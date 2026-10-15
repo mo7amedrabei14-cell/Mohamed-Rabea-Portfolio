@@ -338,7 +338,7 @@ function Arrow({ diagonal = false }) {
 }
 
 function Mark() {
-  return <img className="brand-portrait" src={`${import.meta.env.BASE_URL}images/Personal.png`} alt="Mohamed Rabea" width="38" height="38" />;
+  return <img className="brand-portrait" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" />;
 }
 
 function ProjectArt({ type, copy: c }) {
@@ -350,14 +350,13 @@ function ProjectArt({ type, copy: c }) {
     </div>;
   }
   if (type === 'analytics') {
-    return <div className="art art--analytics" aria-label={c.dataLabel} role="img">
+    return <div className="art art--photo art--analytics" aria-label={c.dataLabel}>
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
-      <div className="analytics-sheet">
-        <div className="analytics-head"><div><span>{c.assessmentLabel}</span><strong>{c.assessmentStatement}</strong></div><div className="round-glyph">↗</div></div>
-        <div className="metric-row"><div><small>{c.healthLabel}</small><span className="metric-line"><i style={{width:'74%'}} /></span></div><div><small>{c.educationLabel}</small><span className="metric-line"><i style={{width:'61%'}} /></span></div></div>
-        <div className="metric-row"><div><small>{c.infrastructureLabel}</small><span className="metric-line"><i style={{width:'86%'}} /></span></div><div><small>{c.economyLabel}</small><span className="metric-line"><i style={{width:'68%'}} /></span></div></div>
-        <div className="analytics-bottom"><span>{c.assessmentModelLabel}</span><strong>{c.ratingScaleLabel}</strong><span>{c.structuredLabel}</span></div>
-      </div>
+      <img
+        className="art-photo"
+        src={`${import.meta.env.BASE_URL}images/dashboard_blurred_final.png`}
+        alt="Screenshot of the Power BI operational analytics dashboard"
+      />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
