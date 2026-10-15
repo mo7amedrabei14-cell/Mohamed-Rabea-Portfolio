@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
   presentationRepo: 'https://github.com/mo7amedrabei14-cell/eoc-presentation',
-  presentationLive: 'https://eoc-presentation.vercel.app/',
-  powerBi: 'https://app.powerbi.com/view?r=eyJrIjoiYmE0ODc0Y2QtMmYyYy00YTZjLTkzZTEtMDBmMTZlMDBlNWRiIiwidCI6IjAyNjU5ODhhLWU0MDQtNGRkYy1hMmEwLTY2MjUwNWMzYjc4ZiIsImMiOjh9',
+  presentationLive: 'https://mo7amedrabei14-cell.github.io/eoc-presentation/eoc-command-deck.html',
   email: 'mailto:mo7amed.rabei14@gmail.com',
   linkedin: 'https://www.linkedin.com/in/mohamed-rabea-50644436b',
 };
