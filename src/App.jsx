@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
@@ -381,22 +381,56 @@ function App() {
       : 'Mohamed Rabea — Data, Systems & Humanitarian Operations';
   }, [lang, rtl]);
 
-  useEffect(() => {
-    const nodes = document.querySelectorAll('[data-reveal]');
-    if (!('IntersectionObserver' in window)) {
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const nodes = Array.from(document.querySelectorAll('[data-reveal]'));
+    let observer;
+
+    const revealEverything = () => {
+      root.classList.remove('motion-ready');
       nodes.forEach((node) => node.classList.add('is-visible'));
+    };
+
+    // Motion is progressive enhancement: never let an unsupported or interrupted
+    // observer hide the portfolio content.
+    if (
+      !nodes.length ||
+      !('IntersectionObserver' in window) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      revealEverything();
       return undefined;
     }
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
+
+    try {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px 8% 0px' });
+
+      // Keep the first viewport visible before enabling the reveal layer.
+      nodes.forEach((node) => {
+        const rect = node.getBoundingClientRect();
+        if (rect.bottom >= 0 && rect.top <= window.innerHeight * 1.1) {
+          node.classList.add('is-visible');
         }
+        observer.observe(node);
       });
-    }, { threshold: 0.12 });
-    nodes.forEach((node) => observer.observe(node));
-    return () => observer.disconnect();
+
+      root.classList.add('motion-ready');
+      return () => {
+        observer?.disconnect();
+        root.classList.remove('motion-ready');
+      };
+    } catch (error) {
+      observer?.disconnect();
+      revealEverything();
+      return undefined;
+    }
   }, [lang]);
 
 

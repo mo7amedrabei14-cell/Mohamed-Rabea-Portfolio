@@ -276,8 +276,8 @@ button { color: inherit; }
 .footer-inner > p { color: #b5c3b8; font-size: 9px; margin: 0 auto; }
 .footer-top { display: inline-flex; align-items: center; gap: 9px; font-size: 10px; color: #d6dfd7; }
 .footer-year { color: #99ac9e; font: 9px var(--mono); }
-[data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
-[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+[data-reveal] { opacity: 1; transform: none; transition: none; }
+[data-reveal].is-visible { opacity: 1; transform: none; }
 .site--ar [data-reveal] { transform: translateY(18px); }
 .site--ar [data-reveal].is-visible { transform: translateY(0); }
 .site--ar h1, .site--ar h2, .site--ar h3, .site--ar p, .site--ar .capability-card li, .site--ar .timeline-desc, .site--ar .training-panel li { letter-spacing: 0; }

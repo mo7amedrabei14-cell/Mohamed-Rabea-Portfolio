@@ -50,7 +50,7 @@ html.is-scrolled .site-header {
 }
 
 /* One shared reveal language, with enough variety to avoid a repeated fade-up template. */
-html .site [data-reveal] {
+html.motion-ready .site [data-reveal] {
   opacity: 0;
   transform: translate3d(0, 26px, 0) scale(.992);
   filter: blur(6px);
@@ -60,20 +60,19 @@ html .site [data-reveal] {
     filter 760ms var(--motion-ease-out);
   transition-delay: var(--motion-delay, 0ms);
 }
-
-html .site [data-reveal].is-visible {
+html.motion-ready .site [data-reveal].is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0);
 }
 
 /* The opening composition is a scene reveal rather than another generic card entrance. */
-html .site .hero-art[data-reveal] {
+html.motion-ready .site .hero-art[data-reveal] {
   clip-path: inset(4% 4% 4% 4% round 3px);
   transition-property: opacity, transform, filter, clip-path;
   transition-duration: 820ms, 900ms, 760ms, 1050ms;
 }
-html .site .hero-art[data-reveal].is-visible {
+html.motion-ready .site .hero-art[data-reveal].is-visible {
   clip-path: inset(0 0 0 0 round 3px);
 }
 
