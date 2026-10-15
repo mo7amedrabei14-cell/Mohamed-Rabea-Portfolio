@@ -619,11 +619,6 @@ function App() {
             <div><span className="detail-label">{c.approach}</span><p>{c.eocContribution}</p></div>
             <div><span className="detail-label">{c.role}</span><p>{c.eocProblem}</p></div>
           </div>
-              <p className="project-full-note">
-                {rtl
-                  ? <>ملحوظة: لمشاهدة المشروع بشكل كامل، يُرجى الاطلاع على <a href={links.presentationLive} target="_blank" rel="noreferrer">العرض التقديمي التفاعلي</a>.</>
-                  : <>Note: To explore the project in full, please see the <a href={links.presentationLive} target="_blank" rel="noreferrer">interactive presentation</a>.</>}
-              </p>
         </article>
 
         <div className="project-pair">
