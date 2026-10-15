@@ -337,15 +337,15 @@ function Arrow({ diagonal = false }) {
   </svg>;
 }
 
-function Mark() {
-  return <img className="brand-portrait" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" />;
+function Mark({ onOpen }) {
+  return <img className="brand-portrait image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
 }
 
-function ProjectArt({ type, copy: c }) {
+function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
     return <div className="art art--photo art--platform" aria-label={c.platformLabel}>
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
-      <img className="art-photo" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" />
+      <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
@@ -353,16 +353,20 @@ function ProjectArt({ type, copy: c }) {
     return <div className="art art--photo art--analytics" aria-label={c.dataLabel}>
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
       <img
-        className="art-photo"
+        className="art-photo image-zoom-trigger"
         src={`${import.meta.env.BASE_URL}images/dashboard_blurred_final.png`}
         alt="Screenshot of the Power BI operational analytics dashboard"
+        role="button" tabIndex={0}
+        onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })}
+        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }}
+        aria-label="Open project image full screen"
       />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
   return <div className="art art--photo art--presentation" aria-label={c.presentationLabel}>
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
-    <img className="art-photo" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" />
+    <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
     <div className="art-note">{c.artLabel}</div>
   </div>;
 }
@@ -370,8 +374,23 @@ function ProjectArt({ type, copy: c }) {
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
+  const openImage = (image) => setLightboxImage(image);
+  const closeImage = () => setLightboxImage(null);
+
+  useEffect(() => {
+    if (!lightboxImage) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event) => { if (event.key === 'Escape') closeImage(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [lightboxImage]);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -498,7 +517,7 @@ function App() {
     <header className="site-header">
       <div className="header-inner">
         <a className="brand" href="#top" onClick={closeMenu} aria-label="Mohamed Rabea — home">
-          <Mark />
+          <Mark onOpen={openImage} />
           <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span>
         </a>
         <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
@@ -561,7 +580,7 @@ function App() {
             <div className="tag-row"><span>React 19</span><span>Vite</span><span>Python</span><span>FastAPI</span><span>PostgreSQL</span><span>JWT</span><span>OpenAPI</span><span>Leaflet</span><span>ExcelJS</span></div>
             <div className="project-links"><a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></div>
           </div>
-          <ProjectArt type="platform" copy={c} />
+          <ProjectArt type="platform" copy={c} onImageOpen={openImage} />
           <div className="project-detail">
             <div><span className="detail-label">{c.details}</span><p>{c.eocSolution}</p></div>
             <div><span className="detail-label">{c.approach}</span><p>{c.eocContribution}</p></div>
@@ -577,7 +596,7 @@ function App() {
         <div className="project-pair">
           <article className="project project--standard" data-reveal>
             <div className="project-number">02 <span>/ 03</span></div>
-            <ProjectArt type="analytics" copy={c} />
+            <ProjectArt type="analytics" copy={c} onImageOpen={openImage} />
             <div className="project-content">
               <div className="project-kicker">{c.analyticsKicker}</div>
               <h3>{c.analyticsTitle}</h3>
@@ -594,7 +613,7 @@ function App() {
 
           <article className="project project--standard project--story" data-reveal>
             <div className="project-number">03 <span>/ 03</span></div>
-            <ProjectArt type="presentation" copy={c} />
+            <ProjectArt type="presentation" copy={c} onImageOpen={openImage} />
             <div className="project-content">
               <div className="project-kicker">{c.presentationKicker}</div>
               <h3>{c.presentationTitle}</h3>
@@ -673,6 +692,11 @@ function App() {
     <footer className="site-footer">
       <div className="section-wrap footer-inner"><a className="brand brand--footer" href="#top"><Mark /><span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span></a><p>{c.footerNote}</p><a href="#top" className="footer-top">{c.backTop}<Arrow diagonal /></a><span className="footer-year">© {new Date().getFullYear()}</span></div>
     </footer>
+    {lightboxImage && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={rtl ? 'عرض الصورة بالحجم الكامل' : 'Full-screen image viewer'} onClick={closeImage}>
+      <button className="image-lightbox-close" type="button" onClick={closeImage} aria-label={rtl ? 'إغلاق الصورة' : 'Close image'}>×</button>
+      <img className="image-lightbox-full" src={lightboxImage.src} alt={lightboxImage.alt} onClick={(event) => event.stopPropagation()} />
+      <span className="image-lightbox-hint">{rtl ? 'اضغط خارج الصورة أو Esc للإغلاق' : 'Click outside the image or press Esc to close'}</span>
+    </div>}
   </div>;
 }
 
