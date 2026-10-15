@@ -20,6 +20,10 @@ npm run build
 npm run preview
 ```
 
+## Public site
+
+Target URL: https://mo7amedrabei14-cell.github.io/Mohamed-Rabea-Portfolio/
+
 ## Deployment
 The `.github/workflows/deploy.yml` workflow builds the site and publishes `dist/` to GitHub Pages whenever code is pushed to `main`.
 
