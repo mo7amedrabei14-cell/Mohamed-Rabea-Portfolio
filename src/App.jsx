@@ -354,16 +354,43 @@ function Mark({ onOpen }) {
   return <img className="brand-portrait image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
 }
 
+function trackArtPointer(event) {
+  const surface = event.currentTarget;
+  if (
+    event.pointerType === 'touch' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) return;
+
+  const rect = surface.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+
+  // Direct DOM updates keep pointer motion smooth without causing React re-renders.
+  surface.style.setProperty('--art-pointer-x', `${x * 100}%`);
+  surface.style.setProperty('--art-pointer-y', `${y * 100}%`);
+  surface.style.setProperty('--art-shift-x', `${(0.5 - x) * 8}px`);
+  surface.style.setProperty('--art-shift-y', `${(0.5 - y) * 6}px`);
+}
+
+function resetArtPointer(event) {
+  const surface = event.currentTarget;
+  surface.style.setProperty('--art-pointer-x', '50%');
+  surface.style.setProperty('--art-pointer-y', '50%');
+  surface.style.setProperty('--art-shift-x', '0px');
+  surface.style.setProperty('--art-shift-y', '0px');
+}
+
 function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
-    return <div className="art art--photo art--platform" aria-label={c.platformLabel}>
+    return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
       <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
   if (type === 'analytics') {
-    return <div className="art art--photo art--analytics" aria-label={c.dataLabel}>
+    return <div className="art art--photo art--analytics" aria-label={c.dataLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
       <img
         className="art-photo image-zoom-trigger"
@@ -377,7 +404,7 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
-  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel}>
+  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
     <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
     <div className="art-note">{c.artLabel}</div>

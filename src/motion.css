@@ -397,3 +397,110 @@ html.motion-reduced .contact-orbit--two {
     transition-duration: .01ms !important;
   }
 }
+
+/* ── Product-UI motion study: art-directed project frames ─────────────────
+   Prompt Motion inspiration: responsive pointer-light + controlled depth.
+   Motion Agent inspiration: each project image arrives as its own scene.
+   All movement is decorative; the original screenshots and page structure stay intact.
+*/
+.site .art--photo {
+  isolation: isolate;
+  --art-pointer-x: 50%;
+  --art-pointer-y: 50%;
+  --art-shift-x: 0px;
+  --art-shift-y: 0px;
+}
+
+.site .art--photo .art-photo {
+  inset: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 16px);
+  transform: translate3d(var(--art-shift-x), var(--art-shift-y), 0) scale(1.025);
+  filter: saturate(.94) contrast(1.015);
+  transition:
+    transform 850ms var(--motion-ease-out),
+    filter 700ms var(--motion-ease-standard),
+    clip-path 1000ms var(--motion-ease-out);
+}
+
+.site .art--photo::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(
+      320px circle at var(--art-pointer-x) var(--art-pointer-y),
+      rgba(255, 255, 255, .18),
+      rgba(255, 255, 255, .055) 28%,
+      transparent 68%
+    ),
+    linear-gradient(
+      112deg,
+      transparent 28%,
+      rgba(255, 255, 255, .055) 47%,
+      transparent 62%
+    );
+  transition: opacity 420ms var(--motion-ease-standard);
+}
+
+.site .art--photo .art-caption,
+.site .art--photo .art-note {
+  transition: color 300ms var(--motion-ease-standard), opacity 350ms var(--motion-ease-standard);
+}
+
+html.motion-ready .site .project[data-reveal] .art--photo .art-photo {
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path 1050ms var(--motion-ease-out) 100ms,
+    transform 850ms var(--motion-ease-out),
+    filter 700ms var(--motion-ease-standard);
+}
+
+html.motion-ready .site .project[data-reveal].is-visible .art--photo .art-photo {
+  clip-path: inset(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site .project--featured:hover .art--photo .art-photo,
+  .site .project--standard:hover .art--photo .art-photo {
+    transform: translate3d(var(--art-shift-x), var(--art-shift-y), 0) scale(1.055);
+    filter: saturate(1.06) contrast(1.025);
+  }
+
+  .site .art--photo:hover::after,
+  .site .art--photo:focus-within::after {
+    opacity: 1;
+  }
+
+  .site .project--featured:hover .art--photo .art-caption,
+  .site .project--standard:hover .art--photo .art-caption {
+    color: #f5f4ef;
+  }
+}
+
+/* No pointer-follow effect on touch screens; preserve reliable image tapping. */
+@media (hover: none), (pointer: coarse) {
+  .site .art--photo .art-photo {
+    transform: none;
+    filter: none;
+  }
+  .site .art--photo::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site .art--photo .art-photo,
+  html.motion-ready .site .project[data-reveal] .art--photo .art-photo {
+    clip-path: none !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .site .art--photo::after {
+    display: none !important;
+  }
+}
