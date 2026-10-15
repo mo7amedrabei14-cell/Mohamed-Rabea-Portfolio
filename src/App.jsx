@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
@@ -38,6 +38,11 @@ const copy = {
     stack: 'TECHNOLOGY',
     openSource: 'Explore source code',
     openDemo: 'View interactive presentation',
+    embeddedPresentationEyebrow: 'LIVE INTERACTIVE PRESENTATION',
+    embeddedPresentationTitle: 'Explore the presentation here.',
+    embeddedPresentationDesc: 'The interactive EOC presentation is now available inside this portfolio. Scroll through it below, or open a separate tab if needed.',
+    openPresentationInNewTab: 'Open in a separate tab',
+    hidePresentation: 'Hide presentation',
     openReport: 'Open interactive report',
     eocKicker: 'FULL-STACK APPLICATION · FLAGSHIP PROJECT',
     eocTitle: 'EOC Smart Command Center',
@@ -198,6 +203,11 @@ const copy = {
     stack: 'التقنيات المستخدمة',
     openSource: 'استكشف الشيفرة المصدرية',
     openDemo: 'شاهد العرض التفاعلي',
+    embeddedPresentationEyebrow: 'العرض التفاعلي المباشر',
+    embeddedPresentationTitle: 'استكشف العرض من هنا.',
+    embeddedPresentationDesc: 'أصبح العرض التفاعلي لمركز العمليات متاحًا داخل البورتفوليو. يمكنك تصفحه بالأسفل أو فتحه في تبويب مستقل عند الحاجة.',
+    openPresentationInNewTab: 'فتح في تبويب مستقل',
+    hidePresentation: 'إخفاء العرض',
     openReport: 'افتح التقرير التفاعلي',
     eocKicker: 'تطوير متكامل · المشروع الرئيسي',
     eocTitle: 'نظام إدارة مركز عمليات الطوارئ',
@@ -375,10 +385,33 @@ function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
+  const presentationEmbedRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
   const openImage = (image) => setLightboxImage(image);
   const closeImage = () => setLightboxImage(null);
+  const openEmbeddedPresentation = () => {
+    if (showPresentationEmbed) {
+      presentationEmbedRef.current?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+      return;
+    }
+    setShowPresentationEmbed(true);
+  };
+
+  useEffect(() => {
+    if (!showPresentationEmbed) return undefined;
+    const section = presentationEmbedRef.current;
+    if (!section) return undefined;
+    section.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+    return undefined;
+  }, [showPresentationEmbed]);
 
   useEffect(() => {
     if (!lightboxImage) return undefined;
@@ -625,7 +658,7 @@ function App() {
               </div>
               <div className="tag-row"><span>React 19</span><span>TypeScript</span><span>Vite</span><span>Framer Motion</span><span>Recharts</span></div>
               <div className="project-links project-links--stacked">
-                <a className="text-link project-text-link" href={links.presentationLive} target="_blank" rel="noreferrer">{c.openDemo}<Arrow diagonal /></a>
+                <button className="text-link project-text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button>
                 <a className="text-link project-text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>
               </div>
 
@@ -634,6 +667,30 @@ function App() {
         </div>
         <p className="disclaimer">{c.artLabel}</p>
       </section>
+
+      {showPresentationEmbed && <section className="embedded-presentation-section" id="live-presentation" ref={presentationEmbedRef}>
+        <div className="section-wrap">
+          <div className="embedded-presentation-heading">
+            <div>
+              <div className="eyebrow"><span className="eyebrow-dot" />{c.embeddedPresentationEyebrow}</div>
+              <h2>{c.embeddedPresentationTitle}</h2>
+              <p>{c.embeddedPresentationDesc}</p>
+            </div>
+            <button className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
+          </div>
+          <div className="embedded-presentation-frame">
+            <iframe
+              src={links.presentationLive}
+              title={c.presentationTitle}
+              loading="lazy"
+              allow="fullscreen; autoplay; clipboard-write"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <a className="text-link embedded-presentation-external" href={links.presentationLive} target="_blank" rel="noreferrer">{c.openPresentationInNewTab}<Arrow diagonal /></a>
+        </div>
+      </section>}
 
       <section className="capabilities-section" id="capabilities">
         <div className="section-wrap">
