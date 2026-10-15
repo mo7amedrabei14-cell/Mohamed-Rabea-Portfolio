@@ -319,7 +319,6 @@ function ProjectArt({ type, copy: c }) {
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [expanded, setExpanded] = useState('eoc');
   const c = copy[lang];
   const rtl = lang === 'ar';
 
