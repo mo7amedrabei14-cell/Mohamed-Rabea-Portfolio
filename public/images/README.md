@@ -1,6 +1,6 @@
 # Portfolio image assets
 
-Place the three image files in this folder using these exact names and PNG format:
+Place the image files in this folder using these exact filenames and formats (PNG except for the personal JPG):
 
 - `05-operations-overview.png` — real screenshot of the EOC Smart Command Center; used in the main project card.
 - `pres.png` — screenshot from the EOC interactive presentation; used in the presentation project card.
