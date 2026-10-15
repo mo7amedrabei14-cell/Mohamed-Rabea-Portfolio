@@ -136,6 +136,39 @@ const copy = {
     closeTag: 'HIDE DETAILS',
     localeAria: 'Switch language to Arabic',
     menuAria: 'Toggle navigation',
+    brandTag: 'DATA · SYSTEMS · IMPACT',
+    fieldNotesLabel: 'MR / FIELD NOTES',
+    roleData: 'DATA INTELLIGENCE',
+    roleSoftware: 'SOFTWARE ENGINEERING',
+    roleHuman: 'HUMANITARIAN OPERATIONS',
+    cairoLabel: 'CAIRO · EGYPT',
+    boardTitle: 'OPERATIONS OVERVIEW',
+    boardState: 'STRUCTURED',
+    missionWorkflow: 'MISSION WORKFLOW',
+    trackText: 'Record · Assign · Follow up',
+    fieldDataLabel: 'FIELD DATA',
+    connectedLabel: 'Connected',
+    peopleLabel: 'PEOPLE & BRANCHES',
+    coordinatedLabel: 'Coordinated',
+    reportingLabel: 'REPORTING',
+    reportingSummary: 'From records to review',
+    caseStudyLabel: 'CASE STUDY / INTERFACE CONCEPT',
+    assessmentLabel: 'FIELD ASSESSMENT',
+    assessmentStatement: 'Multiple dimensions. One clearer view.',
+    healthLabel: 'HEALTH',
+    educationLabel: 'EDUCATION',
+    infrastructureLabel: 'INFRASTRUCTURE',
+    economyLabel: 'LOCAL ECONOMY',
+    assessmentModelLabel: 'ASSESSMENT MODEL',
+    ratingScaleLabel: '1—5 scale',
+    structuredLabel: 'Structured view',
+    challengeFrameLabel: '02 / THE CHALLENGE',
+    challengeFrameText: 'From fragmented workflows',
+    approachFrameLabel: '03 / THE APPROACH',
+    approachFrameText: 'One connected operational picture',
+    platformFrameLabel: '04 / THE PLATFORM',
+    platformFrameText: 'Built around how teams work.',
+    explainLabels: 'EXPLAIN · CONNECT · ENABLE',
   },
   ar: {
     languageName: 'English',
@@ -263,6 +296,39 @@ const copy = {
     closeTag: 'إخفاء التفاصيل',
     localeAria: 'تغيير اللغة إلى الإنجليزية',
     menuAria: 'فتح أو إغلاق القائمة',
+    brandTag: 'البيانات · الأنظمة · الأثر',
+    fieldNotesLabel: 'محمد ربيع / ملاحظات ميدانية',
+    roleData: 'ذكاء البيانات',
+    roleSoftware: 'تطوير البرمجيات',
+    roleHuman: 'العمليات الإنسانية',
+    cairoLabel: 'القاهرة · مصر',
+    boardTitle: 'نظرة عامة على العمليات',
+    boardState: 'منظم',
+    missionWorkflow: 'مسار المهمة',
+    trackText: 'تسجيل · تكليف · متابعة',
+    fieldDataLabel: 'البيانات الميدانية',
+    connectedLabel: 'مترابطة',
+    peopleLabel: 'الأفراد والفروع',
+    coordinatedLabel: 'منسقون',
+    reportingLabel: 'التقارير',
+    reportingSummary: 'من السجلات إلى المراجعة',
+    caseStudyLabel: 'دراسة حالة / تصور للواجهة',
+    assessmentLabel: 'التقييم الميداني',
+    assessmentStatement: 'مجالات متعددة. رؤية أوضح.',
+    healthLabel: 'الصحة',
+    educationLabel: 'التعليم',
+    infrastructureLabel: 'البنية التحتية',
+    economyLabel: 'الاقتصاد المحلي',
+    assessmentModelLabel: 'نموذج التقييم',
+    ratingScaleLabel: 'مقياس 1–5',
+    structuredLabel: 'عرض منظم',
+    challengeFrameLabel: '02 / التحدي',
+    challengeFrameText: 'من مسارات عمل متفرقة',
+    approachFrameLabel: '03 / النهج',
+    approachFrameText: 'صورة تشغيلية مترابطة',
+    platformFrameLabel: '04 / المنصة',
+    platformFrameText: 'مصممة وفق طريقة عمل الفرق.',
+    explainLabels: 'شرح · ربط · تمكين',
   },
 };
 
@@ -281,14 +347,14 @@ function ProjectArt({ type, copy: c }) {
     return <div className="art art--platform" aria-label={c.platformLabel} role="img">
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
       <div className="platform-board">
-        <div className="board-top"><span className="board-dots"><i /><i /><i /></span><span className="board-word">OPERATIONS OVERVIEW</span><span className="board-live"><i /> STRUCTURED</span></div>
+        <div className="board-top"><span className="board-dots"><i /><i /><i /></span><span className="board-word">{c.boardTitle}</span><span className="board-live"><i /> {c.boardState}</span></div>
         <div className="board-grid">
-          <div className="board-tile tile-main"><small>MISSION WORKFLOW</small><strong>01 — 04</strong><div className="tile-track"><i /><i /><i /><i /></div><span>Record · Assign · Follow up</span></div>
-          <div className="board-tile"><small>FIELD DATA</small><div className="tile-lines"><i /><i /><i /></div><b>Connected</b></div>
-          <div className="board-tile"><small>PEOPLE & BRANCHES</small><div className="node-mini"><i /><i /><i /><i /></div><b>Coordinated</b></div>
-          <div className="board-tile tile-bottom"><small>REPORTING</small><div className="spark-bars"><i /><i /><i /><i /><i /><i /><i /></div><span>From records to review</span></div>
+          <div className="board-tile tile-main"><small>{c.missionWorkflow}</small><strong>01 — 04</strong><div className="tile-track"><i /><i /><i /><i /></div><span>{c.trackText}</span></div>
+          <div className="board-tile"><small>{c.fieldDataLabel}</small><div className="tile-lines"><i /><i /><i /></div><b>{c.connectedLabel}</b></div>
+          <div className="board-tile"><small>{c.peopleLabel}</small><div className="node-mini"><i /><i /><i /><i /></div><b>{c.coordinatedLabel}</b></div>
+          <div className="board-tile tile-bottom"><small>{c.reportingLabel}</small><div className="spark-bars"><i /><i /><i /><i /><i /><i /><i /></div><span>{c.reportingSummary}</span></div>
         </div>
-        <div className="board-foot"><span>CASE STUDY / INTERFACE CONCEPT</span><span>MR—01</span></div>
+        <div className="board-foot"><span>{c.caseStudyLabel}</span><span>MR—01</span></div>
       </div>
       <div className="art-note">{c.artLabel}</div>
     </div>;
@@ -297,10 +363,10 @@ function ProjectArt({ type, copy: c }) {
     return <div className="art art--analytics" aria-label={c.dataLabel} role="img">
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
       <div className="analytics-sheet">
-        <div className="analytics-head"><div><span>FIELD ASSESSMENT</span><strong>Multiple dimensions.<br />One clearer view.</strong></div><div className="round-glyph">↗</div></div>
+        <div className="analytics-head"><div><span>FIELD ASSESSMENT</span><strong>{c.assessmentStatement}</strong></div><div className="round-glyph">↗</div></div>
         <div className="metric-row"><div><small>HEALTH</small><span className="metric-line"><i style={{width:'74%'}} /></span></div><div><small>EDUCATION</small><span className="metric-line"><i style={{width:'61%'}} /></span></div></div>
         <div className="metric-row"><div><small>INFRASTRUCTURE</small><span className="metric-line"><i style={{width:'86%'}} /></span></div><div><small>LOCAL ECONOMY</small><span className="metric-line"><i style={{width:'68%'}} /></span></div></div>
-        <div className="analytics-bottom"><span>ASSESSMENT MODEL</span><strong>1—5 scale</strong><span>Structured view</span></div>
+        <div className="analytics-bottom"><span>{c.assessmentModelLabel}</span><strong>{c.ratingScaleLabel}</strong><span>{c.structuredLabel}</span></div>
       </div>
       <div className="art-note">{c.artLabel}</div>
     </div>;
@@ -308,9 +374,9 @@ function ProjectArt({ type, copy: c }) {
   return <div className="art art--presentation" aria-label={c.presentationLabel} role="img">
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
     <div className="slide-stack">
-      <div className="slide slide-back"><span>02 / THE CHALLENGE</span><b>From fragmented<br />workflows</b><i /></div>
-      <div className="slide slide-mid"><span>03 / THE APPROACH</span><b>One connected<br />operational picture</b><div className="mini-constellation"><i /><i /><i /><i /><i /></div></div>
-      <div className="slide slide-front"><span>04 / THE PLATFORM</span><b>Built around<br />how teams work.</b><div className="slide-rule" /><small>EXPLAIN · CONNECT · ENABLE</small></div>
+      <div className="slide slide-back"><span>{c.challengeFrameLabel}</span><b>{c.challengeFrameText}</b><i /></div>
+      <div className="slide slide-mid"><span>{c.approachFrameLabel}</span><b>{c.approachFrameText}</b><div className="mini-constellation"><i /><i /><i /><i /><i /></div></div>
+      <div className="slide slide-front"><span>{c.platformFrameLabel}</span><b>{c.platformFrameText}</b><div className="slide-rule" /><small>{c.explainLabels}</small></div>
     </div>
     <div className="art-note">{c.artLabel}</div>
   </div>;
@@ -360,7 +426,7 @@ function App() {
       <div className="header-inner">
         <a className="brand" href="#top" onClick={closeMenu} aria-label="Mohamed Rabea — home">
           <Mark />
-          <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>DATA · SYSTEMS · IMPACT</small></span>
+          <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span>
         </a>
         <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
         <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
@@ -385,12 +451,12 @@ function App() {
           <div className="hero-footnote"><span className="micro-mark">EG</span><span>{c.location}</span></div>
         </div>
         <div className="hero-art" data-reveal aria-label={c.signal}>
-          <div className="hero-art-top"><span>MR / FIELD NOTES</span><span>01—04</span></div>
+          <div className="hero-art-top"><span>{c.fieldNotesLabel}</span><span>01—04</span></div>
           <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" /><div className="signal-core"><span>MR</span><i /></div>
-          <div className="signal-card signal-card--top"><span className="signal-number">01</span><span>DATA<br />INTELLIGENCE</span><i className="signal-pip" /></div>
-          <div className="signal-card signal-card--right"><span className="signal-number">02</span><span>SOFTWARE<br />ENGINEERING</span><i className="signal-pip" /></div>
-          <div className="signal-card signal-card--bottom"><span className="signal-number">03</span><span>HUMANITARIAN<br />OPERATIONS</span><i className="signal-pip" /></div>
-          <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>CAIRO · EGYPT</span></div>
+          <div className="signal-card signal-card--top"><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></div>
+          <div className="signal-card signal-card--right"><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></div>
+          <div className="signal-card signal-card--bottom"><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></div>
+          <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>{c.cairoLabel}</span></div>
         </div>
         <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>
       </section>
@@ -520,14 +586,14 @@ function App() {
           <h2>{c.contactTitle}</h2>
           <p>{c.contactDesc}</p>
           <div className="contact-actions"><a className="button button--light" href={links.email}>{c.emailBtn}<Arrow diagonal /></a><a className="contact-social" href={links.linkedin} target="_blank" rel="noreferrer">{c.linkedinBtn}<Arrow diagonal /></a></div>
-          <div className="contact-details"><a href={links.email}>mo7amed.rabei14@gmail.com</a><span>·</span><a href="tel:+201090509181">+20 109 050 9181</a><span>·</span><span>Egypt</span></div>
+          <div className="contact-details"><a href={links.email}>mo7amed.rabei14@gmail.com</a><span>·</span><a href="tel:+201090509181">+20 109 050 9181</a><span>·</span><span>{rtl ? "مصر" : "Egypt"}</span></div>
           <div className="contact-orbit contact-orbit--one" /><div className="contact-orbit contact-orbit--two" />
         </div>
       </section>
     </main>
 
     <footer className="site-footer">
-      <div className="section-wrap footer-inner"><a className="brand brand--footer" href="#top"><Mark /><span className="brand-copy"><strong>MOHAMED RABEA</strong><small>DATA · SYSTEMS · IMPACT</small></span></a><p>{c.footerNote}</p><a href="#top" className="footer-top">{c.backTop}<Arrow diagonal /></a><span className="footer-year">© {new Date().getFullYear()}</span></div>
+      <div className="section-wrap footer-inner"><a className="brand brand--footer" href="#top"><Mark /><span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span></a><p>{c.footerNote}</p><a href="#top" className="footer-top">{c.backTop}<Arrow diagonal /></a><span className="footer-year">© {new Date().getFullYear()}</span></div>
     </footer>
   </div>;
 }
