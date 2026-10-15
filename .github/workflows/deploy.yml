@@ -34,8 +34,9 @@ jobs:
         shell: bash
         run: |
           test -s dist/index.html
-          grep -Eq 'assets/[^"]+\\.js' dist/index.html
-          grep -Eq 'assets/[^"]+\\.css' dist/index.html
+          test -n "$(find dist/assets -maxdepth 1 -type f -name '*.js' -print -quit)"
+          test -n "$(find dist/assets -maxdepth 1 -type f -name '*.css' -print -quit)"
+          grep -q 'assets/' dist/index.html
           if grep -q '/src/main.jsx' dist/index.html; then
             echo "Production index.html still references the raw React entrypoint." >&2
             exit 1
