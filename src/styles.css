@@ -396,3 +396,16 @@ button { color: inherit; }
 .project-full-note { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; line-height: 1.7; }
 .project-full-note a { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 600px) { .brand-portrait { width: 35px; height: 35px; flex-basis: 35px; } .art-photo { object-fit: contain; } }
+
+
+/* Full-resolution image viewer: original image source, no thumbnail or CSS scaling loss. */
+.image-zoom-trigger { cursor: zoom-in; }
+.image-zoom-trigger:focus-visible { outline: 2px solid var(--red); outline-offset: 4px; }
+.image-lightbox { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: clamp(16px, 3vw, 44px); background: rgba(5, 7, 6, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); animation: image-lightbox-in .18s ease-out both; }
+.image-lightbox-full { display: block; max-width: 100%; max-height: calc(100dvh - 100px); width: auto; height: auto; object-fit: contain; object-position: center; box-shadow: 0 24px 90px rgba(0,0,0,.45); cursor: zoom-out; }
+.image-lightbox-close { position: absolute; top: max(14px, env(safe-area-inset-top)); inset-inline-end: max(16px, env(safe-area-inset-right)); width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; background: rgba(255,255,255,.08); color: white; font: 300 32px/1 var(--sans, sans-serif); cursor: pointer; display: grid; place-items: center; transition: background .18s ease, transform .18s ease; }
+.image-lightbox-close:hover { background: rgba(255,255,255,.18); transform: scale(1.04); }
+.image-lightbox-hint { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 16px; right: 16px; color: rgba(255,255,255,.65); text-align: center; font: 10px var(--mono); pointer-events: none; }
+@keyframes image-lightbox-in { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 600px) { .image-lightbox { padding: 14px; } .image-lightbox-full { max-height: calc(100dvh - 90px); } .image-lightbox-close { width: 42px; height: 42px; } }
+@media (prefers-reduced-motion: reduce) { .image-lightbox { animation: none; } }
