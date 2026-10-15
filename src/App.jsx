@@ -338,23 +338,14 @@ function Arrow({ diagonal = false }) {
 }
 
 function Mark() {
-  return <span className="brand-mark" aria-hidden="true"><span>M</span><i>R</i></span>;
+  return <img className="brand-portrait" src={`${import.meta.env.BASE_URL}images/Personal.png`} alt="Mohamed Rabea" width="38" height="38" />;
 }
 
 function ProjectArt({ type, copy: c }) {
   if (type === 'platform') {
-    return <div className="art art--platform" aria-label={c.platformLabel} role="img">
+    return <div className="art art--photo art--platform" aria-label={c.platformLabel}>
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
-      <div className="platform-board">
-        <div className="board-top"><span className="board-dots"><i /><i /><i /></span><span className="board-word">{c.boardTitle}</span><span className="board-live"><i /> {c.boardState}</span></div>
-        <div className="board-grid">
-          <div className="board-tile tile-main"><small>{c.missionWorkflow}</small><strong>01 — 04</strong><div className="tile-track"><i /><i /><i /><i /></div><span>{c.trackText}</span></div>
-          <div className="board-tile"><small>{c.fieldDataLabel}</small><div className="tile-lines"><i /><i /><i /></div><b>{c.connectedLabel}</b></div>
-          <div className="board-tile"><small>{c.peopleLabel}</small><div className="node-mini"><i /><i /><i /><i /></div><b>{c.coordinatedLabel}</b></div>
-          <div className="board-tile tile-bottom"><small>{c.reportingLabel}</small><div className="spark-bars"><i /><i /><i /><i /><i /><i /><i /></div><span>{c.reportingSummary}</span></div>
-        </div>
-        <div className="board-foot"><span>{c.caseStudyLabel}</span><span>MR—01</span></div>
-      </div>
+      <img className="art-photo" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
@@ -370,13 +361,9 @@ function ProjectArt({ type, copy: c }) {
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
-  return <div className="art art--presentation" aria-label={c.presentationLabel} role="img">
+  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel}>
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
-    <div className="slide-stack">
-      <div className="slide slide-back"><span>{c.challengeFrameLabel}</span><b>{c.challengeFrameText}</b><i /></div>
-      <div className="slide slide-mid"><span>{c.approachFrameLabel}</span><b>{c.approachFrameText}</b><div className="mini-constellation"><i /><i /><i /><i /><i /></div></div>
-      <div className="slide slide-front"><span>{c.platformFrameLabel}</span><b>{c.platformFrameText}</b><div className="slide-rule" /><small>{c.explainLabels}</small></div>
-    </div>
+    <img className="art-photo" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" />
     <div className="art-note">{c.artLabel}</div>
   </div>;
 }
@@ -510,7 +497,6 @@ function App() {
               </div>
               <div className="approach-note"><span>{c.analyticsApproach}</span><p>{c.analyticsWorkflow}</p></div>
               <div className="tag-row"><span>Power BI</span><span>Power Query</span><span>Excel</span><span>QGIS</span></div>
-              <a className="text-link project-text-link" href={links.powerBi} target="_blank" rel="noreferrer">{c.openReport}<Arrow diagonal /></a>
             </div>
           </article>
 
@@ -531,6 +517,11 @@ function App() {
                 <a className="text-link project-text-link" href={links.presentationLive} target="_blank" rel="noreferrer">{c.openDemo}<Arrow diagonal /></a>
                 <a className="text-link project-text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>
               </div>
+              <p className="project-full-note">
+                {rtl
+                  ? <>ملحوظة: لمشاهدة المشروع بشكل كامل، يُرجى الاطلاع على <a href={links.presentationLive} target="_blank" rel="noreferrer">العرض التقديمي التفاعلي</a>.</>
+                  : <>Note: To explore the project in full, please see the <a href={links.presentationLive} target="_blank" rel="noreferrer">interactive presentation</a>.</>}
+              </p>
             </div>
           </article>
         </div>
