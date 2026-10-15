@@ -363,9 +363,9 @@ function ProjectArt({ type, copy: c }) {
     return <div className="art art--analytics" aria-label={c.dataLabel} role="img">
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
       <div className="analytics-sheet">
-        <div className="analytics-head"><div><span>FIELD ASSESSMENT</span><strong>{c.assessmentStatement}</strong></div><div className="round-glyph">↗</div></div>
-        <div className="metric-row"><div><small>HEALTH</small><span className="metric-line"><i style={{width:'74%'}} /></span></div><div><small>EDUCATION</small><span className="metric-line"><i style={{width:'61%'}} /></span></div></div>
-        <div className="metric-row"><div><small>INFRASTRUCTURE</small><span className="metric-line"><i style={{width:'86%'}} /></span></div><div><small>LOCAL ECONOMY</small><span className="metric-line"><i style={{width:'68%'}} /></span></div></div>
+        <div className="analytics-head"><div><span>{c.assessmentLabel}</span><strong>{c.assessmentStatement}</strong></div><div className="round-glyph">↗</div></div>
+        <div className="metric-row"><div><small>{c.healthLabel}</small><span className="metric-line"><i style={{width:'74%'}} /></span></div><div><small>{c.educationLabel}</small><span className="metric-line"><i style={{width:'61%'}} /></span></div></div>
+        <div className="metric-row"><div><small>{c.infrastructureLabel}</small><span className="metric-line"><i style={{width:'86%'}} /></span></div><div><small>{c.economyLabel}</small><span className="metric-line"><i style={{width:'68%'}} /></span></div></div>
         <div className="analytics-bottom"><span>{c.assessmentModelLabel}</span><strong>{c.ratingScaleLabel}</strong><span>{c.structuredLabel}</span></div>
       </div>
       <div className="art-note">{c.artLabel}</div>
