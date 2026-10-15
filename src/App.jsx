@@ -5,6 +5,7 @@ const links = {
   presentationRepo: 'https://github.com/mo7amedrabei14-cell/eoc-presentation',
   presentationLive: 'https://mo7amedrabei14-cell.github.io/eoc-presentation/eoc-command-deck.html',
   email: 'mailto:mo7amed.rabei14@gmail.com',
+  whatsapp: 'https://wa.me/201090509181',
   linkedin: 'https://www.linkedin.com/in/mohamed-rabea-50644436b',
 };
 
@@ -129,6 +130,7 @@ const copy = {
     contactTitle: 'Let’s make complex work clearer.',
     contactDesc: 'For opportunities in data analytics, software development or humanitarian information systems, I’d be glad to connect.',
     emailBtn: 'Email Mohamed',
+    whatsappBtn: 'Message me on WhatsApp',
     linkedinBtn: 'Connect on LinkedIn',
     backTop: 'Back to top',
     footerNote: 'A portfolio of practical work across data, software and humanitarian operations.',
@@ -294,6 +296,7 @@ const copy = {
     contactTitle: 'لنجعل العمل المعقد أوضح.',
     contactDesc: 'للفرص في تحليل البيانات أو تطوير الأنظمة أو نظم المعلومات الإنسانية، يسعدني التواصل.',
     emailBtn: 'راسل محمد',
+    whatsappBtn: 'راسلني على واتساب',
     linkedinBtn: 'تواصل عبر لينكدإن',
     backTop: 'العودة للأعلى',
     footerNote: 'نماذج من الأعمال العملية في البيانات والبرمجيات والعمليات الإنسانية.',
@@ -734,7 +737,17 @@ function App() {
           <div className="eyebrow"><span className="eyebrow-dot" />{c.contactKicker}</div>
           <h2>{c.contactTitle}</h2>
           <p>{c.contactDesc}</p>
-          <div className="contact-actions"><a className="button button--light" href={links.email}>{c.emailBtn}<Arrow diagonal /></a><a className="contact-social" href={links.linkedin} target="_blank" rel="noreferrer">{c.linkedinBtn}<Arrow diagonal /></a></div>
+          <div className="contact-actions">
+            <a className="button button--light" href={links.email}>{c.emailBtn}<Arrow diagonal /></a>
+            <a className="button button--whatsapp" href={links.whatsapp} target="_blank" rel="noreferrer" aria-label={rtl ? "فتح محادثة واتساب" : "Open WhatsApp chat"}>
+              <svg className="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.2 11.7a8.4 8.4 0 0 1-12.4 7.4L3 20l.9-4.6a8.4 8.4 0 1 1 16.3-3.7Z" />
+                <path d="M8.1 7.8c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.6c.1.3.1.5-.1.7l-.6.7c-.2.2-.2.4 0 .6.6 1 1.4 1.8 2.4 2.4.3.2.5.2.7 0l.7-.8c.2-.2.4-.2.7-.1l1.6.8c.3.1.4.3.4.5 0 .4-.2 1.2-.8 1.7-.5.5-1.2.8-2.1.6-1.2-.3-2.6-.9-4-2.2-1.2-1.1-2-2.5-2.2-3.8-.2-.9.2-1.6.7-2.1Z" />
+              </svg>
+              <span>{c.whatsappBtn}</span>
+            </a>
+            <a className="contact-social" href={links.linkedin} target="_blank" rel="noreferrer">{c.linkedinBtn}<Arrow diagonal /></a>
+          </div>
           <div className="contact-details"><a href={links.email}>mo7amed.rabei14@gmail.com</a><span>·</span><a href="tel:+201090509181">+20 109 050 9181</a><span>·</span><span>{rtl ? "مصر" : "Egypt"}</span></div>
           <div className="contact-orbit contact-orbit--one" /><div className="contact-orbit contact-orbit--two" />
         </div>

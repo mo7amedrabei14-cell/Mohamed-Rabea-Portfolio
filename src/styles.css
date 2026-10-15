@@ -264,6 +264,28 @@ button { color: inherit; }
 .contact-section p { max-width: 560px; position: relative; z-index: 2; color: rgba(255,255,255,.83); font-size: 14px; line-height: 1.9; }
 .contact-actions { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; margin-top: 29px; position: relative; z-index: 2; }
 .contact-social { display: inline-flex; align-items: center; gap: 9px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,.55); font-size: 12px; }
+.button--whatsapp {
+  gap: 10px;
+  color: #103b22;
+  background: #d7f9e2;
+  border-color: rgba(255,255,255,.25);
+}
+.button--whatsapp:hover { background: #bdf1ce; }
+.whatsapp-icon {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 640px) {
+  .contact-actions { gap: 14px; }
+  .button--whatsapp { min-height: 46px; }
+}
+
 .contact-details { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 13px; align-items: center; margin-top: 45px; font: 10px var(--mono); color: rgba(255,255,255,.76); }
 .contact-details a { transition: color .2s ease; }.contact-details a:hover { color: #fff; }
 .contact-orbit { position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); pointer-events: none; }
