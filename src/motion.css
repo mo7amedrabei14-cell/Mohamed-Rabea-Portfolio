@@ -1,0 +1,382 @@
+/*
+ * Portfolio motion system
+ * Art direction: quiet cinematic entrances, direct manipulation, and small spring responses.
+ * Keep motion semantic: it should clarify hierarchy and state, not compete with the work.
+ */
+:root {
+  --motion-ease-out: cubic-bezier(.16, 1, .3, 1);
+  --motion-ease-standard: cubic-bezier(.2, .72, .25, 1);
+  --motion-ease-spring: cubic-bezier(.22, 1.12, .36, 1);
+  --page-progress: 0%;
+  --pointer-x: 50vw;
+  --pointer-y: 18vh;
+}
+
+/* A quiet reading-position indicator, aligned to the document direction. */
+html::before {
+  content: "";
+  position: fixed;
+  z-index: 1000;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: var(--page-progress);
+  height: 2px;
+  background: linear-gradient(90deg, var(--green-deep), var(--green) 68%, var(--red));
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+/* Ambient light follows a desktop pointer without adding a particle/canvas layer. */
+@media (hover: hover) and (pointer: fine) {
+  body {
+    background:
+      radial-gradient(circle 38rem at var(--pointer-x) var(--pointer-y), rgba(255, 255, 255, .52), transparent 76%),
+      var(--paper);
+    background-attachment: fixed;
+  }
+}
+
+.site-header {
+  transition:
+    background-color 420ms var(--motion-ease-standard),
+    box-shadow 420ms var(--motion-ease-standard),
+    border-color 420ms var(--motion-ease-standard);
+}
+
+html.is-scrolled .site-header {
+  background: rgba(245, 244, 239, .96);
+  border-bottom-color: rgba(199, 204, 195, .82);
+  box-shadow: 0 10px 30px rgba(29, 41, 37, .055);
+}
+
+/* One shared reveal language, with enough variety to avoid a repeated fade-up template. */
+html .site [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0) scale(.992);
+  filter: blur(6px);
+  transition:
+    opacity 780ms var(--motion-ease-out),
+    transform 860ms var(--motion-ease-out),
+    filter 760ms var(--motion-ease-out);
+  transition-delay: var(--motion-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+html .site [data-reveal].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0);
+}
+
+/* The opening composition is a scene reveal rather than another generic card entrance. */
+html .site .hero-art[data-reveal] {
+  clip-path: inset(4% 4% 4% 4% round 3px);
+  transition-property: opacity, transform, filter, clip-path;
+  transition-duration: 820ms, 900ms, 760ms, 1050ms;
+}
+html .site .hero-art[data-reveal].is-visible {
+  clip-path: inset(0 0 0 0 round 3px);
+}
+
+.hero-copy.is-visible > .eyebrow {
+  animation: motion-copy-arrive 620ms var(--motion-ease-out) both;
+}
+.hero-copy.is-visible > .hero-greeting {
+  animation: motion-copy-arrive 680ms var(--motion-ease-out) 35ms both;
+}
+.hero-copy.is-visible > h1 {
+  animation: motion-copy-arrive 850ms var(--motion-ease-out) 70ms both;
+}
+.hero-copy.is-visible > .hero-intro {
+  animation: motion-copy-arrive 760ms var(--motion-ease-out) 145ms both;
+}
+.hero-copy.is-visible > .hero-actions {
+  animation: motion-copy-arrive 760ms var(--motion-ease-out) 220ms both;
+}
+.hero-copy.is-visible > .hero-footnote {
+  animation: motion-copy-arrive 760ms var(--motion-ease-out) 290ms both;
+}
+
+.hero-art.is-visible .signal-core {
+  animation:
+    motion-core-arrive 850ms var(--motion-ease-spring) 80ms both,
+    motion-core-breathe 5.8s ease-in-out 1.1s infinite;
+}
+.hero-art.is-visible .signal-card {
+  animation: motion-card-arrive 740ms var(--motion-ease-spring) both;
+}
+.hero-art.is-visible .signal-card--top { animation-delay: 140ms; }
+.hero-art.is-visible .signal-card--right { animation-delay: 220ms; }
+.hero-art.is-visible .signal-card--bottom { animation-delay: 300ms; }
+
+/* Stagger a few meaningful groups instead of delaying every item on the page. */
+.bridge-grid.is-visible > .bridge-item {
+  animation: motion-card-arrive 720ms var(--motion-ease-out) both;
+}
+.bridge-grid.is-visible > .bridge-item:nth-child(2) { animation-delay: 85ms; }
+.bridge-grid.is-visible > .bridge-item:nth-child(3) { animation-delay: 170ms; }
+
+.method-row.is-visible .process-step {
+  animation: motion-step-arrive 560ms var(--motion-ease-out) both;
+}
+.method-row.is-visible .process-step:nth-child(2) { animation-delay: 70ms; }
+.method-row.is-visible .process-step:nth-child(3) { animation-delay: 140ms; }
+.method-row.is-visible .process-step:nth-child(4) { animation-delay: 210ms; }
+
+.capability-grid > [data-reveal]:nth-child(2),
+.project-pair > [data-reveal]:nth-child(2) {
+  --motion-delay: 80ms;
+}
+.capability-grid > [data-reveal]:nth-child(3) { --motion-delay: 160ms; }
+.capability-grid > [data-reveal]:nth-child(4) { --motion-delay: 240ms; }
+.timeline > [data-reveal]:nth-child(2) { --motion-delay: 45ms; }
+.timeline > [data-reveal]:nth-child(3) { --motion-delay: 90ms; }
+.timeline > [data-reveal]:nth-child(4) { --motion-delay: 135ms; }
+
+/* Product-like feedback: short travel, clear focus, no theatrical flips. */
+.nav > a:not(.nav-contact) {
+  position: relative;
+  transition: color 260ms var(--motion-ease-standard);
+}
+.nav > a:not(.nav-contact)::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -7px;
+  height: 1px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: inline-start;
+  transition: transform 320ms var(--motion-ease-out);
+}
+.nav > a:not(.nav-contact):hover::after,
+.nav > a:not(.nav-contact):focus-visible::after {
+  transform: scaleX(1);
+}
+
+.button,
+.nav-contact,
+.text-link,
+.language-toggle,
+.menu-toggle,
+.footer-top,
+.contact-social {
+  transition-timing-function: var(--motion-ease-spring);
+}
+.button,
+.nav-contact {
+  transition:
+    transform 360ms var(--motion-ease-spring),
+    background-color 320ms var(--motion-ease-standard),
+    border-color 320ms var(--motion-ease-standard),
+    box-shadow 360ms var(--motion-ease-standard);
+}
+.button:hover,
+.nav-contact:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 9px 20px rgba(29, 41, 37, .13);
+}
+.button:active,
+.nav-contact:active {
+  transform: translate3d(0, 0, 0) scale(.985);
+  box-shadow: none;
+}
+.button:focus-visible,
+.nav-contact:focus-visible,
+.text-link:focus-visible,
+.contact-social:focus-visible,
+.footer-top:focus-visible,
+.language-toggle:focus-visible,
+.menu-toggle:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 4px;
+}
+
+.bridge-item {
+  transition: background-color 360ms var(--motion-ease-standard), padding 360ms var(--motion-ease-out);
+}
+.bridge-item > i {
+  transition: transform 400ms var(--motion-ease-spring), color 280ms var(--motion-ease-standard);
+}
+.bridge-item:hover > i {
+  transform: translate3d(-3px, -3px, 0) scale(1.08);
+  color: var(--red);
+}
+.site--ar .bridge-item:hover > i {
+  transform: translate3d(3px, -3px, 0) scale(1.08);
+}
+
+.project {
+  transition:
+    transform 520ms var(--motion-ease-out),
+    box-shadow 520ms var(--motion-ease-standard),
+    border-color 400ms var(--motion-ease-standard);
+}
+.project--featured:hover,
+.project--standard:hover {
+  transform: translate3d(0, -5px, 0);
+  box-shadow: 0 22px 52px rgba(29, 41, 37, .09);
+}
+.project--standard .art-photo {
+  transition: transform 1000ms var(--motion-ease-out);
+}
+.project--standard:hover .art-photo {
+  transform: scale(1.025);
+}
+.project--featured .project-module-list > span {
+  transition: color 240ms var(--motion-ease-standard), transform 300ms var(--motion-ease-out);
+}
+.project--featured:hover .project-module-list > span {
+  transform: translate3d(3px, 0, 0);
+}
+.site--ar .project--featured:hover .project-module-list > span {
+  transform: translate3d(-3px, 0, 0);
+}
+
+.capability-card {
+  transition:
+    transform 480ms var(--motion-ease-out),
+    border-color 340ms var(--motion-ease-standard),
+    background-color 340ms var(--motion-ease-standard),
+    box-shadow 480ms var(--motion-ease-standard);
+}
+.capability-card:hover {
+  transform: translate3d(0, -5px, 0);
+  border-color: rgba(255, 255, 255, .34);
+  background: rgba(255, 255, 255, .075);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .12);
+}
+.capability-glyph {
+  display: inline-block;
+  transition: transform 420ms var(--motion-ease-spring), color 280ms var(--motion-ease-standard);
+}
+.capability-card:hover .capability-glyph {
+  transform: rotate(-6deg) scale(1.08);
+  color: #fff;
+}
+
+.timeline-item {
+  transition: padding-inline 360ms var(--motion-ease-out), border-color 300ms var(--motion-ease-standard);
+}
+.timeline-item:hover {
+  padding-inline: 8px;
+  border-bottom-color: var(--line-strong);
+}
+.timeline-index {
+  transition: transform 360ms var(--motion-ease-spring), color 280ms var(--motion-ease-standard);
+}
+.timeline-item:hover .timeline-index {
+  transform: scale(1.08);
+  color: var(--red-deep);
+}
+.education-item .edu-icon {
+  transition: transform 400ms var(--motion-ease-spring), background-color 300ms var(--motion-ease-standard);
+}
+.education-item:hover .edu-icon {
+  transform: translate3d(0, -3px, 0);
+  background: rgba(213, 78, 63, .07);
+}
+
+.contact-social,
+.text-link,
+.footer-top {
+  transition: color 300ms var(--motion-ease-standard), border-color 300ms var(--motion-ease-standard), transform 360ms var(--motion-ease-spring);
+}
+.contact-social:hover,
+.footer-top:hover {
+  transform: translate3d(0, -2px, 0);
+}
+.contact-orbit--one {
+  animation: motion-orbit-breathe 16s ease-in-out infinite alternate;
+}
+.contact-orbit--two {
+  animation: motion-orbit-breathe 12s ease-in-out -3s infinite alternate-reverse;
+}
+
+/* The mobile menu gains rhythm once it becomes visible; it does not slide the whole page. */
+@media (max-width: 760px) {
+  .nav--open > * {
+    animation: motion-nav-arrive 430ms var(--motion-ease-out) both;
+  }
+  .nav--open > *:nth-child(2) { animation-delay: 35ms; }
+  .nav--open > *:nth-child(3) { animation-delay: 70ms; }
+  .nav--open > *:nth-child(4) { animation-delay: 105ms; }
+  .nav--open > *:nth-child(5) { animation-delay: 140ms; }
+
+  .project--featured:hover,
+  .project--standard:hover,
+  .capability-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .timeline-item:hover { padding-inline: 0; }
+}
+
+@keyframes motion-copy-arrive {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes motion-card-arrive {
+  from { opacity: 0; transform: translate3d(0, 15px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes motion-step-arrive {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes motion-core-arrive {
+  0% { opacity: 0; transform: scale(.84); }
+  72% { opacity: 1; transform: scale(1.035); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes motion-core-breathe {
+  0%, 100% { box-shadow: 0 20px 60px rgba(34, 60, 52, .16); }
+  50% { box-shadow: 0 25px 72px rgba(34, 60, 52, .23); }
+}
+@keyframes motion-orbit-breathe {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-10px, 8px, 0) scale(1.025); }
+}
+@keyframes motion-nav-arrive {
+  from { opacity: 0; transform: translate3d(0, -7px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+html.motion-reduced::before {
+  width: 0;
+}
+html.motion-reduced body {
+  background: var(--paper);
+}
+html.motion-reduced .contact-orbit--one,
+html.motion-reduced .contact-orbit--two {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html::before { width: 0 !important; }
+  body { background: var(--paper) !important; }
+  html .site [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    transition: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+  .hero-copy.is-visible > *,
+  .hero-art.is-visible .signal-core,
+  .hero-art.is-visible .signal-card,
+  .bridge-grid.is-visible > .bridge-item,
+  .method-row.is-visible .process-step,
+  .nav--open > * {
+    animation: none !important;
+  }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
