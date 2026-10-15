@@ -30,6 +30,17 @@ jobs:
         run: npm install
       - name: Build production site
         run: npm run build
+      - name: Verify compiled site and make Pages artifact Jekyll-proof
+        shell: bash
+        run: |
+          test -s dist/index.html
+          grep -Eq 'assets/[^"]+\\.js' dist/index.html
+          grep -Eq 'assets/[^"]+\\.css' dist/index.html
+          if grep -q '/src/main.jsx' dist/index.html; then
+            echo "Production index.html still references the raw React entrypoint." >&2
+            exit 1
+          fi
+          touch dist/.nojekyll
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
