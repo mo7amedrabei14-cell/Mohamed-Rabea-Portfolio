@@ -399,6 +399,60 @@ function App() {
     return () => observer.disconnect();
   }, [lang]);
 
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let scrollFrame = 0;
+    let pointerFrame = 0;
+    let latestPointer = null;
+
+    const syncMotionPreference = () => {
+      root.classList.toggle('motion-reduced', motionPreference.matches);
+    };
+
+    const updateScrollState = () => {
+      scrollFrame = 0;
+      const scrollRange = Math.max(root.scrollHeight - window.innerHeight, 0);
+      const progress = scrollRange ? (window.scrollY / scrollRange) * 100 : 0;
+      root.style.setProperty('--page-progress', `${Math.min(100, Math.max(0, progress))}%`);
+      root.classList.toggle('is-scrolled', window.scrollY > 16);
+    };
+
+    const scheduleScrollUpdate = () => {
+      if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollState);
+    };
+
+    const handlePointerMove = (event) => {
+      if (motionPreference.matches || event.pointerType === 'touch') return;
+      latestPointer = { x: event.clientX, y: event.clientY };
+      if (pointerFrame) return;
+      pointerFrame = window.requestAnimationFrame(() => {
+        pointerFrame = 0;
+        if (!latestPointer) return;
+        root.style.setProperty('--pointer-x', `${latestPointer.x}px`);
+        root.style.setProperty('--pointer-y', `${latestPointer.y}px`);
+      });
+    };
+
+    syncMotionPreference();
+    updateScrollState();
+    motionPreference.addEventListener?.('change', syncMotionPreference);
+    window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+    window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      motionPreference.removeEventListener?.('change', syncMotionPreference);
+      window.removeEventListener('scroll', scheduleScrollUpdate);
+      window.removeEventListener('resize', scheduleScrollUpdate);
+      window.removeEventListener('pointermove', handlePointerMove);
+      if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+      if (pointerFrame) window.cancelAnimationFrame(pointerFrame);
+    };
+  }, []);
+
+
   const toggleLanguage = () => {
     setLang((previous) => previous === 'en' ? 'ar' : 'en');
     setMenuOpen(false);
