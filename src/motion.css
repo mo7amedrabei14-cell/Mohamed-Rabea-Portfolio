@@ -59,7 +59,6 @@ html .site [data-reveal] {
     transform 860ms var(--motion-ease-out),
     filter 760ms var(--motion-ease-out);
   transition-delay: var(--motion-delay, 0ms);
-  will-change: opacity, transform;
 }
 
 html .site [data-reveal].is-visible {
@@ -146,12 +145,15 @@ html .site .hero-art[data-reveal].is-visible {
   height: 1px;
   background: var(--red);
   transform: scaleX(0);
-  transform-origin: inline-start;
+  transform-origin: left center;
   transition: transform 320ms var(--motion-ease-out);
 }
 .nav > a:not(.nav-contact):hover::after,
 .nav > a:not(.nav-contact):focus-visible::after {
   transform: scaleX(1);
+}
+[dir="rtl"] .nav > a:not(.nav-contact)::after {
+  transform-origin: right center;
 }
 
 .button,
@@ -246,6 +248,19 @@ html .site .hero-art[data-reveal].is-visible {
   background: rgba(255, 255, 255, .075);
   box-shadow: 0 16px 38px rgba(0, 0, 0, .12);
 }
+
+/* Reveal-state selectors are intentionally more specific so hover feedback remains available after entry. */
+html .site .project--featured[data-reveal].is-visible:hover,
+html .site .project--standard[data-reveal].is-visible:hover {
+  transform: translate3d(0, -5px, 0) scale(1);
+  box-shadow: 0 22px 52px rgba(29, 41, 37, .09);
+}
+html .site .capability-card[data-reveal].is-visible:hover {
+  transform: translate3d(0, -5px, 0) scale(1);
+  border-color: rgba(255, 255, 255, .34);
+  background: rgba(255, 255, 255, .075);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .12);
+}
 .capability-glyph {
   display: inline-block;
   transition: transform 420ms var(--motion-ease-spring), color 280ms var(--motion-ease-standard);
@@ -305,7 +320,10 @@ html .site .hero-art[data-reveal].is-visible {
 
   .project--featured:hover,
   .project--standard:hover,
-  .capability-card:hover {
+  .capability-card:hover,
+  html .site .project--featured[data-reveal].is-visible:hover,
+  html .site .project--standard[data-reveal].is-visible:hover,
+  html .site .capability-card[data-reveal].is-visible:hover {
     transform: none;
     box-shadow: none;
   }
