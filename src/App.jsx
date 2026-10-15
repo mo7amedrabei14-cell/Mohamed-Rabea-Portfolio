@@ -13,7 +13,7 @@ const copy = {
   en: {
     languageName: 'العربية',
     nav: [{ label: 'Selected work', id: 'work' }, { label: 'Capabilities', id: 'capabilities' }, { label: 'Experience', id: 'experience' }, { label: 'Contact', id: 'contact' }],
-    eyebrow: 'DATA ANALYST · FULL-STACK DEVELOPER · EMERGENCY OPERATIONS',
+    eyebrow: 'DATA ANALYST · FULL-STACK DEVELOPER · OPERATIONS SUPERVISOR',
     hello: 'Hello, I’m',
     name: 'Mohamed Rabea.',
     heroLine1: 'Clear data.',
@@ -140,7 +140,7 @@ const copy = {
   ar: {
     languageName: 'English',
     nav: [{ label: 'المشروعات', id: 'work' }, { label: 'المهارات', id: 'capabilities' }, { label: 'الخبرة', id: 'experience' }, { label: 'التواصل', id: 'contact' }],
-    eyebrow: 'محلل بيانات · مطور أنظمة متكاملة · عمليات الطوارئ',
+    eyebrow: 'محلل بيانات · مطور أنظمة متكاملة · مشرف عمليات الطوارئ',
     hello: 'مرحبًا، أنا',
     name: 'محمد ربيع.',
     heroLine1: 'بيانات أوضح.',
