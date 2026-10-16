@@ -465,12 +465,14 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeRole, setActiveRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [hoveredRole, setHoveredRole] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
   const presentationEmbedRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
+  const activeRole = hoveredRole || selectedRole;
   const heroRoleMark = activeRole === 'data'
     ? 'BI'
     : activeRole === 'software'
@@ -669,13 +671,13 @@ function App() {
           </div>
           <div className="hero-footnote"><span className="micro-mark">EG</span><span>{c.location}</span></div>
         </div>
-        <div className="hero-art" data-reveal aria-label={c.signal} onPointerMove={trackHeroPointer} onPointerLeave={(event) => { resetHeroPointer(event); setActiveRole(null); }}>
+        <div className="hero-art" data-reveal aria-label={c.signal} onPointerMove={trackHeroPointer} onPointerLeave={resetHeroPointer}>
           <div className="hero-art-top"><span>{c.fieldNotesLabel}</span><span>01—04</span></div>
           <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" />
           <div className={`signal-core${activeRole ? ` signal-core--${activeRole} is-active` : ''}`} aria-live="polite"><span key={heroRoleMark}>{heroRoleMark}</span><i /></div>
-          <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={activeRole === 'data'} onPointerEnter={() => setActiveRole('data')} onFocus={() => setActiveRole('data')} onClick={() => setActiveRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={activeRole === 'software'} onPointerEnter={() => setActiveRole('software')} onFocus={() => setActiveRole('software')} onClick={() => setActiveRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={activeRole === 'humanitarian'} onPointerEnter={() => setActiveRole('humanitarian')} onFocus={() => setActiveRole('humanitarian')} onClick={() => setActiveRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
+          <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'data'} onPointerEnter={() => setHoveredRole('data')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('data')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
+          <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'software'} onPointerEnter={() => setHoveredRole('software')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('software')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
+          <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'humanitarian'} onPointerEnter={() => setHoveredRole('humanitarian')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('humanitarian')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
           <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>{c.cairoLabel}</span></div>
         </div>
         <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>
