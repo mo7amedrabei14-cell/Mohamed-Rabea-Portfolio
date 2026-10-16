@@ -381,6 +381,57 @@ function resetArtPointer(event) {
   surface.style.setProperty('--art-shift-y', '0px');
 }
 
+
+function trackHeroPointer(event) {
+  const surface = event.currentTarget;
+  if (
+    event.pointerType === 'touch' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) return;
+
+  const rect = surface.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+
+  surface.style.setProperty('--hero-pointer-x', `${x * 100}%`);
+  surface.style.setProperty('--hero-pointer-y', `${y * 100}%`);
+  surface.style.setProperty('--hero-drift-x', `${(0.5 - x) * 14}px`);
+  surface.style.setProperty('--hero-drift-y', `${(0.5 - y) * 10}px`);
+  surface.style.setProperty('--hero-drift-reverse-x', `${(x - 0.5) * 10}px`);
+  surface.style.setProperty('--hero-drift-reverse-y', `${(y - 0.5) * 8}px`);
+}
+
+function resetHeroPointer(event) {
+  const surface = event.currentTarget;
+  surface.style.setProperty('--hero-pointer-x', '50%');
+  surface.style.setProperty('--hero-pointer-y', '50%');
+  surface.style.setProperty('--hero-drift-x', '0px');
+  surface.style.setProperty('--hero-drift-y', '0px');
+  surface.style.setProperty('--hero-drift-reverse-x', '0px');
+  surface.style.setProperty('--hero-drift-reverse-y', '0px');
+}
+
+function trackMagneticPointer(event) {
+  const control = event.currentTarget;
+  if (
+    event.pointerType === 'touch' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) return;
+
+  const rect = control.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = (event.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+  const y = (event.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+  control.style.setProperty('--magnetic-x', `${Math.max(-1, Math.min(1, x)) * 5}px`);
+  control.style.setProperty('--magnetic-y', `${Math.max(-1, Math.min(1, y)) * 4}px`);
+}
+
+function resetMagneticPointer(event) {
+  event.currentTarget.style.setProperty('--magnetic-x', '0px');
+  event.currentTarget.style.setProperty('--magnetic-y', '0px');
+}
+
 function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
     return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
@@ -414,11 +465,19 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
   const presentationEmbedRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
+  const heroRoleMark = activeRole === 'data'
+    ? 'BI'
+    : activeRole === 'software'
+      ? 'FS'
+      : activeRole === 'humanitarian'
+        ? 'EOC'
+        : 'MR';
   const openImage = (image) => setLightboxImage(image);
   const closeImage = () => setLightboxImage(null);
   const openEmbeddedPresentation = () => {
@@ -587,7 +646,7 @@ function App() {
         <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
           {c.nav.map((item) => <a key={item.id} href={'#' + item.id} onClick={closeMenu}>{item.label}</a>)}
           <button className="language-toggle" onClick={toggleLanguage} aria-label={c.localeAria}>{c.languageName}<span>↗</span></button>
-          <a className="nav-contact" href="#contact" onClick={closeMenu}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
+          <a className="nav-contact" href="#contact" onClick={closeMenu} onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
         </nav>
       </div>
     </header>
@@ -597,20 +656,26 @@ function App() {
         <div className="hero-copy" data-reveal>
           <div className="eyebrow"><span className="eyebrow-dot" />{c.eyebrow}</div>
           <p className="hero-greeting">{c.hello}</p>
-          <h1>{c.name}<br /><span>{c.heroLine1}</span><br /><em>{c.heroLine2}</em><br /><span>{c.heroLine3}</span></h1>
+          <h1 className="hero-title">
+            <span className="hero-title-line"><span>{c.name}</span></span>
+            <span className="hero-title-line"><span>{c.heroLine1}</span></span>
+            <span className="hero-title-line"><em>{c.heroLine2}</em></span>
+            <span className="hero-title-line"><span>{c.heroLine3}</span></span>
+          </h1>
           <p className="hero-intro">{c.heroIntro}</p>
           <div className="hero-actions">
-            <a className="button button--primary" href="#work">{c.primary}<Arrow diagonal /></a>
+            <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
           <div className="hero-footnote"><span className="micro-mark">EG</span><span>{c.location}</span></div>
         </div>
-        <div className="hero-art" data-reveal aria-label={c.signal}>
+        <div className="hero-art" data-reveal aria-label={c.signal} onPointerMove={trackHeroPointer} onPointerLeave={(event) => { resetHeroPointer(event); setActiveRole(null); }}>
           <div className="hero-art-top"><span>{c.fieldNotesLabel}</span><span>01—04</span></div>
-          <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" /><div className="signal-core"><span>MR</span><i /></div>
-          <div className="signal-card signal-card--top"><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></div>
-          <div className="signal-card signal-card--right"><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></div>
-          <div className="signal-card signal-card--bottom"><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></div>
+          <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" />
+          <div className={`signal-core${activeRole ? ` signal-core--${activeRole} is-active` : ''}`} aria-live="polite"><span key={heroRoleMark}>{heroRoleMark}</span><i /></div>
+          <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={activeRole === 'data'} onPointerEnter={() => setActiveRole('data')} onFocus={() => setActiveRole('data')} onClick={() => setActiveRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
+          <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={activeRole === 'software'} onPointerEnter={() => setActiveRole('software')} onFocus={() => setActiveRole('software')} onClick={() => setActiveRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
+          <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={activeRole === 'humanitarian'} onPointerEnter={() => setActiveRole('humanitarian')} onFocus={() => setActiveRole('humanitarian')} onClick={() => setActiveRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
           <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>{c.cairoLabel}</span></div>
         </div>
         <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>

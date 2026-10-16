@@ -53,24 +53,21 @@ html.is-scrolled .site-header {
 html.motion-ready .site [data-reveal] {
   opacity: 0;
   transform: translate3d(0, 26px, 0) scale(.992);
-  filter: blur(6px);
   transition:
-    opacity 780ms var(--motion-ease-out),
-    transform 860ms var(--motion-ease-out),
-    filter 760ms var(--motion-ease-out);
+    opacity 620ms var(--motion-ease-out),
+    transform 780ms var(--motion-ease-out);
   transition-delay: var(--motion-delay, 0ms);
 }
 html.motion-ready .site [data-reveal].is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0);
 }
 
 /* The opening composition is a scene reveal rather than another generic card entrance. */
 html.motion-ready .site .hero-art[data-reveal] {
   clip-path: inset(4% 4% 4% 4% round 3px);
-  transition-property: opacity, transform, filter, clip-path;
-  transition-duration: 820ms, 900ms, 760ms, 1050ms;
+  transition-property: opacity, transform, clip-path;
+  transition-duration: 820ms, 900ms, 1050ms;
 }
 html.motion-ready .site .hero-art[data-reveal].is-visible {
   clip-path: inset(0 0 0 0 round 3px);
@@ -502,5 +499,197 @@ html.motion-ready .site .project[data-reveal].is-visible .art--photo .art-photo 
   }
   .site .art--photo::after {
     display: none !important;
+  }
+}
+
+/* ── Kinetic identity system ───────────────────────────────────────────────
+   Inspired by Prompt Motion's "Shape morphing through UI states" and
+   "Photo print app launch film": meaningful state changes, mask-led reveals,
+   direct manipulation and continuity. This is authored for this portfolio,
+   not a copied video/render template.
+*/
+
+/* Typography arrives one line at a time through a clean mask—not a blur dissolve. */
+.hero-copy.is-visible > h1 {
+  animation: none;
+}
+.site .hero-title-line {
+  display: block;
+  overflow: hidden;
+  padding-block: .035em .07em;
+  margin-block: -.035em -.07em;
+}
+.site .hero-title-line > span,
+.site .hero-title-line > em {
+  display: inline-block;
+}
+html.motion-ready .hero-copy.is-visible .hero-title-line > span,
+html.motion-ready .hero-copy.is-visible .hero-title-line > em {
+  animation: motion-title-line-arrive 760ms var(--motion-ease-out) both;
+}
+html.motion-ready .hero-copy.is-visible .hero-title-line:nth-child(1) > * { animation-delay: 35ms; }
+html.motion-ready .hero-copy.is-visible .hero-title-line:nth-child(2) > * { animation-delay: 115ms; }
+html.motion-ready .hero-copy.is-visible .hero-title-line:nth-child(3) > * { animation-delay: 195ms; }
+html.motion-ready .hero-copy.is-visible .hero-title-line:nth-child(4) > * { animation-delay: 275ms; }
+
+@keyframes motion-title-line-arrive {
+  0% { opacity: 0; transform: translate3d(0, 112%, 0); }
+  72% { opacity: 1; transform: translate3d(0, -3%, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Pointer light and a restrained multi-plane drift turn the hero art into a responsive scene. */
+.site .hero-art {
+  --hero-pointer-x: 50%;
+  --hero-pointer-y: 50%;
+  --hero-drift-x: 0px;
+  --hero-drift-y: 0px;
+  --hero-drift-reverse-x: 0px;
+  --hero-drift-reverse-y: 0px;
+}
+.site .hero-art::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    420px circle at var(--hero-pointer-x) var(--hero-pointer-y),
+    rgba(255, 255, 255, .64),
+    rgba(255, 255, 255, .16) 34%,
+    transparent 72%
+  );
+  transition: opacity 420ms var(--motion-ease-standard);
+}
+.site .hero-art:hover::after { opacity: 1; }
+.site .hero-art .signal-orbit { z-index: 0; }
+.site .hero-art .signal-core { z-index: 2; }
+.site .hero-art .signal-card {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  border-radius: 0;
+  cursor: pointer;
+  transition:
+    transform 520ms var(--motion-ease-out),
+    border-color 360ms var(--motion-ease-standard),
+    background-color 360ms var(--motion-ease-standard),
+    box-shadow 420ms var(--motion-ease-standard);
+}
+.site .hero-art .signal-card--top {
+  transform: translate3d(var(--hero-drift-x), var(--hero-drift-y), 0);
+}
+.site .hero-art .signal-card--right {
+  transform: translate3d(var(--hero-drift-reverse-x), var(--hero-drift-y), 0);
+}
+.site .hero-art .signal-card--bottom {
+  transform: translate3d(var(--hero-drift-x), var(--hero-drift-reverse-y), 0);
+}
+.site .hero-art .signal-card:hover,
+.site .hero-art .signal-card.is-active {
+  border-color: rgba(213, 78, 63, .65);
+  background: rgba(255, 254, 250, .985);
+  box-shadow: 0 16px 34px rgba(29, 41, 37, .13);
+}
+.site .hero-art .signal-card:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+.site .hero-art .signal-card.is-active .signal-pip {
+  animation: motion-pip-confirm 520ms var(--motion-ease-out) both;
+}
+@keyframes motion-pip-confirm {
+  0% { opacity: .5; transform: scale(.7); }
+  70% { opacity: 1; transform: scale(1.22); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* One central object changes silhouette and label in response to a selected discipline. */
+.site .hero-art .signal-core {
+  border-radius: 50%;
+  transition:
+    border-radius 680ms var(--motion-ease-out),
+    background-color 420ms var(--motion-ease-standard);
+}
+.site .hero-art .signal-core--data { border-radius: 28%; }
+.site .hero-art .signal-core--software { border-radius: 44% 44% 24% 44%; }
+.site .hero-art .signal-core--humanitarian { border-radius: 50% 22% 50% 22%; }
+.site .hero-art .signal-core > span {
+  position: relative;
+  z-index: 2;
+}
+.site .hero-art .signal-core.is-active > span {
+  animation: motion-role-mark-arrive 430ms var(--motion-ease-out) both;
+}
+@keyframes motion-role-mark-arrive {
+  0% { opacity: 0; transform: translate3d(0, 7px, 0) scale(.92); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Magnetic controls: direct manipulation is subtle, bounded and desktop-only. */
+.site .button,
+.site .nav-contact {
+  --magnetic-x: 0px;
+  --magnetic-y: 0px;
+}
+.site .button:hover,
+.site .nav-contact:hover {
+  transform: translate3d(var(--magnetic-x), calc(var(--magnetic-y) - 3px), 0);
+}
+.site .button:active,
+.site .nav-contact:active {
+  transform: translate3d(var(--magnetic-x), var(--magnetic-y), 0) scale(.985);
+}
+.site .button .arrow-icon,
+.site .nav-contact .arrow-icon,
+.site .text-link .arrow-icon {
+  transition: transform 340ms var(--motion-ease-spring);
+}
+.site .button:hover .arrow-icon,
+.site .nav-contact:hover .arrow-icon {
+  transform: translate3d(3px, -1px, 0);
+}
+.site .text-link:hover .arrow-icon {
+  transform: translate3d(4px, 0, 0);
+}
+[dir="rtl"] .site .button:hover .arrow-icon,
+[dir="rtl"] .site .nav-contact:hover .arrow-icon,
+[dir="rtl"] .site .text-link:hover .arrow-icon {
+  transform: translate3d(-4px, 0, 0);
+}
+
+/* The preview remains readable and still on touchscreens; only the visual affordance changes. */
+@media (hover: none), (pointer: coarse) {
+  .site .hero-art::after { display: none; }
+  .site .hero-art .signal-card--top,
+  .site .hero-art .signal-card--right,
+  .site .hero-art .signal-card--bottom { transform: none; }
+  .site .button:hover,
+  .site .nav-contact:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site .hero-title-line > span,
+  .site .hero-title-line > em,
+  html.motion-ready .hero-copy.is-visible .hero-title-line > span,
+  html.motion-ready .hero-copy.is-visible .hero-title-line > em {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .site .hero-art::after { display: none !important; }
+  .site .hero-art .signal-card,
+  .site .hero-art .signal-core,
+  .site .hero-art .signal-core > span,
+  .site .button,
+  .site .nav-contact,
+  .site .button .arrow-icon,
+  .site .nav-contact .arrow-icon,
+  .site .text-link .arrow-icon {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
