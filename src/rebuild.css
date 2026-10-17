@@ -984,3 +984,9 @@ img, svg { display: block; max-width: 100%; }
 .field__body > * { width: 100%; min-width: 0; max-width: 100%; }
 .fieldmap { width: 100%; min-width: 0; max-width: 100%; }
 .fieldmap svg { display: block; width: 100%; min-width: 0; max-width: 100%; height: auto; }
+
+/* Arabic typography: reserve room for high diacritics and don't crop RTL glyphs at line edges. */
+.entry-gate[dir="rtl"] .entry-gate__headline { line-height: 1.2; }
+.entry-gate[dir="rtl"] .entry-gate__headline > span { overflow: visible; padding-block-end: .08em; }
+.portfolio-shell--ar .hero__title { line-height: 1.2; }
+.portfolio-shell--ar .hero__line { overflow: visible; padding-block-end: .09em; }
