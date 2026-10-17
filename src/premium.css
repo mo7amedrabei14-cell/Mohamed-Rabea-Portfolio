@@ -726,3 +726,60 @@ html.hz-intro { background: var(--abyss); }
   .site--ar .hz-lead { font-size: 32px; }
   .hero-actions { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* Align the top metadata to the same content rails as the rest of the hero. */
+.hero { align-items: stretch; }
+.hz-meta {
+  width: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+.hz-row {
+  width: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+/* Explicit dark mobile menu control: avoid native/light button defaults. */
+@media (max-width: 760px) {
+  .site .menu-toggle {
+    flex: 0 0 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid rgba(238,236,231,.18);
+    border-radius: 50%;
+    background: rgba(18,20,23,.92);
+    color: var(--ice);
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .site .menu-toggle span {
+    display: block;
+    width: 14px;
+    height: 1px;
+    min-height: 1px;
+    margin: 0;
+    border: 0;
+    border-radius: 1px;
+    background: var(--ice);
+    opacity: .92;
+    transform: none;
+    visibility: visible;
+  }
+  .site .menu-toggle:hover,
+  .site .menu-toggle:focus-visible {
+    background: rgba(189,117,89,.12);
+    border-color: rgba(189,117,89,.55);
+  }
+}
