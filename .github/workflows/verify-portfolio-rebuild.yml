@@ -44,3 +44,51 @@ jobs:
             exit 1
           fi
           echo "Production bundle structure verified. This workflow does not deploy."
+
+      - name: Install Playwright runner
+        run: npm install --no-save --package-lock=false playwright
+
+      - name: Install Chromium and operating system libraries
+        run: npx playwright install --with-deps chromium
+
+      - name: Start production preview server
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/portfolio-preview.log 2>&1 &
+          echo $! > /tmp/portfolio-preview.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/Mohamed-Rabea-Portfolio/ > /dev/null; then
+              echo "Production preview is ready."
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/portfolio-preview.log
+          exit 1
+
+      - name: Capture and inspect responsive visual previews
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/Mohamed-Rabea-Portfolio/
+        run: node scripts/visual-qa.mjs
+
+      - name: Publish preview report in the job summary
+        if: always()
+        shell: bash
+        run: |
+          if test -f visual-artifacts/summary.md; then
+            cat visual-artifacts/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if test -f /tmp/portfolio-preview.log; then
+            echo '
+## Preview server log' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 35 /tmp/portfolio-preview.log >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload screenshots and layout measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-visual-preview
+          path: visual-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
