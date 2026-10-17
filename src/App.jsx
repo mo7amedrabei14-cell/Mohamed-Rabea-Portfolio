@@ -73,11 +73,8 @@ function EntryGate({ c, lang, onEnter, onLanguage, phase, gateRef }) {
           </p>
           <p className="entry-gate__index">{rtl ? 'ملف شخصي — ٢٠٢٦' : 'PERSONAL INDEX — 2026'}</p>
           <h1 className="entry-gate__headline">
-            {c.hero.title.map((line, index) => (
-              <span className={line.accent ? 'is-accent' : ''} key={line.text}>
-                {line.text}
-                {index === 0 && <i aria-hidden="true">.</i>}
-              </span>
+            {c.hero.title.map((line) => (
+              <span className={line.accent ? 'is-accent' : ''} key={line.text}>{line.text}</span>
             ))}
           </h1>
           <p className="entry-gate__intro">{c.hero.intro}</p>
@@ -157,7 +154,10 @@ function EntryGate({ c, lang, onEnter, onLanguage, phase, gateRef }) {
 }
 
 function App() {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState(() => {
+    try { return window.localStorage.getItem('portfolio-language') === 'ar' ? 'ar' : 'en'; }
+    catch { return 'en'; }
+  });
   const [phase, setPhase] = useState('intro');
   const [menuOpen, setMenuOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
@@ -258,7 +258,7 @@ function App() {
         delay: 0.5,
         ease: 'power3.out',
       });
-    }, gateRef);
+    }, gateRef.current);
     return () => ctx.revert();
   }, [lang, phase]);
 
@@ -268,7 +268,7 @@ function App() {
   }, [phase, lang]);
 
   useEffect(() => {
-    document.documentElement.lang = c.dir;
+    document.documentElement.lang = lang;
     document.documentElement.dir = c.dir;
     document.documentElement.classList.toggle('is-arabic', rtl);
     document.title = rtl
@@ -318,6 +318,7 @@ function App() {
           <CursorGlow />
           <Grain />
         </div>
+        <a className="skip-link" href="#main">{c.skip}</a>
         <ScrollRail c={c} />
         <Header
           c={c}
@@ -328,7 +329,6 @@ function App() {
           tone="paper"
         />
         <main id="main">
-          <a className="skip-link" href="#main">{c.skip}</a>
           <Hero c={c} lang={lang} onNavigate={navigate} />
           <Manifesto c={c} />
           <Work c={c} onImage={setLightboxImage} />
