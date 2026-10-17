@@ -236,7 +236,7 @@ export function Header({ c, menuOpen, onMenu, onLang, onNavigate, tone = 'paper'
         </div>
       </header>
 
-      <div id="site-menu" className={`menu ${menuOpen ? 'is-open' : ''}`} aria-hidden={menuOpen ? 'false' : 'true'}>
+      <div id="site-menu" className={`menu ${menuOpen ? 'is-open' : ''}`} aria-hidden={menuOpen ? 'false' : 'true'} inert={!menuOpen}>
         <div className="menu__inner">
           <div className="menu__head">
             <span>MR / INDEX</span>
