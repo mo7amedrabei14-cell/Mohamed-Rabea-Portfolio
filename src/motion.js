@@ -1,6 +1,5 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,159 +7,155 @@ export const prefersReduced = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const finePointer = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-let lenis = null;
-let ticker = null;
-
-function ensureLenis() {
-  if (lenis || prefersReduced() || !finePointer()) return lenis;
-
-  lenis = new Lenis({
-    lerp: 0.09,
-    smoothWheel: true,
-    wheelMultiplier: 0.95,
-    touchMultiplier: 1.2,
-  });
-
-  lenis.on('scroll', ScrollTrigger.update);
-  ticker = (time) => lenis?.raf(time * 1000);
-  gsap.ticker.add(ticker);
-  gsap.ticker.lagSmoothing(0);
-  return lenis;
-}
-
+/**
+ * Use the browser's native scrolling instead of a second wheel/RAF loop.
+ * This keeps trackpads, touch, keyboard navigation, and interruption by
+ * direct user input predictable.
+ */
 export function scrollToId(id) {
-  const target = id === 'top' ? document.body : document.getElementById(id);
-  if (!target) return;
+  if (typeof window === 'undefined') return;
 
-  if (lenis) {
-    lenis.scrollTo(id === 'top' ? 0 : target, { offset: id === 'top' ? 0 : -72, duration: 1.15 });
+  if (id === 'top') {
+    window.scrollTo({ top: 0, behavior: prefersReduced() ? 'auto' : 'smooth' });
     return;
   }
 
-  const top = id === 'top'
-    ? 0
-    : target.getBoundingClientRect().top + window.scrollY - 72;
-  window.scrollTo({ top, behavior: prefersReduced() ? 'auto' : 'smooth' });
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const header = document.querySelector('.topbar');
+  const headerHeight = header ? header.getBoundingClientRect().height : 0;
+  const targetTop = target.getBoundingClientRect().top + window.scrollY - headerHeight - 14;
+
+  window.scrollTo({
+    top: Math.max(0, targetTop),
+    behavior: prefersReduced() ? 'auto' : 'smooth',
+  });
 }
 
 export function setupMotion(root) {
   if (!root) return () => {};
-  ensureLenis();
 
+  let active = true;
   const ctx = gsap.context(() => {
     if (prefersReduced()) return;
 
-    // Opening scene: the headline rises line by line, then the console resolves.
+    // The hero animates once on entry; the document keeps native scrolling.
     gsap.from('[data-hero-line]', {
-      yPercent: 118,
-      duration: 1.25,
+      yPercent: 106,
+      duration: 1.05,
       ease: 'expo.out',
-      stagger: 0.09,
-      delay: 0.08,
+      stagger: 0.075,
+      delay: 0.04,
+      clearProps: 'transform',
     });
 
     gsap.from('.hero__eyebrow, .hero__intro, .hero__actions', {
-      y: 22,
+      y: 16,
       autoAlpha: 0,
-      duration: 0.9,
+      duration: 0.7,
       ease: 'power3.out',
-      stagger: 0.09,
-      delay: 0.42,
+      stagger: 0.07,
+      delay: 0.28,
+      clearProps: 'transform',
     });
 
     gsap.from('.console', {
-      y: 34,
+      y: 22,
       autoAlpha: 0,
-      duration: 1.05,
+      duration: 0.8,
       ease: 'power3.out',
-      delay: 0.3,
+      delay: 0.18,
+      clearProps: 'transform',
     });
 
-    // Everything below the fold reveals once, with a short travel distance.
+    // Short, one-shot reveals only: no scrubbed timelines that lag behind
+    // a user's wheel or trackpad movement.
     gsap.utils.toArray('[data-reveal]').forEach((el) => {
       if (el.closest('.hero')) return;
       gsap.from(el, {
-        y: 28,
+        y: 18,
         autoAlpha: 0,
-        duration: 0.85,
+        duration: 0.68,
         ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+        clearProps: 'transform',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 91%',
+          once: true,
+          invalidateOnRefresh: true,
+        },
       });
     });
 
-    // The position statement fills in as it is read.
     const statement = root.querySelector('.manifesto__statement');
     if (statement) {
       gsap.fromTo(
         statement.querySelectorAll('.word'),
-        { opacity: 0.16 },
+        { opacity: 0.28, y: 5 },
         {
           opacity: 1,
-          ease: 'none',
-          stagger: 0.04,
+          y: 0,
+          duration: 0.48,
+          ease: 'power2.out',
+          stagger: 0.018,
+          clearProps: 'transform',
           scrollTrigger: {
             trigger: statement,
-            start: 'top 78%',
-            end: 'bottom 58%',
-            scrub: 0.4,
+            start: 'top 84%',
+            once: true,
+            invalidateOnRefresh: true,
           },
         },
       );
     }
 
-    // Slow image drift inside the frame; the frame itself stays fixed.
-    gsap.utils.toArray('[data-parallax]').forEach((frame) => {
-      const image = frame.querySelector('img');
-      if (!image) return;
-      gsap.fromTo(
-        image,
-        { yPercent: -5 },
-        {
-          yPercent: 5,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: frame,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        },
-      );
-    });
-
     gsap.from('.contact__title span', {
-      y: 48,
+      y: 30,
       autoAlpha: 0,
-      duration: 0.9,
+      duration: 0.72,
       ease: 'expo.out',
-      stagger: 0.08,
-      scrollTrigger: { trigger: '.contact', start: 'top 72%', once: true },
+      stagger: 0.06,
+      clearProps: 'transform',
+      scrollTrigger: { trigger: '.contact', start: 'top 76%', once: true },
     });
 
     gsap.from('.contact__grid > *', {
-      y: 24,
+      y: 18,
       autoAlpha: 0,
-      duration: 0.8,
+      duration: 0.65,
       ease: 'power3.out',
-      stagger: 0.08,
-      scrollTrigger: { trigger: '.contact__grid', start: 'top 88%', once: true },
+      stagger: 0.06,
+      clearProps: 'transform',
+      scrollTrigger: { trigger: '.contact__grid', start: 'top 91%', once: true },
     });
-
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(() => ScrollTrigger.refresh());
-    }
   }, root);
 
-  const onResize = () => ScrollTrigger.refresh();
-  window.addEventListener('load', onResize, { once: true });
+  const refresh = () => {
+    if (active) ScrollTrigger.refresh();
+  };
+
+  window.addEventListener('load', refresh, { once: true });
+  window.addEventListener('resize', refresh, { passive: true });
+  window.addEventListener('pageshow', refresh);
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      if (active) ScrollTrigger.refresh();
+    });
+  }
+
+  // Measure triggers after their first layout has landed.
+  requestAnimationFrame(() => {
+    if (active) ScrollTrigger.refresh();
+  });
 
   return () => {
+    active = false;
     ctx.revert();
-    window.removeEventListener('load', onResize);
+    window.removeEventListener('load', refresh);
+    window.removeEventListener('resize', refresh);
+    window.removeEventListener('pageshow', refresh);
   };
 }
 
