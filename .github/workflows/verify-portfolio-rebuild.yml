@@ -79,8 +79,7 @@ jobs:
             cat visual-artifacts/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
           if test -f /tmp/portfolio-preview.log; then
-            echo '
-## Preview server log' >> "$GITHUB_STEP_SUMMARY"
+            printf '\n## Preview server log\n' >> "$GITHUB_STEP_SUMMARY"
             tail -n 35 /tmp/portfolio-preview.log >> "$GITHUB_STEP_SUMMARY"
           fi
 
