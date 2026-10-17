@@ -47,9 +47,8 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
     }
   });
 
-  await page.goto(baseURL, { waitUntil: 'networkidle', timeout: 45000 }).catch(async (error) => {
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(async (error) => {
     recordError(`${name}: navigation: ${error.message}`);
-    await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
   });
   await page.waitForTimeout(1700);
 
@@ -162,8 +161,6 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
         return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
       });
     }
-    await page.goto(baseURL, { waitUntil: 'domcontentloaded' }).catch(() => {});
-    await page.waitForTimeout(300);
   }
 
   runs.push({
