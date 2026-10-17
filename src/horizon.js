@@ -98,7 +98,7 @@ export function startHorizon() {
   const nameEl = cur.querySelector('.hz-name'), count = cur.querySelector('.hz-count');
   const fullName = nameEl.querySelector('.hz-full-name');
   const single = nameEl.querySelector('.hz-single');
-  const LETTER_STREAM = [...NAME.replace(/\\s/g, '')];
+  const LETTER_STREAM = [...NAME.replace(/\s/g, '')];
   const L = [...NAME].map((ch) => {
     const s = document.createElement('i');
     s.className = ch === ' ' ? 'sp' : 'ch';
