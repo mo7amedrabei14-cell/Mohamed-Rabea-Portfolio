@@ -930,3 +930,12 @@ img, svg { display: block; max-width: 100%; }
 .console__foot { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin: 15px 0 0; color: #728b74; font: 7px/1.7 var(--mono); }
 .console__foot span:last-child { text-align: end; }
 [dir="rtl"] .console__foot { direction: rtl; }
+
+/* Ensure transformed headline rows are block-level and the SVG atlas keeps its geometry. */
+.entry-gate__headline > span > span { display: block; }
+.hero__line > span { display: block; }
+.fieldmap { min-height: 300px; aspect-ratio: 620 / 430; }
+.fieldmap svg .fieldmap__ring { position: static; left: auto; top: auto; transform: none; aspect-ratio: auto; border: 0; border-radius: 0; }
+@media (max-width: 650px) {
+  .fieldmap { min-height: 300px; }
+}
