@@ -810,3 +810,96 @@ html.hz-intro { background: var(--abyss); }
   .site .hz-sec h2 { font-size: clamp(38px, 10vw, 62px); line-height: .99; }
   .site--ar .hz-sec h2 { font-size: clamp(31px, 8vw, 46px); line-height: 1.28; }
 }
+
+
+/* Tablet breakpoint: the full pill navigation must never spill off-screen. */
+@media (max-width: 860px) {
+  .site-header, html.is-scrolled .site-header {
+    height: 66px;
+    background: linear-gradient(180deg, rgba(8,9,11,.96), rgba(8,9,11,.48));
+  }
+  .header-inner {
+    width: calc(100% - 36px);
+    gap: 12px;
+  }
+  .brand {
+    max-width: calc(100vw - 90px);
+    min-width: 0;
+    padding-inline-end: 12px;
+  }
+  .brand-copy strong { font-size: 10px; }
+  .site .menu-toggle {
+    flex: 0 0 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    margin-inline-start: auto;
+    border: 1px solid rgba(238,236,231,.18);
+    border-radius: 50%;
+    background: rgba(18,20,23,.92);
+    color: var(--ice);
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .site .menu-toggle span {
+    display: block;
+    width: 14px;
+    height: 1px;
+    min-height: 1px;
+    margin: 0;
+    border: 0;
+    border-radius: 1px;
+    background: var(--ice);
+    opacity: .92;
+    transform: none;
+    visibility: visible;
+  }
+  .nav {
+    display: none;
+    position: absolute;
+    top: 66px;
+    inset-inline: 18px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+    padding: 12px 14px 16px;
+    border: 1px solid rgba(238,236,231,.12);
+    border-radius: 18px;
+    background: rgba(14,16,18,.98);
+    box-shadow: 0 24px 70px rgba(0,0,0,.42);
+    max-height: calc(100svh - 82px);
+    overflow-y: auto;
+  }
+  .nav--open { display: flex; }
+  .nav > a:not(.nav-contact), .language-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 45px;
+    padding: 0 4px;
+    color: var(--ice);
+    border: 0;
+    border-bottom: 1px solid rgba(238,236,231,.1);
+    border-radius: 0;
+    background: transparent;
+  }
+  .nav > a:not(.nav-contact):hover, .language-toggle:hover {
+    background: rgba(238,236,231,.04);
+    border-color: rgba(238,236,231,.1);
+  }
+  .nav-contact {
+    display: flex;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: 12px;
+  }
+}
