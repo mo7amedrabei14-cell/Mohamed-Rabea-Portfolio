@@ -50,7 +50,7 @@ function EntryGate({ c, lang, onEnter, onLanguage, phase, gateRef }) {
       <div className="entry-gate__glow entry-gate__glow--two" aria-hidden="true" />
 
       <header className="entry-gate__top">
-        <div className="entry-brand" aria-label="Mohamed Rabea">
+        <div className="entry-brand">
           <span className="entry-brand__mark">MR<span /></span>
           <span className="entry-brand__copy">
             <strong>MOHAMED RABEA</strong>
@@ -316,7 +316,7 @@ function App() {
       />
 
       <div
-        className={`portfolio-shell ${phase !== 'intro' ? 'is-uncovered' : ''} ${rtl ? 'portfolio-shell--ar' : ''}`}
+        className={`site portfolio-shell ${phase !== 'intro' ? 'is-uncovered' : ''} ${rtl ? 'portfolio-shell--ar' : ''}`}
         ref={siteRef}
         aria-hidden={phase === 'intro'}
         inert={phase === 'intro'}
