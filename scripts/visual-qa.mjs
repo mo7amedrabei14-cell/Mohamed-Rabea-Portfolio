@@ -142,6 +142,53 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
   const heroScreenshot = path.join(output, `hero-${name}.png`);
   await page.screenshot({ path: heroScreenshot, animations: 'disabled' });
 
+  // Exercise real input-driven scrolling; geometry-only screenshots can miss this class of bug.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  if (width >= 600) {
+    await page.mouse.wheel(0, 480);
+    await page.waitForTimeout(250);
+    const wheelScrollY = await page.evaluate(() => window.scrollY);
+    if (wheelScrollY < 80) {
+      recordError(`${name}: native wheel scrolling did not advance the document (scrollY=${wheelScrollY})`);
+    }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(60);
+  }
+
+  // Verify that section links land below the sticky header on both desktop and mobile.
+  const navigationTarget = width < 600 ? 'experience' : 'contact';
+  if (width < 600) {
+    await page.locator('.menu-toggle').click();
+    await page.locator('.menu.is-open').waitFor({ state: 'visible', timeout: 3000 }).catch(() => {
+      recordError(`${name}: mobile navigation menu did not open`);
+    });
+    await page.locator(`.menu__nav a[href="#${navigationTarget}"]`).click({ timeout: 5000 }).catch((error) => {
+      recordError(`${name}: cannot activate mobile navigation link: ${error.message}`);
+    });
+  } else {
+    await page.locator(`.topbar__nav a[href="#${navigationTarget}"]`).click({ timeout: 5000 }).catch((error) => {
+      recordError(`${name}: cannot activate desktop navigation link: ${error.message}`);
+    });
+  }
+
+  const aligned = await page.waitForFunction((id) => {
+    const target = document.getElementById(id);
+    const header = document.querySelector('.topbar');
+    if (!target || !header) return false;
+    const headerBottom = header.getBoundingClientRect().bottom;
+    const targetTop = target.getBoundingClientRect().top;
+    return targetTop >= headerBottom - 4 && targetTop <= headerBottom + 42;
+  }, navigationTarget, { timeout: 5000 }).then(() => true).catch(() => false);
+
+  if (!aligned) {
+    const navState = await page.evaluate((id) => ({
+      scrollY: Math.round(window.scrollY),
+      targetTop: Math.round(document.getElementById(id)?.getBoundingClientRect().top ?? -999),
+      headerBottom: Math.round(document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? -999),
+    }), navigationTarget);
+    recordError(`${name}: navigation to #${navigationTarget} did not settle below the sticky header: ${JSON.stringify(navState)}`);
+  }
+
   const sections = {};
   if (captureSections) {
     for (const [id, filename] of [
