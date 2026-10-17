@@ -1,20 +1,32 @@
-# Mohamed Rabea — Portfolio
+# Mohamed Rabea — Digital Field Intelligence
 
-A bilingual, responsive portfolio presenting work across data analytics, full-stack development, humanitarian operations and communication design.
+A bilingual, responsive digital experience connecting operational reality, data intelligence, full-stack systems and humanitarian work. Built as a narrative-led showcase—not a generic collection of project cards.
 
-## Built with
-- React
-- Vite
-- Custom CSS design system
-- GitHub Pages deployment through GitHub Actions
+## Creative direction
+
+**Digital Field Intelligence**: cinematic dark surfaces, signal-lime accents, editorial typography, an interactive three-discipline radar, real project imagery, and a contrasting signal-to-action narrative.
+
+## Motion & interaction
+
+- GSAP + ScrollTrigger for restrained scroll-linked scene motion.
+- Lenis for smooth scrolling, synchronized to the GSAP ticker.
+- Original React Bits-inspired pointer spotlights, interactive discipline radar, kinetic typography and editorial reveals.
+- Reduced-motion preferences preserve immediate content access and disable scroll-driven motion.
+- Pointer effects are disabled for touch/coarse-pointer devices.
+
+## Stack
+
+React 19 · Vite 7 · GSAP 3.15 · Lenis 1.3 · Custom CSS
 
 ## Run locally
+
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+## Build and preview
+
 ```bash
 npm run build
 npm run preview
@@ -22,14 +34,15 @@ npm run preview
 
 ## Public site
 
-Target URL: https://mo7amedrabei14-cell.github.io/Mohamed-Rabea-Portfolio/
+https://mo7amedrabei14-cell.github.io/Mohamed-Rabea-Portfolio/
 
-## Deployment
-The `.github/workflows/deploy.yml` workflow builds the site and publishes `dist/` to GitHub Pages whenever code is pushed to `main`.
+## Deployment and validation
 
-If the first deployment does not start, open **Settings → Pages** and choose **GitHub Actions** as the build and deployment source.
+The production workflow publishes only from `main`. A separate validation workflow builds feature branches and pull requests without publishing them.
 
 ## Content principles
-- Project descriptions reflect implemented work and user-provided experience.
-- Dashboard mockups are illustrative design elements, not source data or measured results.
-- Humanitarian and operational details are presented at a high level; sensitive field data is not included.
+
+- Project descriptions reflect documented work and responsibilities.
+- Dashboard mockups are illustrative, not live source data or measured outcomes.
+- Humanitarian and operational details stay high-level; sensitive field data is excluded.
+- Third-party model keys and agent credentials never belong in the client bundle.
