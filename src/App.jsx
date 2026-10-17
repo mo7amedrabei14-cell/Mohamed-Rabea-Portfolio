@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startHorizon } from './horizon.js';
 
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
@@ -462,6 +463,27 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
   </div>;
 }
 
+function HzProject({ n, kicker, title, summary, label, img, alt, flip, onImageOpen, tags, actions, children }) {
+  const open = (e) => onImageOpen({ src: e.currentTarget.src, alt: e.currentTarget.alt });
+  return <article className={`hz-proj${flip ? ' is-flip' : ''}`} data-reveal>
+    <div className="hz-proj-media">
+      <span className="hz-proj-n" aria-hidden="true">{n}</span>
+      <div className="hz-proj-frame">
+        <img src={`${import.meta.env.BASE_URL}images/${img}`} alt={alt} role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} />
+      </div>
+      <span className="hz-proj-label">{label}</span>
+    </div>
+    <div className="hz-proj-body">
+      <div className="hz-kicker">{kicker}</div>
+      <h3>{title}</h3>
+      <p className="hz-proj-sum">{summary}</p>
+      {children}
+      <div className="hz-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
+      <div className="hz-proj-actions">{actions}</div>
+    </div>
+  </article>;
+}
+
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -472,6 +494,7 @@ function App() {
   const presentationEmbedRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
+  useEffect(() => startHorizon(), []);
   const activeRole = hoveredRole || selectedRole;
   const heroRoleMark = activeRole === 'data'
     ? 'BI'
@@ -654,110 +677,79 @@ function App() {
     </header>
 
     <main id="main">
-      <section className="hero section-wrap" id="top">
-        <div className="hero-copy" data-reveal>
-          <div className="eyebrow"><span className="eyebrow-dot" />{c.eyebrow}</div>
-          <p className="hero-greeting">{c.hello}</p>
-          <h1 className="hero-title">
-            <span className="hero-title-line"><span>{c.name}</span></span>
-            <span className="hero-title-line"><span>{c.heroLine1}</span></span>
-            <span className="hero-title-line"><em>{c.heroLine2}</em></span>
-            <span className="hero-title-line"><span>{c.heroLine3}</span></span>
-          </h1>
-          <p className="hero-intro">{c.heroIntro}</p>
-          <div className="hero-actions">
+      <section className="hero" id="top">
+        <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
+        <h1 className="hz-hero-name">
+          <span className="sr-only">{c.name}</span>
+          {rtl ? <span className="hz-word" aria-hidden="true"><i className="hz-aw">{c.name.replace(/\.$/, '')}</i></span>
+            : ['MOHAMED', 'RABEA'].map((w) => <span className="hz-word" key={w} aria-hidden="true">{[...w].map((ch, k) => <i className="hz-ch" key={k}>{ch}</i>)}</span>)}
+        </h1>
+        <div className="hz-row">
+          <p className="hz-lead">{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</p>
+          <div className="hz-side">
+            <p className="hero-intro">{c.heroIntro}</p>
+            <div className="hero-actions">
             <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
-          <div className="hero-footnote"><span className="micro-mark">EG</span><span>{c.location}</span></div>
+          </div>
+          {!rtl && <svg className="hz-badge" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="hzc" d="M60 60m-47 0a47 47 0 1 1 94 0a47 47 0 1 1-94 0" /></defs><text><textPath href="#hzc">{(c.brandTag + ' · ').repeat(2)}</textPath></text><circle cx="60" cy="60" r="5" /></svg>}
         </div>
-        <div className="hero-art" data-reveal aria-label={c.signal} onPointerMove={trackHeroPointer} onPointerLeave={resetHeroPointer}>
-          <div className="hero-art-top"><span>{c.fieldNotesLabel}</span><span>01—04</span></div>
-          <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" />
-          <div className={`signal-core${activeRole ? ` signal-core--${activeRole} is-active` : ''}`} aria-live="polite"><span key={heroRoleMark}>{heroRoleMark}</span><i /></div>
-          <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'data'} onPointerEnter={() => setHoveredRole('data')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('data')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'software'} onPointerEnter={() => setHoveredRole('software')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('software')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'humanitarian'} onPointerEnter={() => setHoveredRole('humanitarian')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('humanitarian')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
-          <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>{c.cairoLabel}</span></div>
-        </div>
-        <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>
       </section>
 
-      <section className="signal-section" id="signal">
-        <div className="section-wrap signal-inner">
-          <div className="section-kicker" data-reveal>{c.smallLabel}</div>
-          <div className="bridge-grid" data-reveal>{c.bridge.map((item, i) => <div className="bridge-item" key={item}><span>0{i + 1}</span><strong>{item}</strong><i><Arrow diagonal /></i></div>)}</div>
-          <div className="method-row" data-reveal>
-            <div><span className="method-label">{c.signal}</span><p>{c.signalDesc}</p></div>
-            <div className="process-flow">{c.process.map((step, i) => <div key={step} className="process-step"><span>{String(i + 1).padStart(2,'0')}</span><strong>{step}</strong>{i < c.process.length - 1 && <i className="process-connector" />}</div>)}</div>
+      <div className="hz-marquee" aria-hidden="true">
+        <div className="hz-skew"><div className="hz-track">
+          {[0, 1, 2, 3].map((k) => c.bridge.concat(c.bridge).map((t, n) => <span key={`${k}-${n}`}>{t}</span>))}
+        </div></div>
+      </div>
+
+      <section className="hz-sec hz-signal" id="signal">
+        <div className="hz-wrap">
+          <div className="hz-label" data-reveal><i>01</i>{c.smallLabel}</div>
+          <ol className="hz-stairs" data-reveal>{c.bridge.map((t, i) => <li key={t} style={{ '--i': i }}><span>0{i + 1}</span><strong>{t}</strong></li>)}</ol>
+          <div className="hz-method" data-reveal>
+            <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
+            <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
           </div>
         </div>
       </section>
 
-      <section className="work-section section-wrap" id="work">
-        <div className="section-heading" data-reveal>
-          <div><div className="eyebrow"><span className="eyebrow-dot" />{c.workEyebrow}</div><h2>{c.workTitle}</h2></div>
-          <p>{c.workIntro}</p>
-        </div>
+      <section className="hz-sec hz-work" id="work">
+        <div className="hz-wrap">
+          <div className="hz-head" data-reveal><div><div className="hz-label"><i>02</i>{c.workEyebrow}</div><h2>{c.workTitle}</h2></div><p>{c.workIntro}</p></div>
 
-        <article className="project project--featured" data-reveal>
-          <div className="project-main">
-            <div className="project-number">01 <span>/ 03</span></div>
-            <div className="project-kicker">{c.eocKicker}</div>
-            <h3>{c.eocTitle}</h3>
-            <p className="project-summary">{c.eocSummary}</p>
-            <div className="project-module-list">{c.eocModules.map((module, i) => <span key={module}><i>{String(i + 1).padStart(2,'0')}</i>{module}</span>)}</div>
-            <div className="tag-row"><span>React 19</span><span>Vite</span><span>Python</span><span>FastAPI</span><span>PostgreSQL</span><span>JWT</span><span>OpenAPI</span><span>Leaflet</span><span>ExcelJS</span></div>
-            <div className="project-links"><a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></div>
-          </div>
-          <ProjectArt type="platform" copy={c} onImageOpen={openImage} />
-          <div className="project-detail">
-            <div><span className="detail-label">{c.details}</span><p>{c.eocSolution}</p></div>
-            <div><span className="detail-label">{c.approach}</span><p>{c.eocContribution}</p></div>
-            <div><span className="detail-label">{c.role}</span><p>{c.eocProblem}</p></div>
-          </div>
-        </article>
-
-        <div className="project-pair">
-          <article className="project project--standard" data-reveal>
-            <div className="project-number">02 <span>/ 03</span></div>
-            <ProjectArt type="analytics" copy={c} onImageOpen={openImage} />
-            <div className="project-content">
-              <div className="project-kicker">{c.analyticsKicker}</div>
-              <h3>{c.analyticsTitle}</h3>
-              <p className="project-summary">{c.analyticsSummary}</p>
-              <div className="analytics-facts">
-                <div><span className="fact-index">01</span><div><strong>{c.analyticsMain}</strong><p>{c.analyticsMainDesc}</p></div></div>
-                <div><span className="fact-index">02</span><div><strong>{c.village}</strong><p>{c.villageDesc}</p></div></div>
-                <div><span className="fact-index">03</span><div><strong>{c.departments}</strong><p>{c.departmentsDesc}</p></div></div>
-              </div>
-              <div className="approach-note"><span>{c.analyticsApproach}</span><p>{c.analyticsWorkflow}</p></div>
-              <div className="tag-row"><span>Power BI</span><span>Power Query</span><span>Excel</span><span>QGIS</span></div>
+          <HzProject n="01" kicker={c.eocKicker} title={c.eocTitle} summary={c.eocSummary} label={c.platformLabel} img="05-operations-overview.png" alt="Real screenshot of the EOC Smart Command Center operations overview" onImageOpen={openImage}
+            tags={['React 19', 'Vite', 'Python', 'FastAPI', 'PostgreSQL', 'JWT', 'OpenAPI', 'Leaflet', 'ExcelJS']}
+            actions={<a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>}>
+            <ol className="hz-list">{c.eocModules.map((m, i) => <li key={m}><i>{String(i + 1).padStart(2, '0')}</i>{m}</li>)}</ol>
+            <div className="hz-folds">
+              <details className="hz-fold"><summary>{c.details}</summary><p>{c.eocSolution}</p></details>
+              <details className="hz-fold"><summary>{c.approach}</summary><p>{c.eocContribution}</p></details>
+              <details className="hz-fold"><summary>{c.role}</summary><p>{c.eocProblem}</p></details>
             </div>
-          </article>
+          </HzProject>
 
-          <article className="project project--standard project--story" data-reveal>
-            <div className="project-number">03 <span>/ 03</span></div>
-            <ProjectArt type="presentation" copy={c} onImageOpen={openImage} />
-            <div className="project-content">
-              <div className="project-kicker">{c.presentationKicker}</div>
-              <h3>{c.presentationTitle}</h3>
-              <p className="project-summary">{c.presentationSummary}</p>
-              <div className="story-points">
-                <div><span>01</span><strong>{c.presentationChallenge}</strong><p>{c.presentationChallengeDesc}</p></div>
-                <div><span>02</span><strong>{c.presentationDesign}</strong><p>{c.presentationDesignDesc}</p></div>
-                <div><span>03</span><strong>{c.presentationContribution}</strong><p>{c.presentationContributionDesc}</p></div>
-              </div>
-              <div className="tag-row"><span>React 19</span><span>TypeScript</span><span>Vite</span><span>Framer Motion</span><span>Recharts</span></div>
-              <div className="project-links project-links--stacked">
-                <button className="text-link project-text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button>
-                <a className="text-link project-text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>
-              </div>
+          <HzProject flip n="02" kicker={c.analyticsKicker} title={c.analyticsTitle} summary={c.analyticsSummary} label={c.dataLabel} img="dashboard_blurred_final.png" alt="Screenshot of the Power BI operational analytics dashboard" onImageOpen={openImage}
+            tags={['Power BI', 'Power Query', 'Excel', 'QGIS']}>
+            <ol className="hz-list hz-list--rich">
+              <li><i>01</i><div><b>{c.analyticsMain}</b><span>{c.analyticsMainDesc}</span></div></li>
+              <li><i>02</i><div><b>{c.village}</b><span>{c.villageDesc}</span></div></li>
+              <li><i>03</i><div><b>{c.departments}</b><span>{c.departmentsDesc}</span></div></li>
+            </ol>
+            <div className="hz-folds"><details className="hz-fold"><summary>{c.analyticsApproach}</summary><p>{c.analyticsWorkflow}</p></details></div>
+          </HzProject>
 
-            </div>
-          </article>
+          <HzProject n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
+            tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
+            actions={<><button className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>}>
+            <ol className="hz-list hz-list--rich">
+              <li><i>01</i><div><b>{c.presentationChallenge}</b><span>{c.presentationChallengeDesc}</span></div></li>
+              <li><i>02</i><div><b>{c.presentationDesign}</b><span>{c.presentationDesignDesc}</span></div></li>
+              <li><i>03</i><div><b>{c.presentationContribution}</b><span>{c.presentationContributionDesc}</span></div></li>
+            </ol>
+          </HzProject>
+          <p className="hz-note">{c.artLabel}</p>
         </div>
-        <p className="disclaimer">{c.artLabel}</p>
       </section>
 
       {showPresentationEmbed && <section className="embedded-presentation-section" id="live-presentation" ref={presentationEmbedRef}>
@@ -784,54 +776,51 @@ function App() {
         </div>
       </section>}
 
-      <section className="capabilities-section" id="capabilities">
-        <div className="section-wrap">
-          <div className="section-heading section-heading--light" data-reveal>
-            <div><div className="eyebrow"><span className="eyebrow-dot" />{c.capabilitiesKicker}</div><h2>{c.capabilitiesTitle}</h2></div>
-            <p>{c.capabilitiesIntro}</p>
-          </div>
-          <div className="capability-grid">
-            <article className="capability-card" data-reveal><div className="capability-top"><span>01</span><span className="capability-glyph">↗</span></div><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>02</span><span className="capability-glyph">{'{}'}</span></div><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>03</span><span className="capability-glyph">⌖</span></div><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>04</span><span className="capability-glyph">✳</span></div><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((item) => <li key={item}>{item}</li>)}</ul></article>
+      <section className="hz-sec hz-cap" id="capabilities">
+        <div className="hz-wrap">
+          <div className="hz-head" data-reveal><div><div className="hz-label"><i>03</i>{c.capabilitiesKicker}</div><h2>{c.capabilitiesTitle}</h2></div><p>{c.capabilitiesIntro}</p></div>
+          <div className="hz-cap-rows">
+            <article className="hz-cap-row" data-reveal><span className="n">01</span><h3>{c.skillData}</h3><div><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></div></article>
+            <article className="hz-cap-row" data-reveal><span className="n">02</span><h3>{c.skillBuild}</h3><div><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></div></article>
+            <article className="hz-cap-row" data-reveal><span className="n">03</span><h3>{c.skillHuman}</h3><div><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></div></article>
+            <article className="hz-cap-row" data-reveal><span className="n">04</span><h3>{c.skillComms}</h3><div><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></div></article>
           </div>
         </div>
       </section>
 
-      <section className="experience-section section-wrap" id="experience">
-        <div className="section-heading" data-reveal>
-          <div><div className="eyebrow"><span className="eyebrow-dot" />{c.experienceKicker}</div><h2>{c.experienceTitle}</h2></div>
-          <p>{c.experienceIntro}</p>
-        </div>
-        <div className="timeline">
-          {[['01',c.exp1Title,c.exp1Org,c.exp1Date,c.exp1Desc],['02',c.exp2Title,c.exp2Org,c.exp2Date,c.exp2Desc],['03',c.exp3Title,c.exp3Org,c.exp3Date,c.exp3Desc],['04',c.exp4Title,c.exp4Org,c.exp4Date,c.exp4Desc]].map((item) => <article className="timeline-item" key={item[0]} data-reveal><span className="timeline-index">{item[0]}</span><div className="timeline-body"><div className="timeline-heading"><div><h3>{item[1]}</h3><p>{item[2]}</p></div><time>{item[3]}</time></div><p className="timeline-desc">{item[4]}</p></div></article>)}
+      <section className="hz-sec hz-exp" id="experience">
+        <div className="hz-wrap">
+          <div className="hz-head" data-reveal><div><div className="hz-label"><i>04</i>{c.experienceKicker}</div><h2>{c.experienceTitle}</h2></div><p>{c.experienceIntro}</p></div>
+          <div className="hz-ledger">
+            {[['01', c.exp1Title, c.exp1Org, c.exp1Date, c.exp1Desc], ['02', c.exp2Title, c.exp2Org, c.exp2Date, c.exp2Desc], ['03', c.exp3Title, c.exp3Org, c.exp3Date, c.exp3Desc], ['04', c.exp4Title, c.exp4Org, c.exp4Date, c.exp4Desc]].map((it) => <article className="hz-job" key={it[0]} data-reveal><span className="hz-job-n">{it[0]}</span><div className="hz-job-t"><h3>{it[1]}</h3><p>{it[2]}</p></div><div className="hz-job-b"><time>{it[3]}</time><p>{it[4]}</p></div></article>)}
+          </div>
         </div>
       </section>
 
-      <section className="education-section">
-        <div className="section-wrap education-grid">
+      <section className="hz-sec hz-edu">
+        <div className="hz-wrap hz-edu-grid">
           <div data-reveal>
-            <div className="eyebrow"><span className="eyebrow-dot" />{c.educationKicker}</div>
+            <div className="hz-label"><i>05</i>{c.educationKicker}</div>
             <h2>{c.educationTitle}</h2>
-            <div className="education-item"><span className="edu-icon">01</span><div><h3>{c.education}</h3><p>{c.educationOrg}</p><small>{c.educationStatus}</small></div></div>
-            <div className="education-item"><span className="edu-icon">02</span><div><h3>{c.course}</h3><p>{c.courseOrg}</p><small>{c.courseDetails}</small></div></div>
+            <div className="hz-edu-item"><span>01</span><div><h3>{c.education}</h3><p>{c.educationOrg}</p><small>{c.educationStatus}</small></div></div>
+            <div className="hz-edu-item"><span>02</span><div><h3>{c.course}</h3><p>{c.courseOrg}</p><small>{c.courseDetails}</small></div></div>
           </div>
-          <div className="training-panel" data-reveal>
-            <div className="training-heading">{c.trainingLabel}</div>
-            <ul>{c.trainings.map((item) => <li key={item}>{item}</li>)}</ul>
-            <div className="training-heading training-heading--language">{c.languagesLabel}</div>
+          <div className="hz-panel" data-reveal>
+            <div className="hz-label hz-label--sm">{c.trainingLabel}</div>
+            <ul>{c.trainings.map((t) => <li key={t}>{t}</li>)}</ul>
+            <div className="hz-label hz-label--sm">{c.languagesLabel}</div>
             <p>{c.languageDetails}</p>
           </div>
         </div>
       </section>
 
-      <section className="contact-section" id="contact">
-        <div className="section-wrap contact-inner" data-reveal>
-          <div className="eyebrow"><span className="eyebrow-dot" />{c.contactKicker}</div>
+      <section className="hz-sec hz-contact" id="contact">
+        <div className="hz-big" aria-hidden="true">{rtl ? '' : 'LET’S TALK'}</div>
+        <div className="hz-wrap" data-reveal>
+          <div className="hz-label"><i>06</i>{c.contactKicker}</div>
           <h2>{c.contactTitle}</h2>
           <p>{c.contactDesc}</p>
-          <div className="contact-actions">
+          <div className="hz-contact-actions">
             <a className="button button--light" href={links.email}>{c.emailBtn}<Arrow diagonal /></a>
             <a className="button button--whatsapp" href={links.whatsapp} target="_blank" rel="noreferrer" aria-label={rtl ? "فتح محادثة واتساب" : "Open WhatsApp chat"}>
               <svg className="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -840,10 +829,9 @@ function App() {
               </svg>
               <span>{c.whatsappBtn}</span>
             </a>
-            <a className="contact-social" href={links.linkedin} target="_blank" rel="noreferrer">{c.linkedinBtn}<Arrow diagonal /></a>
+            <a className="text-link" href={links.linkedin} target="_blank" rel="noreferrer">{c.linkedinBtn}<Arrow diagonal /></a>
           </div>
-          <div className="contact-details"><a href={links.email}>mo7amed.rabei14@gmail.com</a><span>·</span><a href="tel:+201090509181">+20 109 050 9181</a><span>·</span><span>{rtl ? "مصر" : "Egypt"}</span></div>
-          <div className="contact-orbit contact-orbit--one" /><div className="contact-orbit contact-orbit--two" />
+          <div className="hz-contact-details"><a href={links.email}>mo7amed.rabei14@gmail.com</a><span>·</span><a href="tel:+201090509181">+20 109 050 9181</a><span>·</span><span>{rtl ? "مصر" : "Egypt"}</span></div>
         </div>
       </section>
     </main>
