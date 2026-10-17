@@ -53,9 +53,21 @@ html.hz-intro { background: var(--abyss); }
 .hz-curtain { background: #08090b; color: #eeece7; }
 .hz-top,.hz-bottom { color: rgba(238,236,231,.46); }
 .hz-name { font-size: clamp(22px, 7.2vw, 110px); }
-.hz-name .ch { width: .68em; color: var(--ice); }
+.hz-name .hz-single {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  display: block;
+  color: var(--gold);
+  font: inherit;
+  transform: translate(-50%,-50%);
+  will-change: transform, opacity;
+}
+.hz-name .hz-full-name { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
+.hz-name .ch { width: .68em; flex: 0 0 .68em; color: var(--ice); will-change: transform, opacity; }
 .hz-name .ch.is-set { color: var(--ice); }
-.hz-name .sp { width: .38em; }
+.hz-name .sp { width: .38em; flex: 0 0 .38em; }
 .hz-count { color: rgba(238,236,231,.88); }
 .hz-skip { border-color: rgba(238,236,231,.2); color: #eeece7; }
 .hz-skip:hover,.hz-skip:focus-visible { background: var(--gold); color: var(--abyss); border-color: var(--gold); }

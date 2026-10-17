@@ -76,12 +76,22 @@ export function startHorizon() {
   const g = cv.getContext('2d');
   const cur = document.createElement('div');
   cur.className = 'hz-curtain';
-  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
+  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-name" aria-hidden="true"><i class="hz-single">M</i><span class="hz-full-name"></span></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
   document.body.append(cur, cv);
   const nameEl = cur.querySelector('.hz-name'), count = cur.querySelector('.hz-count');
-  const L = [...NAME].map((ch) => { const s = document.createElement('i'); s.className = ch === ' ' ? 'sp' : 'ch'; s.textContent = ch === ' ' ? '' : rnd(); nameEl.append(s); return s; });
+  const fullName = nameEl.querySelector('.hz-full-name');
+  const single = nameEl.querySelector('.hz-single');
+  const LETTER_STREAM = [...NAME.replace(/\s/g, '')];
+  const L = [...NAME].map((ch) => {
+    const s = document.createElement('i');
+    s.className = ch === ' ' ? 'sp' : 'ch';
+    s.textContent = ch === ' ' ? '' : ch;
+    s.style.opacity = '0';
+    fullName.append(s);
+    return s;
+  });
 
-  let vw = 0, vh = 0, P = [], raf = 0, phase = 'scramble', prog = 0, mx = -999, my = -999, done = false;
+  let vw = 0, vh = 0, P = [], raf = 0, phase = 'cycling', prog = 0, mx = -999, my = -999, done = false, spreadStarted = false;
   const T0 = performance.now(), total = 6000, timers = [];
   const size = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -113,10 +123,26 @@ export function startHorizon() {
     const el = performance.now() - T0;
     prog = Math.min(1, el / total);
     count.textContent = String(Math.round(prog * 100)).padStart(3, '0');
-    if (phase === 'scramble') L.forEach((s, i) => {                       // letters flicker, then lock in left → right
-      if (s.classList.contains('sp') || s.classList.contains('is-set')) return;
-      if (el > 500 + i * 105) { s.textContent = NAME[i]; s.classList.add('is-set'); } else if ((el / 45 | 0) !== s._f) { s._f = el / 45 | 0; s.textContent = rnd(); }
-    });
+    if (phase === 'cycling') {
+      const cycleIndex = Math.floor(el / 72) % LETTER_STREAM.length;
+      single.textContent = LETTER_STREAM[cycleIndex];
+      if (el >= 1320 && !spreadStarted) {
+        spreadStarted = true;
+        phase = 'spreading';
+        const centerX = vw / 2;
+        L.forEach((letter) => {
+          const r = letter.getBoundingClientRect();
+          gsap.set(letter, { x: centerX - (r.left + r.width / 2), scale: 0.62, autoAlpha: 0 });
+        });
+        gsap.to(single, { scale: 0.45, autoAlpha: 0, duration: 0.28, ease: 'power2.in' });
+        gsap.to(L, {
+          x: 0, scale: 1, autoAlpha: 1,
+          duration: 0.64, ease: 'back.out(1.35)',
+          stagger: { each: 0.06, from: 'center' },
+          onComplete: () => { phase = 'resolved'; },
+        });
+      }
+    }
     draw(t);
     raf = requestAnimationFrame(loop);
   };
