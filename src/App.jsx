@@ -615,12 +615,21 @@ function App() {
 
       const visualQuery = gsap.matchMedia();
       visualQuery.add('(min-width: 900px)', () => {
-        const orbit = document.querySelector('.site .hero-art .signal-orbit.orbit-one');
-        if (orbit) gsap.to(orbit, {
-          rotation: 28, scale: 1.075, ease: 'none',
+        const roleCards = gsap.utils.toArray('.site .hero-art-stage .signal-card');
+        if (roleCards.length) gsap.fromTo(roleCards, { y: 16, scale: 0.98 }, {
+          y: 0, scale: 1, duration: 0.68, stagger: 0.1, ease: 'power3.out',
+          clearProps: 'transform',
           scrollTrigger: {
-            trigger: '.site .hero', start: 'top top', end: 'bottom top',
-            scrub: 0.7, invalidateOnRefresh: true,
+            trigger: '.site .hero-art', start: 'top 78%',
+            toggleActions: 'play none none none',
+          },
+        });
+        const featuredImage = document.querySelector('.site .project--featured .art-photo');
+        if (featuredImage) gsap.fromTo(featuredImage, { clipPath: 'inset(0 12% 0 0 round 8px)' }, {
+          clipPath: 'inset(0 0% 0 0 round 8px)', duration: 0.9, ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.site .project--featured', start: 'top 78%',
+            toggleActions: 'play none none none',
           },
         });
         const connectors = gsap.utils.toArray('.site .method-row .process-connector');
@@ -742,11 +751,13 @@ function App() {
         </div>
         <div className="hero-art" data-reveal aria-label={c.signal} onPointerMove={trackHeroPointer} onPointerLeave={resetHeroPointer}>
           <div className="hero-art-top"><span>{c.fieldNotesLabel}</span><span>01—04</span></div>
-          <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" />
-          <div className={`signal-core${activeRole ? ` signal-core--${activeRole} is-active` : ''}`} aria-live="polite"><span key={heroRoleMark}>{heroRoleMark}</span><i /></div>
-          <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'data'} onPointerEnter={() => setHoveredRole('data')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('data')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'software'} onPointerEnter={() => setHoveredRole('software')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('software')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
-          <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'humanitarian'} onPointerEnter={() => setHoveredRole('humanitarian')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('humanitarian')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
+          <div className="hero-art-stage">
+            <div className="signal-orbit orbit-one" /><div className="signal-orbit orbit-two" />
+            <div className={`signal-core${activeRole ? ` signal-core--${activeRole} is-active` : ''}`} aria-live="polite"><span key={heroRoleMark}>{heroRoleMark}</span><i /></div>
+            <button type="button" className={`signal-card signal-card--top${activeRole === 'data' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'data'} onPointerEnter={() => setHoveredRole('data')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('data')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('data')}><span className="signal-number">01</span><span>{c.roleData}</span><i className="signal-pip" /></button>
+            <button type="button" className={`signal-card signal-card--right${activeRole === 'software' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'software'} onPointerEnter={() => setHoveredRole('software')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('software')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('software')}><span className="signal-number">02</span><span>{c.roleSoftware}</span><i className="signal-pip" /></button>
+            <button type="button" className={`signal-card signal-card--bottom${activeRole === 'humanitarian' ? ' is-active' : ''}`} aria-pressed={selectedRole === 'humanitarian'} onPointerEnter={() => setHoveredRole('humanitarian')} onPointerLeave={() => setHoveredRole(null)} onFocus={() => setHoveredRole('humanitarian')} onBlur={() => setHoveredRole(null)} onClick={() => setSelectedRole('humanitarian')}><span className="signal-number">03</span><span>{c.roleHuman}</span><i className="signal-pip" /></button>
+          </div>
           <div className="hero-art-bottom"><span>{rtl ? 'الفهم قبل الأدوات' : 'UNDERSTAND BEFORE YOU BUILD'}</span><span>{c.cairoLabel}</span></div>
         </div>
         <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>
