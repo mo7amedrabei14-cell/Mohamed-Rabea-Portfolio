@@ -74,7 +74,7 @@ function EntryGate({ c, lang, onEnter, onLanguage, phase, gateRef }) {
           <p className="entry-gate__index">{rtl ? 'ملف شخصي — ٢٠٢٦' : 'PERSONAL INDEX — 2026'}</p>
           <h1 className="entry-gate__headline">
             {c.hero.title.map((line) => (
-              <span className={line.accent ? 'is-accent' : ''} key={line.text}>{line.text}</span>
+              <span className={line.accent ? 'is-accent' : ''} key={line.text}><span>{line.text}</span></span>
             ))}
           </h1>
           <p className="entry-gate__intro">{c.hero.intro}</p>
@@ -217,7 +217,7 @@ function App() {
         delay: 0.12,
         ease: 'power3.out',
       });
-      gsap.from('.entry-gate__headline > span', {
+      gsap.from('.entry-gate__headline > span > span', {
         yPercent: 112,
         rotate: 1.2,
         autoAlpha: 0,
