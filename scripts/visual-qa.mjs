@@ -56,7 +56,7 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
     const lang = page.locator('.entry-language');
     if (await lang.count()) {
       await lang.click();
-      await page.waitForTimeout(1100);
+      await page.waitForTimeout(1650);
     }
   }
 
@@ -153,7 +153,7 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
     ]) {
       const section = page.locator(`#${id}`);
       if (!(await section.count())) continue;
-      await section.scrollIntoViewIfNeeded();
+      await section.evaluate((el) => el.scrollIntoView({ behavior: 'instant', block: 'start' }));
       await page.waitForTimeout(850);
       await page.screenshot({ path: path.join(output, `${filename}-${name}.png`), animations: 'disabled' });
       sections[id] = await section.evaluate((el) => {
