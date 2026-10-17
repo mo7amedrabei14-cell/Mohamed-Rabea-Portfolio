@@ -163,6 +163,7 @@ function App() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const gateRef = useRef(null);
   const siteRef = useRef(null);
+  const mainRef = useRef(null);
   const entryTimelineRef = useRef(null);
   const c = CONTENT[lang];
   const rtl = lang === 'ar';
@@ -268,6 +269,13 @@ function App() {
   }, [phase, lang]);
 
   useEffect(() => {
+    if (phase !== 'entered') return undefined;
+    // Move keyboard focus out of the now-hidden introduction and into the site.
+    const frame = window.requestAnimationFrame(() => mainRef.current?.focus({ preventScroll: true }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [phase]);
+
+  useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = c.dir;
     document.documentElement.classList.toggle('is-arabic', rtl);
@@ -328,7 +336,7 @@ function App() {
           onNavigate={navigate}
           tone="paper"
         />
-        <main id="main">
+        <main id="main" ref={mainRef} tabIndex={-1}>
           <Hero c={c} lang={lang} onNavigate={navigate} />
           <Manifesto c={c} />
           <Work c={c} onImage={setLightboxImage} />
