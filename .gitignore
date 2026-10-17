@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.freebuff/shots/
+*.bak
+.env
+.env.*
+!.env.example
