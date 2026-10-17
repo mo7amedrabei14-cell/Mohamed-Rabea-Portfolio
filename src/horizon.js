@@ -55,35 +55,18 @@ export function startHorizon() {
   const clockId = setInterval(tickClock, 1000);
   off.push(() => clearInterval(clockId));
 
-  // The name is alive: letters swell wide and light near the cursor.
-  const chars = [...hero.querySelectorAll('.hz-ch')];
-  let busy = false, px = 0, py = 0;
-  const swell = () => {
-    busy = false;
-    for (const el of chars) {
-      const r = el.getBoundingClientRect();
-      const t = Math.max(0, 1 - Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) / 360);
-      el.style.fontVariationSettings = `'wght' ${Math.round(840 - 440 * t)}, 'wdth' ${Math.round(62 + 78 * t)}`;
-    }
-  };
-  if (chars.length && !coarse && !reduced) {
-    const move = (e) => { px = e.clientX; py = e.clientY; if (!busy) { busy = true; requestAnimationFrame(swell); } };
-    addEventListener('pointermove', move, { passive: true });
-    off.push(() => removeEventListener('pointermove', move));
-  }
-
   const ctx = gsap.context(() => {
     if (reduced) return;
-    gsap.to('.hz-word:nth-child(1)', { xPercent: -7, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-    gsap.to('.hz-word:nth-child(2)', { xPercent: 7, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
     ScrollTrigger.create({ onUpdate: (s) => skew(gsap.utils.clamp(-9, 9, s.getVelocity() / -260)) });
   });
   off.push(() => ctx.revert());
 
   const reveal = () => {
-    gsap.from('.hz-hero-name .hz-ch, .hz-hero-name .hz-aw', { yPercent: 118, duration: 1.3, ease: 'expo.out', stagger: .035, delay: .25 });
-    gsap.from('.hz-meta, .hz-lead span, .hz-side > *, .hz-badge', { y: 30, opacity: 0, duration: 1, ease: 'expo.out', stagger: .07, delay: .55 });
+    gsap.from('.hz-meta, .hz-lead span, .hz-side > *, .hz-badge', {
+      y: 26, opacity: 0, duration: .92, ease: 'expo.out', stagger: .075, delay: .22,
+      clearProps: 'transform',
+    });
   };
   if (reduced) return () => { dead = true; off.forEach((f) => f()); };
 
@@ -93,22 +76,12 @@ export function startHorizon() {
   const g = cv.getContext('2d');
   const cur = document.createElement('div');
   cur.className = 'hz-curtain';
-  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-name" aria-hidden="true"><i class="hz-single">M</i><span class="hz-full-name"></span></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
+  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
   document.body.append(cur, cv);
   const nameEl = cur.querySelector('.hz-name'), count = cur.querySelector('.hz-count');
-  const fullName = nameEl.querySelector('.hz-full-name');
-  const single = nameEl.querySelector('.hz-single');
-  const LETTER_STREAM = [...NAME.replace(/\s/g, '')];
-  const L = [...NAME].map((ch) => {
-    const s = document.createElement('i');
-    s.className = ch === ' ' ? 'sp' : 'ch';
-    s.textContent = ch === ' ' ? '' : ch;
-    s.style.opacity = '0';
-    fullName.append(s);
-    return s;
-  });
+  const L = [...NAME].map((ch) => { const s = document.createElement('i'); s.className = ch === ' ' ? 'sp' : 'ch'; s.textContent = ch === ' ' ? '' : rnd(); nameEl.append(s); return s; });
 
-  let vw = 0, vh = 0, P = [], raf = 0, phase = 'cycling', prog = 0, mx = -999, my = -999, done = false, spreadStarted = false;
+  let vw = 0, vh = 0, P = [], raf = 0, phase = 'scramble', prog = 0, mx = -999, my = -999, done = false;
   const T0 = performance.now(), total = 6000, timers = [];
   const size = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -140,26 +113,10 @@ export function startHorizon() {
     const el = performance.now() - T0;
     prog = Math.min(1, el / total);
     count.textContent = String(Math.round(prog * 100)).padStart(3, '0');
-    if (phase === 'cycling') {
-      const cycleIndex = Math.floor(el / 72) % LETTER_STREAM.length;
-      single.textContent = LETTER_STREAM[cycleIndex];
-      if (el >= 1320 && !spreadStarted) {
-        spreadStarted = true;
-        phase = 'spreading';
-        const centerX = vw / 2;
-        L.forEach((letter) => {
-          const r = letter.getBoundingClientRect();
-          gsap.set(letter, { x: centerX - (r.left + r.width / 2), scale: 0.62, autoAlpha: 0 });
-        });
-        gsap.to(single, { scale: 0.45, autoAlpha: 0, duration: 0.28, ease: 'power2.in' });
-        gsap.to(L, {
-          x: 0, scale: 1, autoAlpha: 1,
-          duration: 0.64, ease: 'back.out(1.35)',
-          stagger: { each: 0.06, from: 'center' },
-          onComplete: () => { phase = 'resolved'; },
-        });
-      }
-    }
+    if (phase === 'scramble') L.forEach((s, i) => {                       // letters flicker, then lock in left → right
+      if (s.classList.contains('sp') || s.classList.contains('is-set')) return;
+      if (el > 500 + i * 105) { s.textContent = NAME[i]; s.classList.add('is-set'); } else if ((el / 45 | 0) !== s._f) { s._f = el / 45 | 0; s.textContent = rnd(); }
+    });
     draw(t);
     raf = requestAnimationFrame(loop);
   };

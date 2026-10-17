@@ -679,13 +679,8 @@ function App() {
     <main id="main">
       <section className="hero" id="top">
         <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <h1 className="hz-hero-name">
-          <span className="sr-only">{c.name}</span>
-          {rtl ? <span className="hz-word" aria-hidden="true"><i className="hz-aw">{c.name.replace(/\.$/, '')}</i></span>
-            : ['MOHAMED', 'RABEA'].map((w) => <span className="hz-word" key={w} aria-hidden="true">{[...w].map((ch, k) => <i className="hz-ch" key={k}>{ch}</i>)}</span>)}
-        </h1>
         <div className="hz-row">
-          <p className="hz-lead">{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</p>
+          <h1 className="hz-lead">{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</h1>
           <div className="hz-side">
             <p className="hero-intro">{c.heroIntro}</p>
             <div className="hero-actions">
