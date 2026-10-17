@@ -1,4 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
@@ -432,6 +435,15 @@ function resetMagneticPointer(event) {
   event.currentTarget.style.setProperty('--magnetic-y', '0px');
 }
 
+function trackSpotlightPointer(event) {
+  const surface = event.currentTarget;
+  if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const rect = surface.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  surface.style.setProperty('--spotlight-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+  surface.style.setProperty('--spotlight-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+}
+
 function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
     return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
@@ -470,6 +482,7 @@ function App() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
   const presentationEmbedRef = useRef(null);
+  const lenisRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
   const activeRole = hoveredRole || selectedRole;
@@ -482,12 +495,18 @@ function App() {
         : 'MR';
   const openImage = (image) => setLightboxImage(image);
   const closeImage = () => setLightboxImage(null);
+  const scrollToElement = (element) => {
+    if (!element) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion && lenisRef.current) {
+      lenisRef.current.scrollTo(element, { offset: -92, duration: 0.95 });
+      return;
+    }
+    element.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  };
   const openEmbeddedPresentation = () => {
     if (showPresentationEmbed) {
-      presentationEmbedRef.current?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
+      scrollToElement(presentationEmbedRef.current);
       return;
     }
     setShowPresentationEmbed(true);
@@ -497,10 +516,7 @@ function App() {
     if (!showPresentationEmbed) return undefined;
     const section = presentationEmbedRef.current;
     if (!section) return undefined;
-    section.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
+    scrollToElement(section);
     return undefined;
   }, [showPresentationEmbed]);
 
@@ -508,10 +524,12 @@ function App() {
     if (!lightboxImage) return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    lenisRef.current?.stop();
     const onKeyDown = (event) => { if (event.key === 'Escape') closeImage(); };
     window.addEventListener('keydown', onKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
+      lenisRef.current?.start();
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [lightboxImage]);
@@ -576,6 +594,56 @@ function App() {
     }
   }, [lang]);
 
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const motionQuery = gsap.matchMedia();
+
+    motionQuery.add('(prefers-reduced-motion: no-preference)', () => {
+      const lenis = new Lenis({
+        autoRaf: false,
+        duration: 0.95,
+        smoothWheel: true,
+        syncTouch: false,
+        anchors: { offset: -92 },
+      });
+      lenisRef.current = lenis;
+      const syncLenis = (time) => lenis.raf(time * 1000);
+      const syncScrollTrigger = () => ScrollTrigger.update();
+      lenis.on('scroll', syncScrollTrigger);
+      gsap.ticker.add(syncLenis);
+
+      const visualQuery = gsap.matchMedia();
+      visualQuery.add('(min-width: 900px)', () => {
+        const orbit = document.querySelector('.site .hero-art .signal-orbit.orbit-one');
+        if (orbit) gsap.to(orbit, {
+          rotation: 28, scale: 1.075, ease: 'none',
+          scrollTrigger: {
+            trigger: '.site .hero', start: 'top top', end: 'bottom top',
+            scrub: 0.7, invalidateOnRefresh: true,
+          },
+        });
+        const connectors = gsap.utils.toArray('.site .method-row .process-connector');
+        if (connectors.length) gsap.fromTo(connectors, { scaleX: 0 }, {
+          scaleX: 1, duration: 0.55, stagger: 0.12, ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '.site .method-row', start: 'top 76%',
+            toggleActions: 'play none none reverse',
+          },
+        });
+      });
+
+      ScrollTrigger.refresh();
+      return () => {
+        visualQuery.revert();
+        lenis.off('scroll', syncScrollTrigger);
+        gsap.ticker.remove(syncLenis);
+        lenis.destroy();
+        if (lenisRef.current === lenis) lenisRef.current = null;
+      };
+    });
+    return () => motionQuery.revert();
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -644,6 +712,7 @@ function App() {
           <Mark onOpen={openImage} />
           <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span>
         </a>
+        <span className="site-coordinate"><i />{rtl ? 'القاهرة · مصر' : 'CAIRO · EGYPT'} <b> / </b> {rtl ? 'البيانات والأنظمة' : 'DATA / SYSTEMS'}</span>
         <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
         <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
           {c.nav.map((item) => <a key={item.id} href={'#' + item.id} onClick={closeMenu}>{item.label}</a>)}
@@ -683,6 +752,12 @@ function App() {
         <a href="#signal" className="scroll-cue"><span>{c.scroll}</span><i /></a>
       </section>
 
+      <div className="signal-marquee" aria-hidden="true">
+        <div className="signal-marquee-track">
+          {[0, 1, 2, 3].map((item) => <span className="signal-marquee-item" key={item}>{rtl ? 'ذكاء البيانات' : 'DATA INTELLIGENCE'} <i>✳</i> {rtl ? 'الأنظمة التشغيلية' : 'OPERATIONAL SYSTEMS'} <i>✳</i> {rtl ? 'الأثر الإنساني' : 'HUMAN IMPACT'} <i>✳</i></span>)}
+        </div>
+      </div>
+
       <section className="signal-section" id="signal">
         <div className="section-wrap signal-inner">
           <div className="section-kicker" data-reveal>{c.smallLabel}</div>
@@ -700,7 +775,7 @@ function App() {
           <p>{c.workIntro}</p>
         </div>
 
-        <article className="project project--featured" data-reveal>
+        <article className="project project--featured" data-reveal onPointerMove={trackSpotlightPointer}>
           <div className="project-main">
             <div className="project-number">01 <span>/ 03</span></div>
             <div className="project-kicker">{c.eocKicker}</div>
@@ -719,7 +794,7 @@ function App() {
         </article>
 
         <div className="project-pair">
-          <article className="project project--standard" data-reveal>
+          <article className="project project--standard" data-reveal onPointerMove={trackSpotlightPointer}>
             <div className="project-number">02 <span>/ 03</span></div>
             <ProjectArt type="analytics" copy={c} onImageOpen={openImage} />
             <div className="project-content">
@@ -736,7 +811,7 @@ function App() {
             </div>
           </article>
 
-          <article className="project project--standard project--story" data-reveal>
+          <article className="project project--standard project--story" data-reveal onPointerMove={trackSpotlightPointer}>
             <div className="project-number">03 <span>/ 03</span></div>
             <ProjectArt type="presentation" copy={c} onImageOpen={openImage} />
             <div className="project-content">
@@ -791,10 +866,10 @@ function App() {
             <p>{c.capabilitiesIntro}</p>
           </div>
           <div className="capability-grid">
-            <article className="capability-card" data-reveal><div className="capability-top"><span>01</span><span className="capability-glyph">↗</span></div><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>02</span><span className="capability-glyph">{'{}'}</span></div><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>03</span><span className="capability-glyph">⌖</span></div><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((item) => <li key={item}>{item}</li>)}</ul></article>
-            <article className="capability-card" data-reveal><div className="capability-top"><span>04</span><span className="capability-glyph">✳</span></div><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((item) => <li key={item}>{item}</li>)}</ul></article>
+            <article className="capability-card" data-reveal onPointerMove={trackSpotlightPointer}><div className="capability-top"><span>01</span><span className="capability-glyph">↗</span></div><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((item) => <li key={item}>{item}</li>)}</ul></article>
+            <article className="capability-card" data-reveal onPointerMove={trackSpotlightPointer}><div className="capability-top"><span>02</span><span className="capability-glyph">{'{}'}</span></div><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((item) => <li key={item}>{item}</li>)}</ul></article>
+            <article className="capability-card" data-reveal onPointerMove={trackSpotlightPointer}><div className="capability-top"><span>03</span><span className="capability-glyph">⌖</span></div><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((item) => <li key={item}>{item}</li>)}</ul></article>
+            <article className="capability-card" data-reveal onPointerMove={trackSpotlightPointer}><div className="capability-top"><span>04</span><span className="capability-glyph">✳</span></div><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((item) => <li key={item}>{item}</li>)}</ul></article>
           </div>
         </div>
       </section>
