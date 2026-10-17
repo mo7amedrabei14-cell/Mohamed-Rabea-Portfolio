@@ -50,13 +50,13 @@ function EntryGate({ c, lang, onEnter, onLanguage, phase, gateRef }) {
       <div className="entry-gate__glow entry-gate__glow--two" aria-hidden="true" />
 
       <header className="entry-gate__top">
-        <a className="entry-brand" href="#entry" onClick={(event) => event.preventDefault()} aria-label="Mohamed Rabea">
+        <div className="entry-brand" aria-label="Mohamed Rabea">
           <span className="entry-brand__mark">MR<span /></span>
           <span className="entry-brand__copy">
             <strong>MOHAMED RABEA</strong>
             <small>{c.brandTag}</small>
           </span>
-        </a>
+        </div>
         <div className="entry-gate__top-meta">
           <span className="entry-gate__status"><i />{c.hero.status}</span>
           <button className="entry-language" type="button" onClick={onLanguage} aria-label={c.localeAria}>
