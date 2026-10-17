@@ -978,3 +978,9 @@ img, svg { display: block; max-width: 100%; }
   .fieldrow__main > span { font-size: 10px; }
   .facts span { font-size: 10px; }
 }
+
+/* Visual QA fix: prevent the SVG field atlas from imposing its intrinsic width on mobile grid tracks. */
+.field__body { min-width: 0; }
+.field__body > * { width: 100%; min-width: 0; max-width: 100%; }
+.fieldmap { width: 100%; min-width: 0; max-width: 100%; }
+.fieldmap svg { display: block; width: 100%; min-width: 0; max-width: 100%; height: auto; }
