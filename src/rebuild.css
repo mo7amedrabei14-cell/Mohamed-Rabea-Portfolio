@@ -939,3 +939,42 @@ img, svg { display: block; max-width: 100%; }
 @media (max-width: 650px) {
   .fieldmap { min-height: 300px; }
 }
+
+/* Readability pass: metadata stays compact; paragraph and actionable copy does not. */
+.hero__intro { font-size: 14px; line-height: 1.85; }
+.console__panel > p { font-size: 12px; line-height: 1.75; }
+.console__tab { font-size: 10px; line-height: 1.5; }
+.console__row { font-size: 11px; }
+.console__foot { font-size: 8px; }
+.manifesto__body { font-size: 14px; line-height: 1.9; }
+.steps p { font-size: 12px; line-height: 1.75; }
+.facts span { font-size: 11px; line-height: 1.6; }
+.project__summary { font-size: 13px; line-height: 1.85; }
+.project__block p { font-size: 12px; line-height: 1.85; }
+.project__modules li { font-size: 12px; line-height: 1.65; }
+.project__facts p, .project__points p, .project__workflow p { font-size: 12px; line-height: 1.8; }
+.cap__panel-inner > p { font-size: 12px; line-height: 1.85; }
+.cap__panel-inner li { font-size: 11px; }
+.role__org { font-size: 12px; }
+.role__desc { font-size: 12px; line-height: 1.85; }
+.fieldrow__main > span { font-size: 11px; }
+.fieldrow__text { font-size: 12px; line-height: 1.8; }
+.operator__copy > p { font-size: 13px; line-height: 1.9; }
+.operator__facts dt { font-size: 10px; }
+.operator__facts dd { font-size: 12px; }
+.creds__education article p, .creds__training li { font-size: 12px; line-height: 1.8; }
+.creds__education article > span { font-size: 11px; line-height: 1.7; }
+.creds__languages p { font-size: 13px; line-height: 1.85; }
+.contact__desc { font-size: 13px; line-height: 1.9; }
+.contact__meta { font-size: 11px; line-height: 1.75; }
+@media (max-width: 650px) {
+  .hero__intro, .manifesto__body, .project__block p, .project__summary,
+  .project__facts p, .project__points p, .project__workflow p,
+  .role__desc, .fieldrow__text, .operator__copy > p,
+  .creds__education article p, .creds__training li, .creds__languages p,
+  .contact__desc { font-size: 12px; line-height: 1.8; }
+  .console__panel > p { font-size: 12px; }
+  .console__tab { font-size: 9px; }
+  .fieldrow__main > span { font-size: 10px; }
+  .facts span { font-size: 10px; }
+}
