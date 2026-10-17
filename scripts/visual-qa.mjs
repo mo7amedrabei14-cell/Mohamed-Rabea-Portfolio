@@ -57,7 +57,7 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
     const lang = page.locator('.entry-language');
     if (await lang.count()) {
       await lang.click();
-      await page.waitForTimeout(450);
+      await page.waitForTimeout(1100);
     }
   }
 
@@ -92,7 +92,7 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
   await page.screenshot({ path: introScreenshot, animations: 'disabled' });
   const introOverflow = intro.document.width > width + 1;
   if (introOverflow) recordError(`${name}: horizontal overflow on introduction (${intro.document.width} > ${width})`);
-  if (intro.enter && intro.enter.bottom > height + 1 && width > 600) {
+  if (intro.enter && intro.enter.bottom > height + 1) {
     recordError(`${name}: desktop entry CTA falls below viewport`);
   }
 
