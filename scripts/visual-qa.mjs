@@ -163,6 +163,20 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
     }
   }
 
+  const fieldMap = page.locator('.fieldmap');
+  if (await fieldMap.count()) {
+    await fieldMap.evaluate((el) => el.scrollIntoView({ behavior: 'instant', block: 'center' }));
+    await page.waitForTimeout(350);
+    await page.screenshot({ path: path.join(output, `fieldmap-${name}.png`), animations: 'disabled' });
+    sections.fieldmap = await fieldMap.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height), right: Math.round(r.right), bottom: Math.round(r.bottom) };
+    });
+    if (sections.fieldmap.x < -1 || sections.fieldmap.right > width + 1) {
+      recordError(`${name}: field map escapes viewport: ${JSON.stringify(sections.fieldmap)}`);
+    }
+  }
+
   runs.push({
     name, language, viewport: { width, height }, intro, entered, sections,
     pageErrors, consoleErrors, failedLocalAssets,
