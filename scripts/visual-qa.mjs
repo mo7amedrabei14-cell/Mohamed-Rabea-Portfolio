@@ -134,7 +134,7 @@ async function inspectViewport({ name, width, height, language = 'en', captureSe
       console: box('.console'),
       header: box('.topbar'),
       problematicBounds: largeOverflow,
-      images: Array.from(document.images).map((img) => ({ src: img.currentSrc, loaded: img.complete && img.naturalWidth > 0 })).filter((x) => !x.loaded),
+      images: Array.from(document.images).filter((img) => img.complete && img.naturalWidth === 0).map((img) => ({ src: img.currentSrc || img.src, alt: img.alt })),
     };
   });
   if (entered.document.width > width + 1) recordError(`${name}: horizontal overflow after entry (${entered.document.width} > ${width})`);
