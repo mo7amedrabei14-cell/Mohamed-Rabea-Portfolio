@@ -116,9 +116,13 @@ function startField(hero, seed, coarse, still) {
     const barWidth = pitch * 0.56;
     const heights = Array.from({ length: bars }, (_, b) => 0.22 + 0.78 * Math.abs(Math.sin(b * 1.7 + 0.6) * Math.cos(b * 0.47)));
     const heightSum = heights.reduce((a, b) => a + b, 0);
-    const cx = width * 0.5;
-    const cy = height * 0.49;
-    const radiusMax = Math.min(width, height) * 0.39;
+    const nodes = [
+      [0.10, 0.50], [0.31, 0.50],
+      [0.53, 0.25], [0.53, 0.50], [0.53, 0.75],
+      [0.83, 0.25], [0.83, 0.50], [0.83, 0.75],
+    ];
+    const edges = [[0, 1], [1, 2], [1, 3], [1, 4], [2, 5], [3, 6], [4, 7]];
+    const nodeParticleCount = Math.floor(count * 0.18);
     particles.forEach((p) => {
       p.hx = random() * width;
       p.hy = random() * height;
@@ -133,9 +137,24 @@ function startField(hero, seed, coarse, still) {
         width * 0.07 + bar * pitch + (pitch - barWidth) / 2 + random() * barWidth,
         height * 0.88 - random() * heights[bar] * height * 0.65,
       ];
-      const radius = radiusMax * Math.sqrt(random());
-      const angle = random() * Math.PI * 2;
-      targets[2][p.i] = [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius * 0.82];
+      if (p.i < nodeParticleCount) {
+        const node = nodes[Math.min(nodes.length - 1, Math.floor(p.i * nodes.length / nodeParticleCount))];
+        const spread = Math.min(width, height) * 0.018;
+        targets[2][p.i] = [node[0] * width + (random() - 0.5) * spread, node[1] * height + (random() - 0.5) * spread];
+      } else {
+        const particleIndex = p.i - nodeParticleCount;
+        const edgeIndex = particleIndex % edges.length;
+        const edgeRank = Math.floor(particleIndex / edges.length);
+        const edgePopulation = Math.ceil((count - nodeParticleCount) / edges.length);
+        const progress = Math.max(0.025, Math.min(0.975, (edgeRank + 0.5 + (random() - 0.5) * 0.3) / edgePopulation));
+        const [fromIndex, toIndex] = edges[edgeIndex];
+        const from = [nodes[fromIndex][0] * width, nodes[fromIndex][1] * height];
+        const to = [nodes[toIndex][0] * width, nodes[toIndex][1] * height];
+        const dx = to[0] - from[0], dy = to[1] - from[1];
+        const length = Math.hypot(dx, dy) || 1;
+        const jitter = (random() - 0.5) * 3;
+        targets[2][p.i] = [from[0] + dx * progress - (dy / length) * jitter, from[1] + dy * progress + (dx / length) * jitter];
+      }
     });
     if (still) {
       particles.forEach((p) => { [p.x, p.y] = targets[state][p.i]; p.order = 1; });
@@ -185,14 +204,64 @@ function startField(hero, seed, coarse, still) {
     ctx.fillStyle = DOT[3];
     for (const p of particles) if (p.order >= 0.25 && p.accent) ctx.fillRect(p.x, p.y, p.size + 0.6, p.size + 0.6);
     if (!still) {
-      const gradient = ctx.createRadialGradient(cursorX, cursorY, lensRadius * 0.78, cursorX, cursorY, lensRadius);
-      gradient.addColorStop(0, 'rgba(245,194,66,0)');
-      gradient.addColorStop(0.88, 'rgba(245,194,66,0.025)');
-      gradient.addColorStop(1, 'rgba(245,194,66,0.16)');
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 1;
+      // The lens reveals a different idea at each step: data grid, analytical chart, decision flow.
+      ctx.save();
       ctx.beginPath();
       ctx.arc(cursorX, cursorY, lensRadius, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.lineWidth = 1;
+      if (state === 0) {
+        ctx.strokeStyle = 'rgba(238,240,255,0.105)';
+        for (let row = 1; row < 8; row += 1) {
+          const y = height * row / 8;
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+        }
+        for (let col = 1; col < 14; col += 1) {
+          const x = width * col / 14;
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+        }
+      } else if (state === 1) {
+        ctx.strokeStyle = 'rgba(238,240,255,0.32)';
+        ctx.beginPath();
+        ctx.moveTo(width * 0.07, height * 0.20);
+        ctx.lineTo(width * 0.07, height * 0.88);
+        ctx.lineTo(width * 0.94, height * 0.88);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(245,194,66,0.45)';
+        ctx.beginPath();
+        ctx.moveTo(width * 0.13, height * 0.69);
+        ctx.lineTo(width * 0.31, height * 0.59);
+        ctx.lineTo(width * 0.49, height * 0.64);
+        ctx.lineTo(width * 0.67, height * 0.38);
+        ctx.lineTo(width * 0.86, height * 0.28);
+        ctx.stroke();
+      } else {
+        const nodes = [
+          [0.10, 0.50], [0.31, 0.50],
+          [0.53, 0.25], [0.53, 0.50], [0.53, 0.75],
+          [0.83, 0.25], [0.83, 0.50], [0.83, 0.75],
+        ];
+        const edges = [[0, 1], [1, 2], [1, 3], [1, 4], [2, 5], [3, 6], [4, 7]];
+        ctx.strokeStyle = 'rgba(238,240,255,0.29)';
+        ctx.beginPath();
+        edges.forEach(([from, to]) => {
+          ctx.moveTo(nodes[from][0] * width, nodes[from][1] * height);
+          ctx.lineTo(nodes[to][0] * width, nodes[to][1] * height);
+        });
+        ctx.stroke();
+        nodes.forEach(([x, y], index) => {
+          ctx.beginPath();
+          ctx.arc(x * width, y * height, index === 0 || index === 7 ? 4 : 3, 0, Math.PI * 2);
+          ctx.fillStyle = index === 1 || index > 4 ? 'rgba(245,194,66,0.9)' : 'rgba(238,240,255,0.88)';
+          ctx.fill();
+        });
+      }
+      ctx.restore();
+      // A short rim denotes the moving lens; particles do not assemble into a meaningless circle.
+      ctx.strokeStyle = 'rgba(238,240,255,0.13)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cursorX, cursorY, lensRadius, -0.22, 1.05);
       ctx.stroke();
     }
   };
@@ -508,21 +577,23 @@ export function startHorizon() {
     gsap.to(canvas, { opacity: 0, duration: 0.75, ease: 'power2.in', onComplete: () => { cancelAnimationFrame(raf); canvas.remove(); } });
   };
 
+  const scrambleSequence = [...shuffle([...GLYPHS]), ...shuffle([...GLYPHS])];
   const cycleSingleLetter = () => {
-    GLYPHS.forEach((character, index) => {
+    scrambleSequence.forEach((character, index) => {
       timers.push(window.setTimeout(() => {
         if (dead || finished || phase !== 'letters') return;
         one.textContent = character;
-        gsap.fromTo(one, { scale: 1.13, opacity: 0.25, filter: 'blur(9px)' }, {
-          scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.15, ease: 'power2.out', overwrite: true,
+        gsap.fromTo(one, { scale: 1.12, opacity: 0.28, filter: 'blur(8px)' }, {
+          scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.115, ease: 'power2.out', overwrite: true,
         });
-      }, 250 + index * 145));
+      }, 180 + index * 78));
     });
   };
   const expandName = () => {
     if (dead || finished) return;
     phase = 'expand';
     gsap.to(one, { opacity: 0, scale: 1.2, duration: 0.45, ease: 'power2.in', overwrite: true });
+    gsap.to(nameElement, { opacity: 1, duration: 0.32, ease: 'power2.out', overwrite: true });
     gsap.fromTo(nameLetters,
       { x: (index, element) => viewportWidth / 2 - (element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2), scale: 2.8, opacity: 0 },
       { x: 0, scale: 1, opacity: 1, duration: 1.1, ease: 'expo.out', stagger: { each: 0.035, from: 'center' }, overwrite: true });
@@ -541,7 +612,7 @@ export function startHorizon() {
   const skip = curtain.querySelector('.hz-skip');
   skip.addEventListener('click', finish);
 
-  const expandAt = 250 + GLYPHS.length * 145 + 360;
+  const expandAt = 180 + scrambleSequence.length * 78 + 280;
   timers.push(window.setTimeout(expandName, expandAt));
   // A final safety net prevents a failed image decode or unusual device from blocking entry.
   timers.push(window.setTimeout(finish, 12500));

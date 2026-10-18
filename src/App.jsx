@@ -17,22 +17,22 @@ const copy = {
     eyebrow: 'DATA ANALYST · FULL-STACK DEVELOPER · OPERATIONS SUPERVISOR',
     hello: 'Hello, I’m',
     name: 'Mohamed Rabea.',
-    heroLine1: 'Clear data.',
-    heroLine2: 'Better decisions.',
-    heroLine3: 'Systems that work.',
-    heroIntro: 'I connect operational experience with data analysis and full-stack development to make complex work easier to understand, coordinate and improve.',
+    heroLine1: 'Clarity from complexity.',
+    heroLine2: 'Systems built for use.',
+    heroLine3: 'Decisions backed by data.',
+    heroIntro: 'I work where emergency operations, data analytics and full-stack development meet—turning fragmented information into practical tools, clearer workflows and better-informed decisions.',
     primary: 'Explore selected work',
     secondary: 'Get in touch',
     location: 'Egypt · Humanitarian operations & digital tools',
     scroll: 'Scroll to explore',
-    smallLabel: 'MY WORK SITS AT THE INTERSECTION OF',
-    bridge: ['Operational reality', 'Useful data', 'Practical technology'],
-    signal: 'From information to action',
-    signalDesc: 'A practical approach: understand the need, structure the information, make the picture clear, and help people act on it.',
-    process: ['Understand', 'Structure', 'Interpret', 'Act'],
+    smallLabel: 'THREE DISCIPLINES. ONE OPERATIONAL PURPOSE.',
+    bridge: ['Operational context', 'Decision-ready data', 'Practical technology'],
+    signal: 'From operational need to informed action',
+    signalDesc: 'Start with the decision that needs to be made. Organise reliable information, surface the relevant signal, and present it in a form people can use.',
+    process: ['Frame the need', 'Structure data', 'Surface the signal', 'Support action'],
     workEyebrow: 'SELECTED WORK',
-    workTitle: 'Built around real needs.',
-    workIntro: 'A few projects that show how I turn operational questions into useful systems, clear analysis and thoughtful communication.',
+    workTitle: 'Proof of work, not just a list of tools.',
+    workIntro: 'These case studies connect the problem, the solution and my contribution: an operations platform, analytical dashboards, and an interactive way to explain complex systems.',
     project: 'PROJECT',
     role: 'MY FOCUS',
     details: 'What it does',
@@ -48,28 +48,28 @@ const copy = {
     openReport: 'Open interactive report',
     eocKicker: 'FULL-STACK APPLICATION · FLAGSHIP PROJECT',
     eocTitle: 'EOC Smart Command Center',
-    eocSummary: 'A web-based operations management platform built to bring essential Emergency Operations Center workflows into one structured environment.',
+    eocSummary: 'An operations platform that brings missions, incident records, branch-linked workflows and response information into one structured workspace for clearer coordination and follow-up.',
     eocProblemTitle: 'The need',
-    eocProblem: 'Operational information can become fragmented across separate files, messages and manual follow-ups. The platform brings core workflows into a shared structure.',
+    eocProblem: 'During response operations, critical details can be spread across messages, spreadsheets and manual handoffs. The challenge is keeping information structured, traceable and usable—not simply collecting more of it.',
     eocSolutionTitle: 'The platform',
-    eocSolution: 'Mission and incident records, volunteer coordination, field assessment information, branch-linked workflows, operational logs, reporting and Excel export—supported by controlled access and traceable actions.',
+    eocSolution: 'A connected workflow for missions and incidents, volunteer coordination, field-assessment inputs, branch-linked operations, logs, reports and spreadsheet exports—with controlled access and traceable actions.',
     eocContributionTitle: 'Engineering focus',
-    eocContribution: 'Developed the front end and API-backed workflows, connected the application to PostgreSQL, and implemented authentication, permission checks, event handling and audit logging.',
+    eocContribution: 'Built the front-end workflows and connected them to API services and PostgreSQL, including work on authentication, permission checks, event handling and audit logging.',
     eocModules: ['Missions & field operations', 'Volunteer coordination', 'Branch-linked workflows', 'Operational logs & reports', 'Earthquake and event monitoring', 'Weather intelligence'],
     analyticsKicker: 'BUSINESS INTELLIGENCE · DATA STORYTELLING',
-    analyticsTitle: 'Power BI & Operational Analytics',
-    analyticsSummary: 'Interactive dashboards designed to turn operational, field-assessment and service data into clearer views for review and decision support.',
-    analyticsMain: '27-page ERC dashboard',
-    analyticsMainDesc: 'A multi-page view for reviewing operational information and bringing related indicators together.',
+    analyticsTitle: 'Power BI & Decision-Support Analytics',
+    analyticsSummary: 'Interactive dashboards that organise operational, field-assessment and service data into clearer views—making indicators easier to review, compare and discuss.',
+    analyticsMain: '15-page ERC dashboard',
+    analyticsMainDesc: 'An integrated, multi-page view for reviewing operational information and comparing related indicators across the dashboard.',
     village: 'Village assessment dashboard',
     villageDesc: 'A multi-domain assessment model using a 1–5 rating scale across health, education, infrastructure and the local economy.',
     departments: 'Three department dashboards',
     departmentsDesc: 'Separate dashboard work for Health, Case Management and Psychosocial Support.',
     analyticsApproach: 'Data workflow',
-    analyticsWorkflow: 'Clean and structure source data with Excel and Power Query, shape it for analysis, then present the relevant indicators through interactive Power BI views. QGIS supports spatial analysis in data and humanitarian contexts.',
+    analyticsWorkflow: 'Prepare and validate source data with Excel and Power Query, model it for analysis, then present relevant indicators through interactive Power BI views. Use QGIS where location and spatial context affect the question.',
     presentationKicker: 'INTERACTIVE COMMUNICATION · DIGITAL SHOWCASE',
     presentationTitle: 'EOC Interactive Presentation',
-    presentationSummary: 'A purpose-built, interactive web presentation that explains the EOC platform as a coherent story—from the operational challenge to the technical approach and main modules.',
+    presentationSummary: 'An interactive, guided explanation of the EOC platform—from the operational need to the system approach and its main workflows, rather than a static list of features.',
     presentationChallenge: 'The challenge',
     presentationChallengeDesc: 'A complex operational platform is difficult to explain through a list of features alone.',
     presentationDesign: 'The approach',
@@ -77,23 +77,23 @@ const copy = {
     presentationContribution: 'My contribution',
     presentationContributionDesc: 'Structured the story and built the interactive presentation experience using React and TypeScript, with motion and data-visualization components.',
     capabilitiesKicker: 'CAPABILITIES',
-    capabilitiesTitle: 'A multidisciplinary toolkit.',
-    capabilitiesIntro: 'The value is not just knowing tools—it is choosing the right tool for the operational question.',
+    capabilitiesTitle: 'One toolkit. Four complementary strengths.',
+    capabilitiesIntro: 'Tools matter when they solve the right problem. I combine data analysis, software development, operational understanding and communication to make information more useful.',
     skillData: 'Data & Business Intelligence',
-    skillDataDesc: 'Transforming raw or inconsistent information into useful models, indicators and readable dashboards.',
+    skillDataDesc: 'Clean, model and contextualise data, then turn it into indicators and dashboards people can explore—not just numbers on a screen.',
     skillDataList: ['Power BI', 'Power Query & Excel', 'Data cleaning & preparation', 'KPI design & operational reporting', 'SQL / PostgreSQL', 'Python & pandas'],
     skillBuild: 'Full-Stack Development',
-    skillBuildDesc: 'Building connected front-end experiences and back-end services around real workflows.',
+    skillBuildDesc: 'Build user-facing workflows and API-backed services that keep operational tasks, permissions and data connected.',
     skillBuildList: ['React, JavaScript & Vite', 'Python & FastAPI', 'REST APIs / OpenAPI', 'PostgreSQL data models', 'JWT authentication & access control', 'Leaflet maps & Excel exports'],
     skillHuman: 'Humanitarian Operations',
-    skillHumanDesc: 'Understanding the constraints behind the data: response coordination, field needs and the people doing the work.',
+    skillHumanDesc: 'Emergency information is time-sensitive and people-dependent. Tools should fit coordination realities and field constraints, not add friction.',
     skillHumanList: ['Emergency operations coordination', 'Field assessment & response planning', 'Volunteer team coordination', 'QGIS for spatial analysis', 'Humanitarian planning & mapping', 'Psychological first aid awareness'],
     skillComms: 'Communication & Design',
-    skillCommsDesc: 'Making detailed information easier to explain to visitors, stakeholders and decision-makers.',
+    skillCommsDesc: 'Turn complex platforms and detailed analysis into a clear story for visitors, partners and decision-makers—without hiding the important caveats.',
     skillCommsList: ['Interactive presentations', 'Technical storytelling', 'Information hierarchy', 'PowerPoint & Word', 'Clear operational reports'],
     experienceKicker: 'EXPERIENCE',
-    experienceTitle: 'Operations first. Technology in service of people.',
-    experienceIntro: 'My perspective has been shaped by operational work, field missions, data responsibilities and hands-on technical projects.',
+    experienceTitle: 'Grounded in operations. Built with technology.',
+    experienceIntro: 'My work spans central operations coordination, humanitarian deployments, data products and application development. That mix shapes how I approach technology: useful under real constraints, not just impressive in a demo.',
     exp1Title: 'Emergency Operations Center Supervisor',
     exp1Org: 'Egyptian Red Crescent Society',
     exp1Date: '2021 — Present',
@@ -128,13 +128,13 @@ const copy = {
     languagesLabel: 'LANGUAGES',
     languageDetails: 'Arabic — Native · English — Very good reading and writing; intermediate speaking',
     contactKicker: 'CONTACT',
-    contactTitle: 'Let’s make complex work clearer.',
-    contactDesc: 'For opportunities in data analytics, software development or humanitarian information systems, I’d be glad to connect.',
+    contactTitle: 'Have a real problem worth making clearer?',
+    contactDesc: 'If you are improving an operational workflow, making sense of difficult data or building a practical information system, let’s talk about the problem and what a useful solution would look like.',
     emailBtn: 'Email Mohamed',
     whatsappBtn: 'Message me on WhatsApp',
     linkedinBtn: 'Connect on LinkedIn',
     backTop: 'Back to top',
-    footerNote: 'A portfolio of practical work across data, software and humanitarian operations.',
+    footerNote: 'Practical work connecting operations, data and software—with people and decisions at the centre.',
     artLabel: 'CONCEPTUAL PREVIEW · NOT LIVE OPERATIONAL DATA',
     platformLabel: 'PLATFORM MAP',
     dataLabel: 'ANALYTICS SNAPSHOT',
@@ -183,22 +183,22 @@ const copy = {
     eyebrow: 'محلل بيانات · مطور أنظمة متكاملة · مشرف عمليات الطوارئ',
     hello: 'مرحبًا، أنا',
     name: 'محمد ربيع.',
-    heroLine1: 'بيانات أوضح.',
-    heroLine2: 'قرارات أفضل.',
-    heroLine3: 'أنظمة عملية.',
-    heroIntro: 'أربط بين الخبرة التشغيلية وتحليل البيانات وتطوير الأنظمة المتكاملة، لتحويل العمل المعقد إلى إجراءات أوضح وأسهل في الفهم والتنسيق والتحسين.',
+    heroLine1: 'وضوح وسط التعقيد.',
+    heroLine2: 'أنظمة تخدم الواقع.',
+    heroLine3: 'قرارات تستند إلى البيانات.',
+    heroIntro: 'أجمع بين خبرة العمليات الإنسانية وتحليل البيانات وتطوير الأنظمة لبناء أدوات عملية تنظّم المعلومات، وتوضح مسارات العمل، وتساعد الفرق على اتخاذ قرارات أفضل.',
     primary: 'استكشف أبرز الأعمال',
     secondary: 'تواصل معي',
     location: 'مصر · العمليات الإنسانية والأدوات الرقمية',
     scroll: 'مرّر لاستكشاف الموقع',
-    smallLabel: 'تتقاطع خبرتي في ثلاثة مجالات',
-    bridge: ['الواقع التشغيلي', 'البيانات المفيدة', 'التقنية العملية'],
-    signal: 'من المعلومات إلى الإجراء',
-    signalDesc: 'منهج عملي يبدأ بفهم الاحتياج، ثم تنظيم المعلومات وتحليلها، وتوضيح الصورة لدعم اتخاذ الإجراء المناسب.',
-    process: ['فهم الاحتياج', 'تنظيم البيانات', 'استخلاص الدلالة', 'دعم القرار'],
+    smallLabel: 'ثلاثة مجالات لهدف تشغيلي واحد',
+    bridge: ['السياق التشغيلي', 'بيانات تدعم القرار', 'تقنية قابلة للاستخدام'],
+    signal: 'من الاحتياج التشغيلي إلى إجراء مدروس',
+    signalDesc: 'أبدأ بالقرار المطلوب، ثم أنظّم المعلومات وأُظهر المؤشرات ذات الصلة وأعرضها بطريقة تساعد الفريق على تحديد الخطوة التالية.',
+    process: ['تحديد الاحتياج', 'تنظيم البيانات', 'إظهار المؤشرات', 'دعم الإجراء'],
     workEyebrow: 'نماذج من الأعمال',
-    workTitle: 'مشروعات تنطلق من احتياجات حقيقية.',
-    workIntro: 'نماذج توضح كيف أحوّل الأسئلة التشغيلية إلى أنظمة مفيدة وتحليلات واضحة وطريقة عرض مدروسة.',
+    workTitle: 'مشروعات توضح العمل، لا مجرد قائمة أدوات.',
+    workIntro: 'تربط هذه النماذج بين المشكلة والحل ومساهمتي: منصة لإدارة العمليات، ولوحات للتحليل، وتجربة تفاعلية لشرح الأنظمة المعقدة بوضوح.',
     project: 'المشروع',
     role: 'مجال مساهمتي',
     details: 'وظيفة المشروع',
@@ -214,28 +214,28 @@ const copy = {
     openReport: 'افتح التقرير التفاعلي',
     eocKicker: 'تطوير متكامل · المشروع الرئيسي',
     eocTitle: 'نظام إدارة مركز عمليات الطوارئ',
-    eocSummary: 'منصة ويب لإدارة عمليات مركز الطوارئ، صُممت لجمع مسارات العمل الأساسية داخل بيئة واحدة منظمة.',
+    eocSummary: 'منصة تجمع المهام وسجلات الحوادث ومسارات العمل المرتبطة بالفروع ومعلومات الاستجابة داخل مساحة منظمة تساعد على التنسيق والمتابعة.',
     eocProblemTitle: 'الاحتياج',
-    eocProblem: 'قد تتوزع المعلومات التشغيلية بين ملفات ورسائل ومتابعات يدوية متعددة. تجمع المنصة مسارات العمل الأساسية في هيكل مشترك.',
+    eocProblem: 'قد تتوزع التفاصيل المهمة أثناء الاستجابة بين الرسائل وجداول البيانات والمتابعات اليدوية. التحدي ليس جمع معلومات أكثر، بل إبقاؤها منظمة وقابلة للتتبع والاستخدام.',
     eocSolutionTitle: 'المنصة',
-    eocSolution: 'سجلات المهام والحوادث، وتنسيق المتطوعين، وبيانات التقييمات الميدانية، ومسارات العمل المرتبطة بالفروع، وسجلات العمليات والتقارير وتصدير ملفات إكسل، مع صلاحيات محددة وسجل يمكن الرجوع إليه.',
+    eocSolution: 'مسارات مترابطة للمهام والحوادث وتنسيق المتطوعين والتقييمات الميدانية والعمليات المرتبطة بالفروع، مع سجلات وتقارير وتصدير للجداول وصلاحيات محددة وإجراءات يمكن الرجوع إليها.',
     eocContributionTitle: 'الجانب التقني',
-    eocContribution: 'طورت واجهات الاستخدام ومسارات العمل المرتبطة بواجهات البرمجة، وربطت التطبيق بقاعدة بيانات PostgreSQL، ونفذت المصادقة والتحقق من الصلاحيات ومعالجة الأحداث وتسجيل الإجراءات.',
+    eocContribution: 'طورت واجهات الاستخدام ومسارات العمل المتصلة بواجهات البرمجة وقاعدة PostgreSQL، وعملت على المصادقة والتحقق من الصلاحيات ومعالجة الأحداث وتسجيل الإجراءات.',
     eocModules: ['المهام والعمليات الميدانية', 'تنسيق المتطوعين', 'مسارات العمل حسب الفروع', 'سجلات العمليات والتقارير', 'رصد الزلازل والأحداث', 'استخبارات الطقس'],
     analyticsKicker: 'ذكاء الأعمال · عرض البيانات',
-    analyticsTitle: 'تحليل البيانات ولوحات Power BI',
-    analyticsSummary: 'لوحات تفاعلية تحول البيانات التشغيلية وبيانات التقييم الميداني والخدمات إلى صورة أوضح للمراجعة ودعم القرار.',
-    analyticsMain: 'لوحة الهلال الأحمر — 27 صفحة',
-    analyticsMainDesc: 'لوحة متعددة الصفحات لمراجعة المعلومات التشغيلية وربط المؤشرات ذات الصلة.',
+    analyticsTitle: 'تحليل البيانات ودعم القرار عبر Power BI',
+    analyticsSummary: 'لوحات تفاعلية تنظّم البيانات التشغيلية وتقييمات الميدان والخدمات في صورة أوضح، لتسهيل مراجعة المؤشرات ومقارنتها ومناقشتها.',
+    analyticsMain: 'لوحة الهلال الأحمر — 15 صفحة',
+    analyticsMainDesc: 'لوحة مترابطة من 15 صفحة لمراجعة المعلومات التشغيلية ومقارنة المؤشرات ذات الصلة عبر الصفحات.',
     village: 'لوحة تقييم القرى',
     villageDesc: 'نموذج تقييم متعدد المجالات باستخدام مقياس من 1 إلى 5 للصحة والتعليم والبنية التحتية والاقتصاد المحلي.',
     departments: 'ثلاث لوحات للإدارات',
     departmentsDesc: 'لوحات مستقلة لإدارات الصحة وإدارة الحالة والدعم النفسي والاجتماعي.',
     analyticsApproach: 'سير عمل البيانات',
-    analyticsWorkflow: 'تنظيف البيانات وتنظيمها باستخدام إكسل وPower Query، وتجهيزها للتحليل، ثم عرض المؤشرات ذات الصلة داخل لوحات Power BI تفاعلية. ويُستخدم QGIS للتحليل المكاني في سياقات تحليل البيانات والعمل الإنساني.',
+    analyticsWorkflow: 'أجهز البيانات وأتحقق منها باستخدام Excel وPower Query، ثم أبني نموذجًا مناسبًا للتحليل وأعرض المؤشرات عبر Power BI. ويُستخدم QGIS عندما يكون الموقع والسياق المكاني جزءًا من السؤال.',
     presentationKicker: 'التواصل التفاعلي · عرض رقمي',
     presentationTitle: 'العرض التفاعلي لمشروع مركز العمليات',
-    presentationSummary: 'عرض ويب تفاعلي يشرح منصة مركز العمليات في تسلسل واضح؛ من التحدي التشغيلي إلى النهج التقني والوظائف الرئيسية.',
+    presentationSummary: 'تجربة تفاعلية تشرح منصة مركز العمليات في تسلسل واضح؛ من الاحتياج التشغيلي إلى طريقة بناء النظام ومسارات العمل الرئيسية، بدلًا من الاكتفاء بقائمة وظائف.',
     presentationChallenge: 'التحدي',
     presentationChallengeDesc: 'يصعب شرح منصة تشغيلية معقدة عبر قائمة وظائف منفصلة فقط.',
     presentationDesign: 'طريقة العرض',
@@ -243,23 +243,23 @@ const copy = {
     presentationContribution: 'مساهمتي',
     presentationContributionDesc: 'نظمت قصة العرض وبنيت التجربة التفاعلية باستخدام React وTypeScript ومكونات للحركة وعرض البيانات.',
     capabilitiesKicker: 'المهارات',
-    capabilitiesTitle: 'خبرة متعددة التخصصات.',
-    capabilitiesIntro: 'القيمة ليست في معرفة الأدوات فقط، بل في اختيار الأداة المناسبة للسؤال التشغيلي.',
+    capabilitiesTitle: 'أربع نقاط قوة تعمل معًا.',
+    capabilitiesIntro: 'قيمة الأدوات تظهر عندما تُستخدم لحل المشكلة المناسبة. أجمع بين تحليل البيانات وتطوير الأنظمة وفهم العمليات والتواصل لتصبح المعلومات أكثر فائدة.',
     skillData: 'تحليل البيانات وذكاء الأعمال',
-    skillDataDesc: 'تحويل البيانات الخام أو غير المتسقة إلى نماذج ومؤشرات ولوحات واضحة.',
+    skillDataDesc: 'تنظيف البيانات ونمذجتها وتحويلها إلى مؤشرات ولوحات يمكن استكشافها ومراجعتها، لا مجرد أرقام معروضة على الشاشة.',
     skillDataList: ['Power BI', 'Power Query وExcel', 'تنظيف البيانات وتجهيزها', 'تصميم المؤشرات والتقارير التشغيلية', 'SQL وPostgreSQL', 'Python وpandas'],
     skillBuild: 'تطوير الأنظمة المتكاملة',
-    skillBuildDesc: 'بناء واجهات وخدمات خلفية مترابطة تخدم مسارات عمل فعلية.',
+    skillBuildDesc: 'بناء واجهات ومسارات عمل وخدمات مرتبطة بواجهات البرمجة، بحيث تظل المهام والصلاحيات والبيانات مترابطة.',
     skillBuildList: ['React وJavaScript وVite', 'Python وFastAPI', 'واجهات REST وOpenAPI', 'نمذجة بيانات PostgreSQL', 'المصادقة والتحكم في الصلاحيات', 'خرائط Leaflet وتصدير ملفات إكسل'],
     skillHuman: 'العمليات الإنسانية',
-    skillHumanDesc: 'فهم الاحتياجات خلف البيانات: تنسيق الاستجابة واحتياجات الميدان والفرق التي تنفذ العمل.',
+    skillHumanDesc: 'معلومات الطوارئ مرتبطة بالوقت والناس. لذلك ينبغي أن تراعي الأدوات واقع التنسيق وقيود الميدان، لا أن تزيد عبء العمل.',
     skillHumanList: ['تنسيق عمليات الطوارئ', 'التقييم الميداني وتخطيط الاستجابة', 'تنسيق فرق المتطوعين', 'QGIS للتحليل المكاني', 'التخطيط والخرائط الإنسانية', 'الإلمام بالإسعاف النفسي الأولي'],
     skillComms: 'التواصل والتصميم',
-    skillCommsDesc: 'تسهيل شرح المعلومات التفصيلية للزوار وأصحاب المصلحة ومتخذي القرار.',
+    skillCommsDesc: 'تحويل الأنظمة والتحليلات المعقدة إلى قصة واضحة للزوار والشركاء ومتخذي القرار، دون إخفاء التفاصيل أو القيود المهمة.',
     skillCommsList: ['العروض التقديمية التفاعلية', 'السرد التقني', 'تنظيم المعلومات بصريًا', 'PowerPoint وWord', 'التقارير التشغيلية الواضحة'],
     experienceKicker: 'الخبرة',
-    experienceTitle: 'العمليات أولًا، والتقنية في خدمة الناس.',
-    experienceIntro: 'تشكّلت رؤيتي من العمل التشغيلي والمهام الميدانية ومسؤوليات البيانات والمشروعات التقنية العملية.',
+    experienceTitle: 'خبرة تشغيلية، توظف التقنية لخدمة الناس.',
+    experienceIntro: 'تجمع خبرتي بين تنسيق العمليات المركزية والمهام الإنسانية ومنتجات البيانات وتطوير التطبيقات. لذلك أقيّم التقنية بمدى فائدتها في الواقع، لا بمجرد شكلها في العرض.',
     exp1Title: 'مشرف مركز عمليات الطوارئ',
     exp1Org: 'جمعية الهلال الأحمر المصري',
     exp1Date: '2021 — حتى الآن',
@@ -294,13 +294,13 @@ const copy = {
     languagesLabel: 'اللغات',
     languageDetails: 'العربية — اللغة الأم · الإنجليزية — جيد جدًا في القراءة والكتابة، ومتوسط في المحادثة',
     contactKicker: 'تواصل',
-    contactTitle: 'لنجعل العمل المعقد أوضح.',
-    contactDesc: 'للفرص في تحليل البيانات أو تطوير الأنظمة أو نظم المعلومات الإنسانية، يسعدني التواصل.',
+    contactTitle: 'هل هناك مشكلة حقيقية تستحق حلًا أوضح؟',
+    contactDesc: 'إذا كنت تعمل على تحسين مسار تشغيلي، أو فهم بيانات معقدة، أو بناء نظام معلومات عملي، يسعدني مناقشة المشكلة وما الذي يجعل الحل مفيدًا فعلًا.',
     emailBtn: 'راسل محمد',
     whatsappBtn: 'راسلني على واتساب',
     linkedinBtn: 'تواصل عبر لينكدإن',
     backTop: 'العودة للأعلى',
-    footerNote: 'نماذج من الأعمال العملية في البيانات والبرمجيات والعمليات الإنسانية.',
+    footerNote: 'أعمال عملية تربط العمليات بالبيانات والبرمجيات، مع وضع الناس والقرارات في المقدمة.',
     artLabel: 'معاينة توضيحية · ليست بيانات تشغيل حية',
     platformLabel: 'تصور لبنية المنصة',
     dataLabel: 'تصور للتحليل',
@@ -681,7 +681,7 @@ function App() {
       <section className="hero" id="top">
         <canvas className="hz-field" aria-hidden="true" />
         <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <div className="hz-hint"><i className="hz-pulse" />{rtl ? 'حرّك المؤشر… وشاهد الفوضى تتحوّل إلى نظام' : 'Move your cursor — watch noise become order'}</div>
+        <div className="hz-hint"><i className="hz-pulse" />{rtl ? 'حرّك المؤشر واكشف البنية الكامنة في النقاط' : 'Move through the field. Reveal the structure.'}</div>
         <div className="hz-hero-bottom">
           <h1 className="sr-only">{c.name} — {c.heroLine1} {c.heroLine2} {c.heroLine3}</h1>
           <p className="hz-lead">{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</p>
@@ -692,7 +692,7 @@ function App() {
               <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
             </div>
           </div>
-          <div className="hz-state" data-labels={(rtl ? ['فوضى', 'إشارة', 'نظام'] : ['Noise', 'Signal', 'Structure']).join('|')}><b>01 / 03</b><span>{rtl ? 'فوضى' : 'Noise'}</span></div>
+          <div className="hz-state" data-labels={(rtl ? ['بيانات منظمة', 'مؤشرات وتحليل', 'مسارات القرار'] : ['Structured data', 'Analytics', 'Decision pathways']).join('|')}><b>01 / 03</b><span>{rtl ? 'بيانات منظمة' : 'Structured data'}</span></div>
         </div>
       </section>
 
@@ -710,7 +710,7 @@ function App() {
             <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
             <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
           </div>
-          <Next href="#work">{rtl ? 'كيف تتحوّل الفوضى إلى قرار واضح؟' : 'How does noise become a decision?'}</Next>
+          <Next href="#work">{rtl ? 'كيف يتحول هذا المنهج إلى نظام يعمل؟' : 'How does this approach become a working system?'}</Next>
         </div>
       </section>
 
@@ -744,7 +744,7 @@ function App() {
             </HzProject>
           </div>
           <p className="hz-note">{c.artLabel}</p>
-          <Next href="#capabilities">{rtl ? 'ما الذي يجعل هذه الأنظمة مفيدة فعلًا؟' : 'What makes a system genuinely useful?'}</Next>
+          <Next href="#capabilities">{rtl ? 'ما الذي يجعل النظام مفيدًا فيما وراء الواجهة؟' : 'What makes a system useful beyond its interface?'}</Next>
         </div>
       </section>
 
@@ -781,7 +781,7 @@ function App() {
             <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
             <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
           </div>
-          <Next href="#experience">{rtl ? 'كيف تبدو الخبرة حين تتحوّل إلى أثر؟' : 'What does experience change in practice?'}</Next>
+          <Next href="#experience">{rtl ? 'أين واجه هذا النهج احتياجات تشغيلية حقيقية؟' : 'Where has this approach met real operational needs?'}</Next>
         </div>
       </section>
 
@@ -792,7 +792,7 @@ function App() {
             <span className="hz-tl-line" aria-hidden="true" />
             {[['01', c.exp1Title, c.exp1Org, c.exp1Date, c.exp1Desc], ['02', c.exp2Title, c.exp2Org, c.exp2Date, c.exp2Desc], ['03', c.exp3Title, c.exp3Org, c.exp3Date, c.exp3Desc], ['04', c.exp4Title, c.exp4Org, c.exp4Date, c.exp4Desc]].map((it) => <article className="hz-job" key={it[0]}><span className="hz-dot" aria-hidden="true" /><time>{it[3]}</time><div className="hz-job-t"><h3>{it[1]}</h3><p>{it[2]}</p></div><p className="hz-job-b">{it[4]}</p></article>)}
           </div>
-          <Next href="#education">{rtl ? 'ما الذي يقف وراء هذا المسار؟' : 'What shaped the way I work?'}</Next>
+          <Next href="#education">{rtl ? 'ما الذي يواصل بناء هذه الخبرة؟' : 'What keeps this learning grounded?'}</Next>
         </div>
       </section>
 
@@ -810,7 +810,7 @@ function App() {
             <div className="hz-label hz-label--sm">{c.languagesLabel}</div>
             <p>{c.languageDetails}</p>
           </div>
-          <Next href="#contact">{rtl ? 'هل يمكن أن نحلّ تحديًا معًا؟' : 'Could we solve a real problem together?'}</Next>
+          <Next href="#contact">{rtl ? 'هل لديك مسار عمل معقد يستحق التبسيط؟' : 'Have a difficult workflow worth simplifying?'}</Next>
         </div>
       </section>
 
