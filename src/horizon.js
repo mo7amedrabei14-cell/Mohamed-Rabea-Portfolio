@@ -5,191 +5,567 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 
 const TONE = `${import.meta.env.BASE_URL}images/face-tone.png`;
-const DOT = ['rgba(238,240,255,.5)', 'rgba(238,240,255,.78)', 'rgba(238,240,255,.97)', '#ffc62e'];
-const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&@*+<>/';
+const DOT = ['rgba(238,240,255,.46)', 'rgba(238,240,255,.76)', 'rgba(238,240,255,.98)', '#ffc62e'];
 const NAME = 'MOHAMED RABEA';
-const rnd = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
+const GLYPHS = [...NAME.replace(/\s/g, '')];
+const FIELD_COUNT = (coarse) => (coarse ? 420 : 1400);
+const rng = (seed) => () => {
+  seed |= 0;
+  seed = seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+};
+const shuffle = (items) => {
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+};
 
-// Light dots, denser where the portrait is brighter.
-async function stipple(step, keep) {
+// Read a grayscale portrait into a bounded particle field; preserve the image aspect ratio.
+async function stipple(step, keep, maximum) {
   const img = new Image();
   img.src = TONE;
   await img.decode();
-  const c = document.createElement('canvas');
-  c.width = img.width; c.height = img.height;
-  const g = c.getContext('2d', { willReadFrequently: true });
-  g.drawImage(img, 0, 0);
-  const d = g.getImageData(0, 0, c.width, c.height).data, pts = [];
-  for (let y = 0; y < c.height; y += step) for (let x = 0; x < c.width; x += step) {
-    const i = (y * c.width + x) * 4;
-    if (d[i + 3] < 140) continue;
-    const l = d[i] / 255;
-    if (Math.random() < keep * (.03 + .97 * l ** 1.1)) pts.push({ q: [(x + Math.random() * step) / c.width - .5, (y + Math.random() * step) / c.height - .5], c: Math.random() < .03 ? 3 : l > .65 ? 2 : l > .35 ? 1 : 0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0);
+  const { width, height } = canvas;
+  const pixels = ctx.getImageData(0, 0, width, height).data;
+  const points = [];
+  for (let y = 0; y < height; y += step) {
+    for (let x = 0; x < width; x += step) {
+      const index = (y * width + x) * 4;
+      if (pixels[index + 3] < 140) continue;
+      const luminance = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / (3 * 255);
+      if (Math.random() < keep * (0.025 + 0.975 * luminance ** 1.1)) {
+        points.push({
+          q: [(x + Math.random() * step) / width - 0.5, ((y + Math.random() * step) / height - 0.5) * height / width],
+          c: Math.random() < 0.035 ? 3 : luminance > 0.66 ? 2 : luminance > 0.34 ? 1 : 0,
+        });
+      }
+    }
   }
-  return pts;
+  if (points.length > maximum) {
+    const stride = points.length / maximum;
+    return { points: Array.from({ length: maximum }, (_, i) => points[Math.floor(i * stride)]), aspect: height / width };
+  }
+  return { points, aspect: height / width };
+}
+
+// Cursor lens: particles are noisy until the pointer brings their hidden structure into focus.
+function startField(hero, seed, coarse, still) {
+  const canvas = hero.querySelector('.hz-field');
+  if (!canvas) return () => {};
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return () => {};
+  const count = FIELD_COUNT(coarse);
+  const stateEl = hero.querySelector('.hz-state');
+  const stateNumber = stateEl?.querySelector('b');
+  const stateLabel = stateEl?.querySelector('span');
+  const labels = (stateEl?.dataset.labels || 'Noise|Signal|Structure').split('|');
+  let width = 0;
+  let height = 0;
+  let state = still ? 2 : 0;
+  let stateStartedAt = performance.now();
+  let cursorX = -9999;
+  let cursorY = -9999;
+  let lastMove = -1e9;
+  let raf = 0;
+  let visible = true;
+  let disposed = false;
+  const targets = [[], [], []];
+  const particles = Array.from({ length: count }, (_, i) => ({
+    i,
+    x: seed?.[i]?.x ?? Math.random() * innerWidth,
+    y: seed?.[i]?.y ?? Math.random() * innerHeight,
+    vx: seed?.[i]?.vx || 0,
+    vy: seed?.[i]?.vy || 0,
+    hx: 0,
+    hy: 0,
+    phase: Math.random() * Math.PI * 2,
+    size: 1 + Math.random() * 1.3,
+    accent: Math.random() < 0.065,
+    order: 0,
+  }));
+
+  const updateLabel = () => {
+    if (stateNumber) stateNumber.textContent = `0${state + 1} / 03`;
+    if (stateLabel) stateLabel.textContent = labels[state] || '';
+  };
+
+  const layout = () => {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = rect.width;
+    height = rect.height;
+    canvas.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = Math.max(1, Math.round(height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const random = rng(1103 + Math.round(width) * 3 + Math.round(height));
+    const columns = Math.max(1, Math.ceil(Math.sqrt(count * width / Math.max(height, 1))));
+    const rows = Math.ceil(count / columns);
+    const sx = width / columns;
+    const sy = height / rows;
+    const bars = coarse ? 12 : 22;
+    const pitch = width * 0.86 / bars;
+    const barWidth = pitch * 0.56;
+    const heights = Array.from({ length: bars }, (_, b) => 0.22 + 0.78 * Math.abs(Math.sin(b * 1.7 + 0.6) * Math.cos(b * 0.47)));
+    const heightSum = heights.reduce((a, b) => a + b, 0);
+    const cx = width * 0.5;
+    const cy = height * 0.49;
+    const radiusMax = Math.min(width, height) * 0.39;
+    particles.forEach((p) => {
+      p.hx = random() * width;
+      p.hy = random() * height;
+      targets[0][p.i] = [
+        (p.i % columns + 0.18 + random() * 0.64) * sx,
+        (Math.floor(p.i / columns) + 0.18 + random() * 0.64) * sy,
+      ];
+      let weight = random() * heightSum;
+      let bar = 0;
+      while (weight > heights[bar] && bar < bars - 1) { weight -= heights[bar]; bar += 1; }
+      targets[1][p.i] = [
+        width * 0.07 + bar * pitch + (pitch - barWidth) / 2 + random() * barWidth,
+        height * 0.88 - random() * heights[bar] * height * 0.65,
+      ];
+      const radius = radiusMax * Math.sqrt(random());
+      const angle = random() * Math.PI * 2;
+      targets[2][p.i] = [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius * 0.82];
+    });
+    if (still) {
+      particles.forEach((p) => { [p.x, p.y] = targets[state][p.i]; });
+    }
+  };
+
+  const frame = (time) => {
+    if (disposed || !width || !height) return;
+    ctx.clearRect(0, 0, width, height);
+    const elapsed = time - stateStartedAt;
+    if (!still && elapsed > 7600) {
+      state = (state + 1) % 3;
+      stateStartedAt = time;
+      updateLabel();
+    }
+    if (!still && (time - lastMove > 3200 || coarse)) {
+      cursorX = width * (0.5 + 0.28 * Math.sin(time * 0.00023));
+      cursorY = height * (0.48 + 0.22 * Math.sin(time * 0.00031 + 1.4));
+    }
+    const lensRadius = Math.min(width, height) * (coarse ? 0.29 : 0.23);
+    for (const p of particles) {
+      if (!still) {
+        p.vx += Math.sin(p.y * 0.007 + time * 0.00048 + p.phase) * 0.026 + (p.hx - p.x) * 0.00028;
+        p.vy += Math.cos(p.x * 0.007 - time * 0.0004 + p.phase) * 0.026 + (p.hy - p.y) * 0.00028;
+        const dx = cursorX - p.x;
+        const dy = cursorY - p.y;
+        const distanceSq = dx * dx + dy * dy;
+        if (distanceSq < lensRadius * lensRadius) {
+          const proximity = 1 - Math.sqrt(distanceSq) / lensRadius;
+          const target = targets[state][p.i];
+          p.vx += (target[0] - p.x) * 0.036 * proximity;
+          p.vy += (target[1] - p.y) * 0.036 * proximity;
+          p.order = proximity;
+        } else {
+          p.order *= 0.88;
+        }
+        p.vx *= 0.93;
+        p.vy *= 0.93;
+        p.x += p.vx;
+        p.y += p.vy;
+      }
+    }
+    ctx.fillStyle = DOT[0];
+    for (const p of particles) if (p.order < 0.25) ctx.fillRect(p.x, p.y, p.size, p.size);
+    ctx.fillStyle = DOT[2];
+    for (const p of particles) if (p.order >= 0.25 && !p.accent) ctx.fillRect(p.x, p.y, p.size + 0.35, p.size + 0.35);
+    ctx.fillStyle = DOT[3];
+    for (const p of particles) if (p.order >= 0.25 && p.accent) ctx.fillRect(p.x, p.y, p.size + 0.6, p.size + 0.6);
+    if (!still) {
+      const gradient = ctx.createRadialGradient(cursorX, cursorY, lensRadius * 0.78, cursorX, cursorY, lensRadius);
+      gradient.addColorStop(0, 'rgba(245,194,66,0)');
+      gradient.addColorStop(0.88, 'rgba(245,194,66,0.025)');
+      gradient.addColorStop(1, 'rgba(245,194,66,0.16)');
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cursorX, cursorY, lensRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+
+  const loop = (time) => {
+    if (!visible || disposed) { raf = requestAnimationFrame(loop); return; }
+    frame(time);
+    if (!still) raf = requestAnimationFrame(loop);
+  };
+  layout();
+  updateLabel();
+  if (still) { frame(performance.now()); return () => { disposed = true; cancelAnimationFrame(raf); }; }
+
+  const onMove = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+      cursorX = -9999; cursorY = -9999;
+      lastMove = performance.now();
+      return;
+    }
+    cursorX = event.clientX - rect.left;
+    cursorY = event.clientY - rect.top;
+    lastMove = performance.now();
+  };
+  const onClick = (event) => {
+    if (event.target.closest?.('a,button,input,textarea,select')) return;
+    if (!hero.contains(event.target)) return;
+    state = (state + 1) % 3;
+    stateStartedAt = performance.now();
+    updateLabel();
+  };
+  let resizeTimer;
+  const onResize = () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(layout, 120);
+  };
+  const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
+  observer.observe(hero);
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('resize', onResize);
+  hero.addEventListener('click', onClick);
+  raf = requestAnimationFrame(loop);
+  return () => {
+    disposed = true;
+    cancelAnimationFrame(raf);
+    observer.disconnect();
+    window.clearTimeout(resizeTimer);
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('resize', onResize);
+    hero.removeEventListener('click', onClick);
+  };
 }
 
 export function startHorizon() {
   const root = document.documentElement;
   const hero = document.querySelector('.hero');
   if (!hero) return () => {};
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const coarse = matchMedia('(pointer: coarse)').matches;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
   const off = [];
-  let lenis, tick, dead = false;
+  let lenis;
+  let tick;
+  let dead = false;
+  let stopField = null;
+  let introCleanup = null;
 
   const startScroll = () => {
     if (reduced || coarse || lenis || dead) return;
     lenis = new Lenis({ lerp: 0.085, anchors: { offset: -84 } });
     lenis.on('scroll', ScrollTrigger.update);
-    tick = (t) => lenis.raf(t * 1000);
+    tick = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
   };
+  const beginField = (seed) => {
+    if (!stopField && !dead) stopField = startField(hero, seed, coarse, false);
+  };
 
-  const spot = (e) => { const c = e.target.closest?.('.hz-spot'); if (!c) return; const r = c.getBoundingClientRect(); c.style.setProperty('--sx', `${e.clientX - r.left}px`); c.style.setProperty('--sy', `${e.clientY - r.top}px`); };
-  addEventListener('pointermove', spot, { passive: true });
-  off.push(() => removeEventListener('pointermove', spot));
+  const spotlight = (event) => {
+    const element = event.target.closest?.('.hz-spot');
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    element.style.setProperty('--sx', `${event.clientX - rect.left}px`);
+    element.style.setProperty('--sy', `${event.clientY - rect.top}px`);
+  };
+  window.addEventListener('pointermove', spotlight, { passive: true });
+  off.push(() => window.removeEventListener('pointermove', spotlight));
 
   // Cairo clock
   const clock = hero.querySelector('.hz-clock');
-  const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Africa/Cairo' });
-  const tickClock = () => { if (clock) clock.textContent = fmt.format(new Date()); };
-  tickClock();
-  const clockId = setInterval(tickClock, 1000);
-  off.push(() => clearInterval(clockId));
+  const formatClock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Africa/Cairo' });
+  const updateClock = () => { if (clock) clock.textContent = formatClock.format(new Date()); };
+  updateClock();
+  const clockId = window.setInterval(updateClock, 1000);
+  off.push(() => window.clearInterval(clockId));
 
-  // The name is alive: letters swell wide and light near the cursor.
-  const chars = [...hero.querySelectorAll('.hz-ch')];
-  let busy = false, px = 0, py = 0;
-  const swell = () => {
-    busy = false;
-    for (const el of chars) {
-      const r = el.getBoundingClientRect();
-      const t = Math.max(0, 1 - Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) / 360);
-      el.style.fontVariationSettings = `'wght' ${Math.round(840 - 440 * t)}, 'wdth' ${Math.round(62 + 78 * t)}`;
-    }
-  };
-  if (chars.length && !coarse && !reduced) {
-    const move = (e) => { px = e.clientX; py = e.clientY; if (!busy) { busy = true; requestAnimationFrame(swell); } };
-    addEventListener('pointermove', move, { passive: true });
-    off.push(() => removeEventListener('pointermove', move));
-  }
-
-  const ctx = gsap.context(() => {
+  const scrollContext = gsap.context(() => {
     if (reduced) return;
-    gsap.to('.hz-hero-name .hz-word:nth-child(2)', { xPercent: -6, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-    gsap.to('.hz-hero-name .hz-word:nth-child(3)', { xPercent: 6, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-    // Manifesto: words light up as you read.
-    gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
-    // Work: cards stack and recede.
+    gsap.fromTo('.hz-manifesto .w', { opacity: 0.14 }, { opacity: 1, ease: 'none', stagger: 0.12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
     const cards = gsap.utils.toArray('.hz-card');
-    cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
-    // Experience: the line draws itself, nodes switch on.
+    cards.forEach((card, index) => {
+      if (cards[index + 1]) gsap.to(card, { scale: 0.93, opacity: 0.5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[index + 1], start: 'top 82%', end: 'top 14%', scrub: true } });
+    });
     gsap.fromTo('.hz-tl-line', { scaleY: 0 }, { scaleY: 1, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: '.hz-ledger', start: 'top 70%', end: 'bottom 60%', scrub: true } });
-    gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
-    const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
-    ScrollTrigger.create({ onUpdate: (s) => skew(gsap.utils.clamp(-9, 9, s.getVelocity() / -260)) });
+    gsap.utils.toArray('.hz-job').forEach((element) => ScrollTrigger.create({
+      trigger: element,
+      start: 'top 68%',
+      onEnter: () => element.classList.add('is-on'),
+      onLeaveBack: () => element.classList.remove('is-on'),
+    }));
+    const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: 0.5, ease: 'power3.out' });
+    ScrollTrigger.create({ onUpdate: (scroll) => skew(gsap.utils.clamp(-9, 9, scroll.getVelocity() / -260)) });
   });
-  off.push(() => ctx.revert());
+  off.push(() => scrollContext.revert());
 
   const reveal = () => {
-    gsap.from('.hz-hero-name .hz-ch, .hz-hero-name .hz-aw', { yPercent: 118, duration: 1.3, ease: 'expo.out', stagger: .035, delay: .25 });
-    gsap.from('.hz-meta, .hz-lead span, .hz-side > *, .hz-badge', { y: 30, opacity: 0, duration: 1, ease: 'expo.out', stagger: .07, delay: .55 });
+    if (reduced) return;
+    gsap.from('.hz-meta, .hz-hint, .hz-lead span, .hz-side > *, .hz-state', {
+      y: 28, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.075, delay: 0.3,
+    });
   };
-  if (reduced) return () => { dead = true; off.forEach((f) => f()); };
 
-  // ---- Intro: name scrambles → resolves → collapses → dots find a face → we go in through the eye ----
+  const cleanupShared = () => {
+    off.forEach((dispose) => dispose());
+    if (tick) gsap.ticker.remove(tick);
+    lenis?.destroy();
+  };
+
+  // Reduced-motion users get the same interactive composition without the cinematic sequence.
+  if (reduced) {
+    stopField = startField(hero, null, coarse, true);
+    return () => {
+      dead = true;
+      stopField?.();
+      cleanupShared();
+    };
+  }
+
+  // Cinematic intro: a single letter changes through the name, expands into the full name,
+  // dissolves into dots, those dots converge into the portrait, then the curtain opens.
   root.classList.add('hz-intro');
-  const cv = Object.assign(document.createElement('canvas'), { className: 'hz-fx' });
-  const g = cv.getContext('2d');
-  const cur = document.createElement('div');
-  cur.className = 'hz-curtain';
-  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
-  document.body.append(cur, cv);
-  const nameEl = cur.querySelector('.hz-name'), count = cur.querySelector('.hz-count');
-  const L = [...NAME].map((ch) => { const s = document.createElement('i'); s.className = ch === ' ' ? 'sp' : 'ch'; s.textContent = ch === ' ' ? '' : rnd(); nameEl.append(s); return s; });
+  const canvas = Object.assign(document.createElement('canvas'), { className: 'hz-fx' });
+  const draw = canvas.getContext('2d');
+  const curtain = document.createElement('div');
+  curtain.className = 'hz-curtain';
+  curtain.innerHTML = '<div class="hz-top"><span>FIELD STUDY / 01</span><span>CAIRO · EG</span></div><div class="hz-one" aria-hidden="true"></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip intro</button></div>';
+  document.body.append(curtain, canvas);
+  const one = curtain.querySelector('.hz-one');
+  const nameElement = curtain.querySelector('.hz-name');
+  const counter = curtain.querySelector('.hz-count');
+  const letters = [...NAME].map((character) => {
+    const element = document.createElement('i');
+    element.className = character === ' ' ? 'sp' : 'ch';
+    element.textContent = character === ' ' ? '' : character;
+    nameElement.append(element);
+    return element;
+  });
+  const nameLetters = letters.filter((element) => element.classList.contains('ch'));
+  const portraitPromise = stipple(coarse ? 3 : 2, coarse ? 0.95 : 0.7, coarse ? 1800 : 6200);
 
-  let vw = 0, vh = 0, P = [], raf = 0, phase = 'scramble', prog = 0, mx = -999, my = -999, done = false;
-  const T0 = performance.now(), total = 6000, timers = [];
-  const size = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    vw = innerWidth; vh = innerHeight;
-    cv.width = vw * dpr; cv.height = vh * dpr;
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  let viewportWidth = 0;
+  let viewportHeight = 0;
+  let particles = [];
+  let raf = 0;
+  let phase = 'letters';
+  let gatherStartedAt = 0;
+  let gatheringProgress = 0;
+  let mouseX = -9999;
+  let mouseY = -9999;
+  let finished = false;
+  const startedAt = performance.now();
+  const introDuration = 8500;
+  const timers = [];
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    viewportWidth = window.innerWidth;
+    viewportHeight = window.innerHeight;
+    canvas.width = Math.max(1, Math.round(viewportWidth * dpr));
+    canvas.height = Math.max(1, Math.round(viewportHeight * dpr));
+    draw?.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
-  const faceSize = () => Math.min(vh * .78, vw * .9, 700);
-  const aim = () => { const s = faceSize(); for (const p of P) { p.tx = vw / 2 + p.q[0] * s; p.ty = vh * .5 + p.q[1] * s; } };
-  const pts = stipple(coarse ? 2 : 1, coarse ? 1 : .6);
-
-  const draw = (t) => {
-    g.clearRect(0, 0, vw, vh);
-    if (!P.length) return;
-    const k = phase === 'gather' ? .006 + .02 * prog ** 1.2 : phase === 'burst' ? .004 : 0;
-    const sw = phase === 'gather' ? (1 - prog) * .28 : 0;
-    let last = -1;
-    for (const p of P) {
-      const dx = mx - p.x, dy = my - p.y, d2 = dx * dx + dy * dy;
-      if (d2 < 15000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 15000) * 2.6; p.vx -= dx / d * f; p.vy -= dy / d * f; }
-      p.vx += (p.tx - p.x) * k + Math.sin(t * .0017 + p.y * .013) * sw;
-      p.vy += (p.ty - p.y) * k + Math.cos(t * .0015 + p.x * .011) * sw;
-      p.vx *= .88; p.vy *= .88; p.x += p.vx; p.y += p.vy;
-      if (p.c !== last) { g.fillStyle = DOT[p.c]; last = p.c; }
-      g.fillRect(p.x, p.y, p.s, p.s);
+  const faceScale = (aspect) => Math.min(viewportWidth * 0.88, viewportHeight * 0.78 / Math.max(aspect, 0.2), 700);
+  const aimPortrait = (aspect) => {
+    const scale = faceScale(aspect);
+    for (const particle of particles) {
+      particle.tx = viewportWidth / 2 + particle.q[0] * scale;
+      particle.ty = viewportHeight / 2 + particle.q[1] * scale;
     }
   };
-  const loop = (t) => {
-    const el = performance.now() - T0;
-    prog = Math.min(1, el / total);
-    count.textContent = String(Math.round(prog * 100)).padStart(3, '0');
-    if (phase === 'scramble') L.forEach((s, i) => {                       // letters flicker, then lock in left → right
-      if (s.classList.contains('sp') || s.classList.contains('is-set')) return;
-      if (el > 500 + i * 105) { s.textContent = NAME[i]; s.classList.add('is-set'); } else if ((el / 45 | 0) !== s._f) { s._f = el / 45 | 0; s.textContent = rnd(); }
-    });
-    draw(t);
-    raf = requestAnimationFrame(loop);
+
+  let portraitAspect = 1;
+  const drawFrame = (time) => {
+    if (!draw || !viewportWidth || !viewportHeight) return;
+    draw.clearRect(0, 0, viewportWidth, viewportHeight);
+    const elapsed = performance.now() - startedAt;
+    const normalized = Math.min(1, elapsed / introDuration);
+    counter.textContent = String(Math.round(normalized * 100)).padStart(3, '0');
+
+    if (phase === 'letters') {
+      for (const particle of particles) {
+        draw.fillStyle = DOT[particle.c];
+        draw.fillRect(particle.x, particle.y, particle.s, particle.s);
+      }
+      return;
+    }
+    if (!particles.length) return;
+    if (phase === 'wordDots') {
+      for (const particle of particles) {
+        particle.x += (particle.tx - particle.x) * 0.16;
+        particle.y += (particle.ty - particle.y) * 0.16;
+      }
+    } else if (phase === 'gather' || phase === 'portrait' || phase === 'release') {
+      gatheringProgress = Math.min(1, (performance.now() - gatherStartedAt) / 2200);
+      const force = phase === 'release' ? 0.004 : 0.005 + 0.023 * gatheringProgress;
+      for (const particle of particles) {
+        const dx = mouseX - particle.x;
+        const dy = mouseY - particle.y;
+        const distanceSq = dx * dx + dy * dy;
+        if (phase !== 'release' && distanceSq < 13000) {
+          const distance = Math.sqrt(distanceSq) || 1;
+          const repel = (1 - distanceSq / 13000) * 0.9;
+          particle.vx -= dx / distance * repel;
+          particle.vy -= dy / distance * repel;
+        }
+        particle.vx += (particle.tx - particle.x) * force;
+        particle.vy += (particle.ty - particle.y) * force;
+        particle.vx *= phase === 'portrait' ? 0.82 : 0.86;
+        particle.vy *= phase === 'portrait' ? 0.82 : 0.86;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+      }
+    }
+    particles.sort((a, b) => a.c - b.c);
+    let lastColor = -1;
+    for (const particle of particles) {
+      if (particle.c !== lastColor) { draw.fillStyle = DOT[particle.c]; lastColor = particle.c; }
+      draw.fillRect(particle.x, particle.y, particle.s, particle.s);
+    }
   };
 
-  const collapse = async () => {
-    phase = 'collapse';
-    const rects = L.filter((s) => s.classList.contains('ch')).map((s) => s.getBoundingClientRect());
-    const pt = await pts; if (dead) return;
-    P = pt.map((p) => { const r = rects[(Math.random() * rects.length) | 0]; return { ...p, s: coarse ? 1.6 : 1.3 + Math.random() * .8, x: r.left + Math.random() * r.width, y: r.top + Math.random() * r.height, vx: 0, vy: 0, tx: 0, ty: 0 }; }).sort((a, b) => a.c - b.c);
-    aim();
-    gsap.to(L, { x: (i, el) => vw / 2 - (el.getBoundingClientRect().left + el.offsetWidth / 2), scale: 0, opacity: 0, duration: .75, ease: 'power3.in', stagger: { each: .03, from: 'edges' } });
-    timers.push(setTimeout(() => { phase = 'gather'; }, 500));
+  const loop = (time) => {
+    if (dead) return;
+    drawFrame(time);
+    raf = requestAnimationFrame(loop);
+  };
+  const showWordAsDots = async () => {
+    if (dead || finished) return;
+    let portrait;
+    try { portrait = await portraitPromise; } catch { finish(); return; }
+    if (dead || finished) return;
+    const mask = document.createElement('canvas');
+    mask.width = Math.max(1, viewportWidth);
+    mask.height = Math.max(1, viewportHeight);
+    const maskContext = mask.getContext('2d', { willReadFrequently: true });
+    if (!maskContext) { finish(); return; }
+    const font = getComputedStyle(nameLetters[0]).font;
+    maskContext.font = font;
+    maskContext.textAlign = 'center';
+    maskContext.textBaseline = 'middle';
+    nameLetters.forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      maskContext.fillText(element.textContent, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    });
+    const image = maskContext.getImageData(0, 0, mask.width, mask.height).data;
+    const shape = [];
+    for (let y = Math.max(0, Math.floor(viewportHeight * 0.18)); y < Math.min(viewportHeight, Math.ceil(viewportHeight * 0.82)); y += 2) {
+      for (let x = 0; x < viewportWidth; x += 2) {
+        if (image[(y * mask.width + x) * 4 + 3] > 100) shape.push([x, y]);
+      }
+    }
+    if (!shape.length) { finish(); return; }
+    shuffle(shape);
+    portraitAspect = portrait.aspect;
+    particles = portrait.points.map((point, index) => {
+      const position = shape[index % shape.length];
+      return {
+        ...point,
+        s: coarse ? 1.6 : 1.2 + Math.random() * 0.7,
+        x: position[0] + (Math.random() - 0.5),
+        y: position[1] + (Math.random() - 0.5),
+        vx: 0, vy: 0, tx: position[0], ty: position[1],
+      };
+    }).sort((a, b) => a.c - b.c);
+    phase = 'wordDots';
+    gsap.to(nameLetters, { opacity: 0, duration: 0.28, overwrite: true });
+    timers.push(window.setTimeout(() => {
+      if (dead || finished) return;
+      phase = 'gather';
+      gatherStartedAt = performance.now();
+      aimPortrait(portraitAspect);
+      timers.push(window.setTimeout(() => {
+        if (dead || finished) return;
+        phase = 'portrait';
+        timers.push(window.setTimeout(finish, 1150));
+      }, 2300));
+    }, 780));
   };
 
   const finish = () => {
-    if (done || dead) return;
-    done = true; phase = 'burst';
-    for (const p of P) { const a = Math.atan2(p.y - vh * .5, p.x - vw / 2), r = 200 + Math.random() * 600; p.tx = p.x + Math.cos(a) * r; p.ty = p.y + Math.sin(a) * r; }
+    if (finished || dead) return;
+    finished = true;
+    phase = 'release';
     root.classList.remove('hz-intro');
+    const targetCount = FIELD_COUNT(coarse);
+    const stride = Math.max(1, Math.ceil(particles.length / targetCount));
+    const seed = particles.filter((_, index) => index % stride === 0).slice(0, targetCount)
+      .map((particle) => ({ x: particle.x, y: particle.y, vx: particle.vx, vy: particle.vy }));
     reveal();
-    gsap.fromTo(cur, { clipPath: 'circle(150% at 50% 42%)' }, { clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut', onComplete: () => { cur.remove(); startScroll(); } });
-    gsap.to(cv, { opacity: 0, duration: 1, ease: 'power2.in', onComplete: () => { cancelAnimationFrame(raf); cv.remove(); } });
+    beginField(seed.length ? seed : null);
+    gsap.fromTo(curtain, { clipPath: 'circle(150% at 50% 42%)' }, {
+      clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut',
+      onComplete: () => { curtain.remove(); startScroll(); },
+    });
+    gsap.to(canvas, { opacity: 0, duration: 0.75, ease: 'power2.in', onComplete: () => { cancelAnimationFrame(raf); canvas.remove(); } });
   };
 
-  const onMove = (e) => { mx = e.clientX; my = e.clientY; };
-  const onResize = () => { size(); aim(); };
-  const onKey = (e) => { if (e.key === 'Escape') finish(); };
-  size();
-  addEventListener('pointermove', onMove, { passive: true });
-  addEventListener('resize', onResize);
-  addEventListener('keydown', onKey);
-  cur.querySelector('.hz-skip').addEventListener('click', finish);
+  const cycleSingleLetter = () => {
+    GLYPHS.forEach((character, index) => {
+      timers.push(window.setTimeout(() => {
+        if (dead || finished || phase !== 'letters') return;
+        one.textContent = character;
+        gsap.fromTo(one, { scale: 1.13, opacity: 0.25, filter: 'blur(9px)' }, {
+          scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.15, ease: 'power2.out', overwrite: true,
+        });
+      }, 250 + index * 145));
+    });
+  };
+  const expandName = () => {
+    if (dead || finished) return;
+    phase = 'expand';
+    gsap.to(one, { opacity: 0, scale: 1.2, duration: 0.45, ease: 'power2.in', overwrite: true });
+    gsap.fromTo(nameLetters,
+      { x: (index, element) => viewportWidth / 2 - (element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2), scale: 2.8, opacity: 0 },
+      { x: 0, scale: 1, opacity: 1, duration: 1.1, ease: 'expo.out', stagger: { each: 0.035, from: 'center' }, overwrite: true });
+    timers.push(window.setTimeout(showWordAsDots, 1500));
+  };
+  const onPointerMove = (event) => { mouseX = event.clientX; mouseY = event.clientY; };
+  const onResize = () => { resize(); if (phase === 'gather' || phase === 'portrait') aimPortrait(portraitAspect); };
+  const onKeyDown = (event) => { if (event.key === 'Escape') finish(); };
+
+  resize();
+  cycleSingleLetter();
   raf = requestAnimationFrame(loop);
-  timers.push(setTimeout(collapse, 2700), setTimeout(finish, total + 600));
-  pts.catch(() => finish());
+  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', onKeyDown);
+  const skip = curtain.querySelector('.hz-skip');
+  skip.addEventListener('click', finish);
+
+  const expandAt = 250 + GLYPHS.length * 145 + 360;
+  timers.push(window.setTimeout(expandName, expandAt));
+  // A final safety net prevents a failed image decode or unusual device from blocking entry.
+  timers.push(window.setTimeout(finish, 12500));
+  portraitPromise.catch(() => finish());
+
+  introCleanup = () => {
+    dead = true;
+    timers.forEach((timer) => window.clearTimeout(timer));
+    cancelAnimationFrame(raf);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('keydown', onKeyDown);
+    skip.removeEventListener('click', finish);
+    gsap.killTweensOf([curtain, canvas, one, ...nameLetters]);
+    curtain.remove();
+    canvas.remove();
+    root.classList.remove('hz-intro');
+  };
 
   return () => {
     dead = true;
-    cancelAnimationFrame(raf); timers.forEach(clearTimeout);
-    removeEventListener('pointermove', onMove); removeEventListener('resize', onResize); removeEventListener('keydown', onKey);
-    off.forEach((f) => f());
-    if (tick) gsap.ticker.remove(tick);
-    lenis?.destroy();
-    cv.remove(); cur.remove();
-    root.classList.remove('hz-intro');
+    introCleanup?.();
+    stopField?.();
+    cleanupShared();
   };
 }
