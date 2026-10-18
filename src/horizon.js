@@ -138,7 +138,7 @@ function startField(hero, seed, coarse, still) {
       targets[2][p.i] = [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius * 0.82];
     });
     if (still) {
-      particles.forEach((p) => { [p.x, p.y] = targets[state][p.i]; });
+      particles.forEach((p) => { [p.x, p.y] = targets[state][p.i]; p.order = 1; });
     }
   };
 
@@ -425,7 +425,6 @@ export function startHorizon() {
         particle.y += particle.vy;
       }
     }
-    particles.sort((a, b) => a.c - b.c);
     let lastColor = -1;
     for (const particle of particles) {
       if (particle.c !== lastColor) { draw.fillStyle = DOT[particle.c]; lastColor = particle.c; }
