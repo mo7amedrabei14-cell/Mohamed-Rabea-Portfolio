@@ -4,7 +4,6 @@ import App from './App.jsx';
 import './styles.css';
 import './motion.css';
 import './horizon.css';
-import './premium.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
