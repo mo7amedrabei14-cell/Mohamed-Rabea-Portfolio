@@ -151,7 +151,7 @@ function startField(hero, seed, coarse, still) {
       stateStartedAt = time;
       updateLabel();
     }
-    if (!still && (time - lastMove > 3200 || coarse)) {
+    if (!still && time - lastMove > (coarse ? 2400 : 3200)) {
       cursorX = width * (0.5 + 0.28 * Math.sin(time * 0.00023));
       cursorY = height * (0.48 + 0.22 * Math.sin(time * 0.00031 + 1.4));
     }
@@ -364,7 +364,7 @@ export function startHorizon() {
   let mouseY = -9999;
   let finished = false;
   const startedAt = performance.now();
-  const introDuration = 8500;
+  const introDuration = 8000;
   const timers = [];
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -447,8 +447,8 @@ export function startHorizon() {
     mask.height = Math.max(1, viewportHeight);
     const maskContext = mask.getContext('2d', { willReadFrequently: true });
     if (!maskContext) { finish(); return; }
-    const font = getComputedStyle(nameLetters[0]).font;
-    maskContext.font = font;
+    const fontSize = getComputedStyle(nameLetters[0]).fontSize;
+    maskContext.font = `800 ${fontSize} "Anybody", system-ui, sans-serif`;
     maskContext.textAlign = 'center';
     maskContext.textBaseline = 'middle';
     nameLetters.forEach((element) => {
