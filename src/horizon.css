@@ -492,3 +492,6 @@ html.hz-intro{overflow:hidden}
 @media (max-width: 980px) {
   .hero .hz-lead { font-size: clamp(40px, 5.9vw, 72px); }
 }
+
+/* Keep the name's letterforms typographic, not browser-default italic. */
+.hz-name .ch { font-style: normal; }
