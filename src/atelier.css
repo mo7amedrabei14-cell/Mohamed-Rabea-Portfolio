@@ -260,6 +260,7 @@ html.is-scrolled .site .site-header {
   color: var(--atelier-cashmere);
   box-shadow: 0 32px 76px -44px rgba(24,18,15,.48), inset 0 0 0 1px rgba(243,232,220,.035);
 }
+.site .hz-card:focus-within { border-color: rgba(210,164,135,.68); }
 .site .hz-card-media { align-self: start; }
 .site .hz-card-bar {
   height: 39px;
@@ -572,6 +573,7 @@ html.is-scrolled .site .site-header {
 }
 @media (prefers-reduced-motion: reduce) {
   .site .hero::after { display: none !important; }
+  .site .hz-card:hover .hz-card-media img { transform: none !important; filter: saturate(.9) contrast(1.03); }
   .site .hero .hz-ln,
   .site .hz-card-media img,
   .site .nav > a:not(.nav-contact)::after,
