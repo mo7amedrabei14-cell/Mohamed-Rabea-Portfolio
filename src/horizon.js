@@ -563,12 +563,13 @@ export function startHorizon() {
       point.y += point.vy;
     }
 
-    for (let shade = 0; shade < 4; shade += 1) {
-      introContext.fillStyle = DOT[shade];
-      for (const point of portraitPoints) {
-        if (point.c !== shade) continue;
-        introContext.fillRect(point.x, point.y, point.s, point.s);
+    let activeShade = -1;
+    for (const point of portraitPoints) {
+      if (point.c !== activeShade) {
+        activeShade = point.c;
+        introContext.fillStyle = DOT[activeShade];
       }
+      introContext.fillRect(point.x, point.y, point.s, point.s);
     }
   }
 
@@ -641,7 +642,7 @@ export function startHorizon() {
           tx: 0,
           ty: 0,
         };
-      });
+      }).sort((left, right) => left.c - right.c);
       aimAtPortrait();
       phase = 'dots';
       gsap.to(nameLetters, { opacity: 0, duration: 0.28, ease: 'power1.out' });
