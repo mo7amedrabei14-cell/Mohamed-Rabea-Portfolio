@@ -107,7 +107,7 @@ function startField(hero, coarse, seed, staticMode = false) {
       hy: random() * height,
       phase: random() * Math.PI * 2,
       size: initial && initial.s ? initial.s : 1 + random() * 1.25,
-      color: initial && Number.isInteger(initial.c) ? initial.c : random() < 0.035 ? 3 : random() < 0.45 ? 1 : 0,
+      color: initial && Number.isInteger(initial.c) ? initial.c : (() => { const roll = random(); return roll < 0.035 ? 3 : roll < 0.22 ? 2 : roll < 0.62 ? 1 : 0; })(),
       influence: 0,
     };
   });
