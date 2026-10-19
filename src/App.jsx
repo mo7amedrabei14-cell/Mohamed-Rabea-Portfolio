@@ -558,6 +558,33 @@ function App() {
   }, []);
 
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!finePointer.matches || reducedMotion.matches) return undefined;
+
+    let frame = 0;
+    let pointerX = window.innerWidth * 0.78;
+    let pointerY = window.innerHeight * 0.28;
+    const paintLight = () => {
+      frame = 0;
+      root.style.setProperty('--pointer-x', `${pointerX}px`);
+      root.style.setProperty('--pointer-y', `${pointerY}px`);
+    };
+    const onPointerMove = (event) => {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      if (!frame) frame = window.requestAnimationFrame(paintLight);
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
   const toggleLanguage = () => {
     setLang((previous) => previous === 'en' ? 'ar' : 'en');
     setMenuOpen(false);
