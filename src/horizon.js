@@ -42,26 +42,37 @@ async function stipple(coarse) {
   const width = canvas.width;
   const height = canvas.height;
   const pixels = ctx.getImageData(0, 0, width, height).data;
-  const cap = coarse ? 1500 : 5600;
-  const stride = Math.max(coarse ? 3 : 2, Math.ceil(Math.sqrt((width * height) / cap)));
+  const cap = coarse ? 2600 : 11000;
+  const stride = 2;
   const random = rng(241019);
   const points = [];
+  let seen = 0;
 
-  for (let y = 0; y < height && points.length < cap; y += stride) {
-    for (let x = 0; x < width && points.length < cap; x += stride) {
+  // Walk the entire portrait, including its lower half, and use reservoir
+  // sampling to enforce the point budget without cutting the image off early.
+  for (let y = 0; y < height; y += stride) {
+    for (let x = 0; x < width; x += stride) {
       const offset = (y * width + x) * 4;
       if (pixels[offset + 3] < 90) continue;
+
       const lum = (pixels[offset] * 0.2126 + pixels[offset + 1] * 0.7152 + pixels[offset + 2] * 0.0722) / 255;
-      // Keep shadow detail as well as highlights; brightness changes the density
-      // gently rather than erasing the darker contours of the face.
-      const keep = 0.48 + 0.52 * Math.pow(lum, 0.62);
+      const keep = 0.70 + 0.30 * Math.pow(lum, 0.55);
       if (random() > keep) continue;
+
       const shade = random() < 0.022 ? 3 : lum > 0.7 ? 2 : lum > 0.39 ? 1 : 0;
-      points.push({
+      const point = {
         q: [(x + stride * 0.5) / width - 0.5, (y + stride * 0.5) / height - 0.5],
         c: shade,
-        s: coarse ? 1.45 : 1.15 + random() * 0.85,
-      });
+        s: coarse ? 1.45 : 1.2 + random() * 0.9,
+      };
+
+      seen += 1;
+      if (points.length < cap) {
+        points.push(point);
+      } else {
+        const slot = Math.floor(random() * seen);
+        if (slot < cap) points[slot] = point;
+      }
     }
   }
 
@@ -202,6 +213,19 @@ function startField(hero, coarse, seed, staticMode = false) {
 
     const radius = Math.min(width, height) * (coarse ? 0.23 : 0.215);
     const radius2 = radius * radius;
+
+    // A quiet glass-like bloom gives the particle ordering a readable lens
+    // without obscuring the fine dot work below it.
+    if (inside) {
+      const glow = ctx.createRadialGradient(lensX, lensY, radius * 0.08, lensX, lensY, radius);
+      glow.addColorStop(0, 'rgba(123,135,255,.085)');
+      glow.addColorStop(0.68, 'rgba(123,135,255,.035)');
+      glow.addColorStop(1, 'rgba(123,135,255,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(lensX, lensY, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     for (const p of points) {
       p.influence = 0;
