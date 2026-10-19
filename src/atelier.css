@@ -149,7 +149,7 @@ html.is-scrolled .site .site-header {
 .site .hero .hz-lead {
   max-width: 1050px;
   font-family: 'DM Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  font-size: clamp(52px, 7.2vw, 122px);
+  font-size: clamp(48px, 6.1vw, 106px);
   font-weight: 560;
   font-variation-settings: normal;
   line-height: .99;
@@ -282,8 +282,8 @@ html.is-scrolled .site .site-header {
 }
 .site .hz-card-bar i:first-child { background: var(--atelier-copper); }
 .site .hz-card-media img {
-  aspect-ratio: 1.22 / 1;
-  object-fit: cover;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
   object-position: top center;
   border: 1px solid rgba(243,232,220,.1);
   border-radius: 0;
@@ -508,7 +508,7 @@ html.is-scrolled .site .site-header {
   .site .hz-card { position: relative; top: auto; }
   .site .hz-card-media,
   .site .hz-card-body { grid-column: 1 / -1; grid-row: auto; }
-  .site .hz-card-media img { aspect-ratio: 1.48 / 1; }
+  .site .hz-card-media img { aspect-ratio: 16 / 10; }
   .site .hz-job { grid-template-columns: 105px 1fr; }
   .site .hz-job-b { grid-column: 2; }
   .site .hz-b,
