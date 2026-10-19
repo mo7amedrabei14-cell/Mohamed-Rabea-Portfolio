@@ -355,94 +355,16 @@ function Mark({ onOpen }) {
   return <img className="brand-portrait image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
 }
 
-function trackArtPointer(event) {
-  const surface = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
-  const rect = surface.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-
-  // Direct DOM updates keep pointer motion smooth without causing React re-renders.
-  surface.style.setProperty('--art-pointer-x', `${x * 100}%`);
-  surface.style.setProperty('--art-pointer-y', `${y * 100}%`);
-  surface.style.setProperty('--art-shift-x', `${(0.5 - x) * 8}px`);
-  surface.style.setProperty('--art-shift-y', `${(0.5 - y) * 6}px`);
-}
-
-function resetArtPointer(event) {
-  const surface = event.currentTarget;
-  surface.style.setProperty('--art-pointer-x', '50%');
-  surface.style.setProperty('--art-pointer-y', '50%');
-  surface.style.setProperty('--art-shift-x', '0px');
-  surface.style.setProperty('--art-shift-y', '0px');
-}
-
-
-function trackHeroPointer(event) {
-  const surface = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
-  const rect = surface.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-
-  surface.style.setProperty('--hero-pointer-x', `${x * 100}%`);
-  surface.style.setProperty('--hero-pointer-y', `${y * 100}%`);
-  surface.style.setProperty('--hero-drift-x', `${(0.5 - x) * 14}px`);
-  surface.style.setProperty('--hero-drift-y', `${(0.5 - y) * 10}px`);
-  surface.style.setProperty('--hero-drift-reverse-x', `${(x - 0.5) * 10}px`);
-  surface.style.setProperty('--hero-drift-reverse-y', `${(y - 0.5) * 8}px`);
-}
-
-function resetHeroPointer(event) {
-  const surface = event.currentTarget;
-  surface.style.setProperty('--hero-pointer-x', '50%');
-  surface.style.setProperty('--hero-pointer-y', '50%');
-  surface.style.setProperty('--hero-drift-x', '0px');
-  surface.style.setProperty('--hero-drift-y', '0px');
-  surface.style.setProperty('--hero-drift-reverse-x', '0px');
-  surface.style.setProperty('--hero-drift-reverse-y', '0px');
-}
-
-function trackMagneticPointer(event) {
-  const control = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
-  const rect = control.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const x = (event.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-  const y = (event.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-  control.style.setProperty('--magnetic-x', `${Math.max(-1, Math.min(1, x)) * 5}px`);
-  control.style.setProperty('--magnetic-y', `${Math.max(-1, Math.min(1, y)) * 4}px`);
-}
-
-function resetMagneticPointer(event) {
-  event.currentTarget.style.setProperty('--magnetic-x', '0px');
-  event.currentTarget.style.setProperty('--magnetic-y', '0px');
-}
-
 function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
-    return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
+    return <div className="art art--photo art--platform" aria-label={c.platformLabel}>
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
       <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
   if (type === 'analytics') {
-    return <div className="art art--photo art--analytics" aria-label={c.dataLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
+    return <div className="art art--photo art--analytics" aria-label={c.dataLabel}>
       <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
       <img
         className="art-photo image-zoom-trigger"
@@ -456,7 +378,7 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
-  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
+  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel}>
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
     <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
     <div className="art-note">{c.artLabel}</div>
@@ -605,9 +527,6 @@ function App() {
     const root = document.documentElement;
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let scrollFrame = 0;
-    let pointerFrame = 0;
-    let latestPointer = null;
-
     const syncMotionPreference = () => {
       root.classList.toggle('motion-reduced', motionPreference.matches);
     };
@@ -624,32 +543,17 @@ function App() {
       if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollState);
     };
 
-    const handlePointerMove = (event) => {
-      if (motionPreference.matches || event.pointerType === 'touch') return;
-      latestPointer = { x: event.clientX, y: event.clientY };
-      if (pointerFrame) return;
-      pointerFrame = window.requestAnimationFrame(() => {
-        pointerFrame = 0;
-        if (!latestPointer) return;
-        root.style.setProperty('--pointer-x', `${latestPointer.x}px`);
-        root.style.setProperty('--pointer-y', `${latestPointer.y}px`);
-      });
-    };
-
     syncMotionPreference();
     updateScrollState();
     motionPreference.addEventListener?.('change', syncMotionPreference);
     window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
     window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     return () => {
       motionPreference.removeEventListener?.('change', syncMotionPreference);
       window.removeEventListener('scroll', scheduleScrollUpdate);
       window.removeEventListener('resize', scheduleScrollUpdate);
-      window.removeEventListener('pointermove', handlePointerMove);
       if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
-      if (pointerFrame) window.cancelAnimationFrame(pointerFrame);
     };
   }, []);
 
@@ -672,34 +576,27 @@ function App() {
         <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
           {c.nav.map((item) => <a key={item.id} href={'#' + item.id} onClick={closeMenu}>{item.label}</a>)}
           <button className="language-toggle" onClick={toggleLanguage} aria-label={c.localeAria}>{c.languageName}<span>↗</span></button>
-          <a className="nav-contact" href="#contact" onClick={closeMenu} onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
+          <a className="nav-contact" href="#contact" onClick={closeMenu}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
         </nav>
       </div>
     </header>
 
     <main id="main">
       <section className="hero" id="top">
-        <canvas className="hz-field" aria-hidden="true" />
-        <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <div className="hz-hint" data-hints={(rtl ? ['مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط', 'الطبقة التالية — اجمع النقاط ثم اضغط', 'الطبقة الأخيرة — اضغط لتتناثر النقاط من جديد'] : ['Sweep the circle across the dots — each one locks in place. Then click', 'Next layer — collect again, then click', 'Final layer — click to scatter everything']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط' : 'Sweep the circle across the dots — each one locks in place. Then click'}</span></div>
+        <div className="hz-meta"><span>CAIRO · EGYPT</span><span>{c.brandTag}</span></div>
         <div className="hz-hero-bottom">
           <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span className="hz-ln" key={t}>{t}</span>)}</h1>
           <div className="hz-side">
             <p className="hero-intro">{c.heroIntro}</p>
             <div className="hero-actions">
-            <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
+            <a className="button button--primary" href="#work">{c.primary}<Arrow diagonal /></a>
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
           </div>
-          <div className="hz-state" data-labels={(rtl ? ['صفوف وأعمدة', 'اتجاهات', 'صورة العمليات'] : ['Rows & columns', 'Trends', 'The operations picture']).join('|')}><b>01 / 03</b><span>{rtl ? 'صفوف وأعمدة' : 'Rows & columns'}</span></div>
         </div>
       </section>
 
-      <div className="hz-marquee" aria-hidden="true">
-        <div className="hz-skew"><div className="hz-track">
-          {[0, 1, 2, 3].map((k) => c.bridge.concat(c.bridge).map((t, n) => <span key={`${k}-${n}`}>{t}</span>))}
-        </div></div>
-      </div>
+
 
       <section className="hz-sec hz-man" id="signal">
         <div className="hz-wrap">
@@ -775,10 +672,10 @@ function App() {
         <div className="hz-wrap">
           <div className="hz-head" data-reveal><div><div className="hz-label"><i>03</i>{c.capabilitiesKicker}</div><h2>{c.capabilitiesTitle}</h2></div><p>{c.capabilitiesIntro}</p></div>
           <div className="hz-bento">
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--data"><i /><i /><i /><i /><i /><i /><i /></div><span className="n">01</span><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--code"><i /><i /><i /><i /><b /></div><span className="n">02</span><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><span className="n">01</span><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><span className="n">02</span><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
           </div>
           <Next href="#experience">{rtl ? "وأين اختُبر كل هذا؟" : "Where was it tested?"}</Next>
         </div>
