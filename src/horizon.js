@@ -267,8 +267,12 @@ function startField(hero, coarse, seed, staticMode = false) {
   }
 
   function loop(now) {
-    if (visible) frame(now);
-    if (!staticMode) raf = requestAnimationFrame(loop);
+    if (staticMode || !visible) {
+      raf = 0;
+      return;
+    }
+    frame(now);
+    raf = requestAnimationFrame(loop);
   }
 
   function onPointerMove(event) {
@@ -296,7 +300,15 @@ function startField(hero, coarse, seed, staticMode = false) {
     resizeTimer = window.setTimeout(layout, 120);
   }
 
-  const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
+  const observer = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (staticMode) return;
+    if (visible && !raf) raf = requestAnimationFrame(loop);
+    else if (!visible && raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  });
   observer.observe(hero);
   layout();
   window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -305,7 +317,7 @@ function startField(hero, coarse, seed, staticMode = false) {
 
   if (staticMode) {
     frame(0);
-  } else {
+  } else if (visible) {
     raf = requestAnimationFrame(loop);
   }
 
