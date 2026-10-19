@@ -481,3 +481,14 @@ html.hz-intro{overflow:hidden}
 @media (prefers-reduced-motion: reduce) {
   .hz-pulse, .hz-next i { animation: none !important; transition: none !important; }
 }
+
+/* Final visual calibration: keep hero typography legible against the dark field. */
+.hero .hz-lead {
+  color: #eef0ff;
+  font-size: clamp(38px, 5.65vw, 88px);
+}
+.hero .hz-lead > span { color: #eef0ff; }
+.hero .hz-lead > span:nth-of-type(3) { color: #ffc62e; }
+@media (max-width: 980px) {
+  .hero .hz-lead { font-size: clamp(40px, 5.9vw, 72px); }
+}
