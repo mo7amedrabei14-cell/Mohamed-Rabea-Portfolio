@@ -11,6 +11,7 @@
   --atelier-paper: #FBF7F1;
   --atelier-sand: #E8D9CA;
   --atelier-copper: #B8734E;
+  --atelier-copper-deep: #75452E;
   --atelier-copper-light: #D2A487;
   --atelier-muted: #8B7666;
   --atelier-line: rgba(33, 26, 22, .17);
@@ -138,6 +139,11 @@ html.is-scrolled .site .site-header {
   letter-spacing: .17em;
 }
 .site .hz-meta span:last-child { color: var(--atelier-copper-light); }
+.site .hz-label i {
+  border: 1px solid rgba(210,164,135,.42);
+  background: transparent;
+  color: var(--atelier-copper-light);
+}
 .site .hz-hero-bottom {
   align-items: end;
   gap: clamp(24px, 4vw, 70px);
@@ -197,7 +203,7 @@ html.is-scrolled .site .site-header {
 .site .hz-man .hz-label { color: rgba(33,26,22,.63); }
 .site .hz-man .hz-label i {
   border-color: rgba(184,115,78,.7);
-  color: var(--atelier-copper-deep, #925B3E);
+  color: var(--atelier-copper-deep);
 }
 .site .hz-manifesto {
   max-width: 1240px;
@@ -210,7 +216,7 @@ html.is-scrolled .site .site-header {
   text-transform: none;
 }
 .site .hz-manifesto .ph { padding-inline-start: 0; color: var(--atelier-espresso); }
-.site .hz-manifesto .ph:nth-child(2) { padding-inline-start: clamp(0px, 8vw, 134px); color: #925B3E; }
+.site .hz-manifesto .ph:nth-child(2) { padding-inline-start: clamp(0px, 8vw, 134px); color: var(--atelier-copper-deep); }
 .site .hz-manifesto .ph:nth-child(3) { padding-inline-start: clamp(0px, 16vw, 268px); }
 .site .hz-manifesto .w { margin-inline-end: .16em; }
 .site .hz-method { border-top-color: rgba(33,26,22,.2); }
@@ -243,6 +249,7 @@ html.is-scrolled .site .site-header {
   background: var(--atelier-cashmere);
 }
 .site .hz-work .hz-label { color: rgba(33,26,22,.68); }
+.site .hz-work .hz-label i { color: var(--atelier-copper-deep); border-color: rgba(117,69,46,.45); }
 .site .hz-work .hz-head { margin-bottom: clamp(42px, 6vw, 86px); }
 .site .hz-work .hz-head h2 { max-width: 880px; }
 .site .hz-stack { gap: clamp(32px, 5vw, 76px); }
@@ -356,7 +363,7 @@ html.is-scrolled .site .site-header {
 .site .hz-card .button--dark:hover { border-color: var(--atelier-paper); background: var(--atelier-paper); }
 .site .hz-card .text-link { color: var(--atelier-cashmere); border-bottom-color: rgba(243,232,220,.34); }
 .site .hz-card .text-link:hover { color: var(--atelier-copper-light); border-color: var(--atelier-copper-light); }
-.site .hz-note { color: rgba(33,26,22,.52); font-size: 10px; letter-spacing: .08em; }
+.site .hz-note { color: rgba(33,26,22,.68); font-size: 10px; letter-spacing: .08em; }
 
 /* Capabilities: a grid of expertise, not a set of floating UI islands. */
 .site .hz-cap {
@@ -366,6 +373,7 @@ html.is-scrolled .site .site-header {
     var(--atelier-espresso);
 }
 .site .hz-cap .hz-head p { color: rgba(243,232,220,.68); }
+.site .hz-cap .hz-label i, .site .hz-edu .hz-label i { color: var(--atelier-copper-light); border-color: rgba(210,164,135,.42); }
 .site .hz-bento { gap: 0; border-top: 1px solid var(--atelier-line-light); border-inline-start: 1px solid var(--atelier-line-light); }
 .site .hz-b,
 .site .hz-b:nth-child(n) {
@@ -405,6 +413,7 @@ html.is-scrolled .site .site-header {
   background: var(--atelier-paper);
 }
 .site .hz-exp .hz-label { color: rgba(33,26,22,.62); }
+.site .hz-exp .hz-label i { color: var(--atelier-copper-deep); border-color: rgba(117,69,46,.45); }
 .site .hz-exp .hz-head p { color: rgba(33,26,22,.65); }
 .site .hz-ledger { border-top: 1px solid rgba(33,26,22,.2); }
 .site .hz-job {
