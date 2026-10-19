@@ -209,23 +209,25 @@ function startField(hero, coarse, seed, staticMode = false) {
       const dy = lensY - p.y;
       const d2 = dx * dx + dy * dy;
 
-      // Free particles remain soft and restless outside the lens.
-      p.vx += (p.hx - p.x) * 0.00056 + Math.sin(p.y * 0.007 + now * 0.00048 + p.phase) * 0.018;
-      p.vy += (p.hy - p.y) * 0.00056 + Math.cos(p.x * 0.007 - now * 0.00042 + p.phase) * 0.018;
-
-      if (inside && d2 < radius2) {
-        const distance = Math.sqrt(d2);
-        const strength = 1 - distance / radius;
+      const inLens = inside && d2 < radius2;
+      if (inLens) {
+        // Inside the lens, let the geometric attractor dominate. Ambient drift
+        // resumes outside the lens so the two forces do not cancel each other.
+        const strength = 1 - Math.sqrt(d2) / radius;
         const slot = patterns[state][p.i];
         const targetX = lensX + (slot[0] / width - 0.5) * radius * 1.45;
         const targetY = lensY + (slot[1] / height - 0.5) * radius * 1.45;
-        const force = 0.012 + strength * 0.055;
+        const force = 0.018 + strength * 0.075;
         p.vx += (targetX - p.x) * force;
         p.vy += (targetY - p.y) * force;
         p.influence = strength;
+      } else {
+        // Free particles remain soft and restless outside the lens.
+        p.vx += (p.hx - p.x) * 0.00056 + Math.sin(p.y * 0.007 + now * 0.00048 + p.phase) * 0.018;
+        p.vy += (p.hy - p.y) * 0.00056 + Math.cos(p.x * 0.007 - now * 0.00042 + p.phase) * 0.018;
       }
 
-      const damping = p.influence > 0.02 ? 0.82 : 0.94;
+      const damping = p.influence > 0.02 ? 0.78 : 0.94;
       p.vx *= damping;
       p.vy *= damping;
       p.x += p.vx;
