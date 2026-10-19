@@ -128,7 +128,7 @@ function startField(hero, seed, coarse, still) {
     g.font = '500 11px "DM Mono", monospace'; g.textBaseline = 'alphabetic';
     for (let s = 0; s < 3; s++) if (ptr[s] > 0 || still) { g.fillStyle = 'rgba(238,240,255,.72)'; g.fillText(`0${s + 1}  ${(labels[s] || '').toUpperCase()}`, anchors[s][0], anchors[s][1]); }
     if (!still) {
-      g.lineWidth = 1; g.strokeStyle = ptr[stage] < M ? 'rgba(238,240,255,.5)' : 'rgba(238,240,255,.15)';
+      g.lineWidth = 1; g.strokeStyle = 'rgba(238,240,255,.82)';
       g.beginPath(); g.arc(lx, ly, RL, 0, 6.2832); g.stroke();
       g.beginPath(); g.moveTo(lx - 6, ly); g.lineTo(lx + 6, ly); g.moveTo(lx, ly - 6); g.lineTo(lx, ly + 6); g.stroke();
       if ((t | 0) % 6 === 0) setUI();
@@ -288,12 +288,12 @@ export function startHorizon() {
     g.clearRect(0, 0, vw, vh);
     if (!P.length) return;
     const e = phase === 'gather' ? Math.min(1, (performance.now() - tGather) / 2600) : 0;
-    const k = phase === 'gather' ? .006 + .02 * e ** 1.2 : .02;
-    const sw = phase === 'dots' ? .22 : phase === 'gather' ? (1 - e) * .28 : 0;
+    const k = phase === 'gather' ? .006 + .02 * e ** 1.2 : phase === 'dots' ? 0 : .02;
+    const sw = phase === 'gather' ? (1 - e) * .28 : 0;
     const buckets = [[], [], [], [], [], [], [], [], [], [], [], []], acc = [];
     for (const p of P) {
       const dx = mx - p.x, dy = my - p.y, d2 = dx * dx + dy * dy;
-      if (d2 < 15000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 15000) * 2.6; p.vx -= dx / d * f; p.vy -= dy / d * f; }
+      if (phase !== 'dots' && d2 < 15000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 15000) * 2.6; p.vx -= dx / d * f; p.vy -= dy / d * f; }
       p.vx += (p.tx - p.x) * k + Math.sin(t * .0017 + p.y * .013) * sw;
       p.vy += (p.ty - p.y) * k + Math.cos(t * .0015 + p.x * .011) * sw;
       p.vx *= .88; p.vy *= .88; p.x += p.vx; p.y += p.vy;
@@ -321,8 +321,11 @@ export function startHorizon() {
     if (dead || done) return;
     phase = 'expand';
     gsap.to(one, { scale: .3, opacity: 0, duration: .35, ease: 'power3.in' });
-    gsap.fromTo(CH, { x: (i, el) => vw / 2 - (el.getBoundingClientRect().left + el.offsetWidth / 2), scale: 1, opacity: 0 }, { x: 0, opacity: 1, duration: 1.1, ease: 'expo.out', delay: .12, stagger: { each: .05, from: 'center' } });
-    timers.push(setTimeout(toDots, 1500));
+    gsap.fromTo(CH, { x: (i, el) => vw / 2 - (el.getBoundingClientRect().left + el.offsetWidth / 2), scale: 1, opacity: 0 }, { x: 0, y: 0, scale: 1, opacity: 1, filter: 'none', duration: 1.1, ease: 'expo.out', delay: .12, stagger: { each: .05, from: 'center' }, onComplete: () => {
+      // Lock the complete name in place before the pixel-morph begins.
+      gsap.set(CH, { x: 0, y: 0, scale: 1, opacity: 1, filter: 'none' });
+      timers.push(setTimeout(toDots, 450));
+    } });
   };
 
   // 3. the name melts into dots that keep its exact shape; 4. the dots become the portrait
@@ -341,10 +344,11 @@ export function startHorizon() {
     const d = g2.getImageData(0, 0, vw, vh).data, shape = [];
     for (let y = y0; y < y1; y += 2) for (let x = 0; x < vw; x += 2) if (d[(y * vw + x) * 4 + 3] > 128) shape.push([x, y]);
     for (let i = shape.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [shape[i], shape[j]] = [shape[j], shape[i]]; }
-    P = pts.map((p, i) => { const q = shape[i % shape.length] || [vw / 2, vh / 2]; return { ...p, rt: 1.3, cr: 1.1 + Math.random() * .5, x: q[0] + Math.random() * 2, y: q[1] + Math.random() * 2, vx: 0, vy: 0, tx: q[0], ty: q[1] }; });
+    P = pts.map((p, i) => { const q = shape[i % shape.length] || [vw / 2, vh / 2]; return { ...p, rt: 1.3, cr: 1.1 + Math.random() * .5, x: q[0], y: q[1], vx: 0, vy: 0, tx: q[0], ty: q[1] }; });
     phase = 'dots';
+    // Dots inherit the exact letter positions and stay still; only then do they gather into the portrait.
     gsap.to(CH, { opacity: 0, duration: .3 });
-    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); aim(); P.forEach((p) => { p.rt = p.r; }); }, 800));
+    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); aim(); P.forEach((p) => { p.rt = p.r; }); }, 500));
   };
 
   // 5. we go in
