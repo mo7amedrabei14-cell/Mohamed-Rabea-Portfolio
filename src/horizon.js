@@ -96,7 +96,7 @@ function startField(hero, seed, coarse, still) {
 
   const frame = (t) => {
     g.clearRect(0, 0, w, h);
-    const manual = !coarse && t - lastMove < 2600;
+    const manual = t - lastMove < 2600;
     if (!manual && !still) { lx = w * (.5 + .34 * Math.sin(t * .00021)); ly = h * (.46 + .26 * Math.sin(t * .00033 + 1.3)); }
     const RL = Math.min(w, h) * (coarse ? .22 : .16);
     for (const p of P) {
