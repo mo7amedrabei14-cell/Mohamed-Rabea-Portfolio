@@ -337,9 +337,25 @@ export function startHorizon() {
     const rects = CH.map((s) => s.getBoundingClientRect());
     const c2 = document.createElement('canvas'); c2.width = vw; c2.height = vh;
     const g2 = c2.getContext('2d', { willReadFrequently: true });
-    g2.fillStyle = '#fff'; g2.textAlign = 'center'; g2.textBaseline = 'middle';
-    g2.font = `800 ${getComputedStyle(CH[0]).fontSize} Anybody, system-ui, sans-serif`;
-    CH.forEach((s, i) => g2.fillText(s.textContent, rects[i].left + rects[i].width / 2, rects[i].top + rects[i].height * .54));
+    g2.fillStyle = '#fff';
+    g2.textAlign = 'center';
+    g2.textBaseline = 'alphabetic';
+    // Match each rendered DOM glyph's font metrics and baseline, rather than guessing a y offset.
+    // This keeps the text-particle silhouette anchored to the exact on-screen name position.
+    const nameStyle = getComputedStyle(CH[0]);
+    g2.font = `${nameStyle.fontStyle} ${nameStyle.fontVariant} ${nameStyle.fontWeight} ${nameStyle.fontSize} ${nameStyle.fontFamily}`;
+    CH.forEach((s, i) => {
+      const rect = rects[i];
+      const style = getComputedStyle(s);
+      const metrics = g2.measureText(s.textContent);
+      const fontSize = parseFloat(style.fontSize) || rect.height;
+      const ascent = metrics.fontBoundingBoxAscent || fontSize * .8;
+      const descent = metrics.fontBoundingBoxDescent || fontSize * .2;
+      const lineHeight = parseFloat(style.lineHeight) || fontSize;
+      const leading = (lineHeight - ascent - descent) / 2;
+      const baselineY = rect.top + leading + ascent;
+      g2.fillText(s.textContent, rect.left + rect.width / 2, baselineY);
+    });
     const y0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.top)) - 10)), y1 = Math.min(vh, Math.ceil(Math.max(...rects.map((r) => r.bottom)) + 10));
     const d = g2.getImageData(0, 0, vw, vh).data, shape = [];
     for (let y = y0; y < y1; y += 2) for (let x = 0; x < vw; x += 2) if (d[(y * vw + x) * 4 + 3] > 128) shape.push([x, y]);
