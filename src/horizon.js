@@ -6,9 +6,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TONE = import.meta.env.BASE_URL + 'images/face-tone.png';
 const DOT = [
-  'rgba(238,240,255,.46)',
-  'rgba(238,240,255,.76)',
-  'rgba(238,240,255,.96)',
+  'rgba(238,240,255,.64)',
+  'rgba(238,240,255,.84)',
+  'rgba(255,255,255,.99)',
   '#ffc62e',
 ];
 const NAME = 'MOHAMED RABEA';
@@ -56,12 +56,15 @@ async function stipple(coarse) {
       if (pixels[offset + 3] < 90) continue;
 
       const lum = (pixels[offset] * 0.2126 + pixels[offset + 1] * 0.7152 + pixels[offset + 2] * 0.0722) / 255;
-      const keep = 0.70 + 0.30 * Math.pow(lum, 0.55);
+      // Lift shadow detail in the monochrome mask so eyes, brows, beard and
+      // jacket folds survive the conversion instead of collapsing to one tone.
+      const tone = Math.pow(lum, 0.58);
+      const keep = 0.75 + 0.25 * tone;
       if (random() > keep) continue;
 
-      const shade = random() < 0.022 ? 3 : lum > 0.7 ? 2 : lum > 0.39 ? 1 : 0;
+      const shade = random() < 0.022 ? 3 : tone > 0.73 ? 2 : tone > 0.45 ? 1 : 0;
       const point = {
-        q: [(x + stride * 0.5) / width - 0.5, (y + stride * 0.5) / height - 0.5],
+        q: [(x + random() * stride) / width - 0.5, (y + random() * stride) / height - 0.5],
         c: shade,
         s: coarse ? 1.45 : 1.2 + random() * 0.9,
       };
