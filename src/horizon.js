@@ -743,7 +743,7 @@ export function startHorizon() {
       ease: 'expo.out',
       stagger: { each: 0.04, from: 'center' },
     });
-    timers.push(window.setTimeout(toDots, 1700));
+    timers.push(window.setTimeout(toDots, 2200));
   }, expandAt));
 
   timers.push(window.setTimeout(finish, totalDuration + 450));
