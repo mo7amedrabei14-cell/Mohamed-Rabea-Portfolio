@@ -49,8 +49,13 @@ function startField(hero, seed, coarse, still) {
   const hintEl = hero.querySelector('.hz-hint'), hintTxt = hintEl?.querySelector('span');
   const hints = (hintEl?.dataset.hints || '').split('|');
   const lines = [...hero.querySelectorAll('.hz-ln')];
+  const touchTarget = document.createElement('div');
+  touchTarget.className = 'hz-touch-target';
+  touchTarget.setAttribute('aria-hidden', 'true');
   const slots = [[], [], []], anchors = [];
   let w = 0, h = 0, stage = 0, ptr = [0, 0, 0], lx = -999, ly = -999, lastMove = -1e9, raf = 0, vis = true, shown = '';
+  // Track touch drags separately from taps so the browser cannot turn a drag into a stage click.
+  let activePointer = null, pointerStartX = 0, pointerStartY = 0, didDrag = false, suppressClick = false;
   const P = Array.from({ length: N }, (_, i) => ({ i, x: seed?.[i]?.x ?? Math.random() * innerWidth, y: seed?.[i]?.y ?? Math.random() * innerHeight, vx: seed?.[i]?.vx || 0, vy: seed?.[i]?.vy || 0, hx: 0, hy: 0, ph: Math.random() * 6.28, s: 1.1 + Math.random() * 1.1, lock: 0, si: 0 }));
 
   const setUI = () => {
@@ -69,6 +74,7 @@ function startField(hero, seed, coarse, still) {
   const layout = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect(), mob = r.width < 760;
     w = r.width; h = r.height;
+    if (coarse) { touchTarget.style.width = `${Math.min(w, h) * .44}px`; touchTarget.style.height = `${Math.min(w, h) * .44}px`; }
     cv.width = w * dpr; cv.height = h * dpr;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const R = rng(7);
@@ -99,6 +105,7 @@ function startField(hero, seed, coarse, still) {
     const manual = t - lastMove < 2600;
     if (!manual && !still) { lx = w * (.5 + .34 * Math.sin(t * .00021)); ly = h * (.46 + .26 * Math.sin(t * .00033 + 1.3)); }
     const RL = Math.min(w, h) * (coarse ? .22 : .16);
+    if (coarse) touchTarget.style.transform = `translate3d(${lx - RL}px, ${ly - RL}px, 0)`;
     for (const p of P) {
       if (p.lock) {
         const s = slots[p.lock - 1][p.si % M];
@@ -132,16 +139,78 @@ function startField(hero, seed, coarse, still) {
   layout();
   if (still) { P.forEach((p) => { p.lock = Math.floor(p.i / M) + 1; if (p.lock > 3) p.lock = 3; p.si = p.i % M; }); for (let k = 0; k < 90; k++) frame(k * 16); lines.forEach((l) => l.classList.add('on')); hintEl?.remove(); stEl?.remove(); return () => {}; }
   setUI();
-  const onMove = (e) => { const r = cv.getBoundingClientRect(); if (e.clientY < r.top || e.clientY > r.bottom) return; lx = e.clientX - r.left; ly = e.clientY - r.top; lastMove = performance.now(); };
-  const onClick = (e) => { if (e.target.closest('a,button') || !hero.contains(e.target)) return; advance(); };
+  if (coarse) {
+    // Only the moving circle captures a touch. Swipes elsewhere remain normal page scrolling.
+    touchTarget.style.transform = 'translate3d(-1000px, -1000px, 0)';
+    hero.appendChild(touchTarget);
+  }
+  const placePointer = (e, clampToField = false) => {
+    const r = cv.getBoundingClientRect();
+    if (!clampToField && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) return;
+    lx = Math.max(0, Math.min(w, e.clientX - r.left));
+    ly = Math.max(0, Math.min(h, e.clientY - r.top));
+    lastMove = performance.now();
+  };
+  const onMove = (e) => {
+    if (e.pointerType === 'touch') {
+      if (activePointer !== e.pointerId) return;
+      if (Math.hypot(e.clientX - pointerStartX, e.clientY - pointerStartY) > 6) didDrag = true;
+      placePointer(e, true);
+      return;
+    }
+    // Keep the original desktop hover behavior independent from touch interaction.
+    if (activePointer !== null) return;
+    placePointer(e);
+  };
+  const onPointerDown = (e) => {
+    if (e.pointerType !== 'touch' || e.target.closest('a,button,input,textarea,select')) return;
+    activePointer = e.pointerId;
+    pointerStartX = e.clientX;
+    pointerStartY = e.clientY;
+    didDrag = false;
+    suppressClick = false;
+    placePointer(e, true);
+    try { touchTarget.setPointerCapture(e.pointerId); } catch { /* Older browsers may not expose pointer capture. */ }
+  };
+  const onPointerEnd = (e) => {
+    if (activePointer !== e.pointerId) return;
+    suppressClick = didDrag;
+    activePointer = null;
+    didDrag = false;
+  };
+  const onClick = (e) => {
+    if (e.target.closest('a,button') || !hero.contains(e.target)) return;
+    if (suppressClick) {
+      suppressClick = false;
+      e.preventDefault();
+      return;
+    }
+    advance();
+  };
   let rt; const onResize = () => { clearTimeout(rt); rt = setTimeout(layout, 150); };
   const io = new IntersectionObserver(([en]) => { vis = en.isIntersecting; });
   io.observe(hero);
   addEventListener('pointermove', onMove, { passive: true });
+  if (coarse) {
+    touchTarget.addEventListener('pointerdown', onPointerDown);
+    touchTarget.addEventListener('pointerup', onPointerEnd);
+    touchTarget.addEventListener('pointercancel', onPointerEnd);
+  }
   addEventListener('resize', onResize);
   hero.addEventListener('click', onClick);
   raf = requestAnimationFrame(loop);
-  return () => { cancelAnimationFrame(raf); io.disconnect(); clearTimeout(rt); removeEventListener('pointermove', onMove); removeEventListener('resize', onResize); hero.removeEventListener('click', onClick); };
+  return () => {
+    cancelAnimationFrame(raf); io.disconnect(); clearTimeout(rt);
+    removeEventListener('pointermove', onMove);
+    if (coarse) {
+      touchTarget.removeEventListener('pointerdown', onPointerDown);
+      touchTarget.removeEventListener('pointerup', onPointerEnd);
+      touchTarget.removeEventListener('pointercancel', onPointerEnd);
+      touchTarget.remove();
+    }
+    removeEventListener('resize', onResize);
+    hero.removeEventListener('click', onClick);
+  };
 }
 
 export function startHorizon() {
