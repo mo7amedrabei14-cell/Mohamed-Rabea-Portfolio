@@ -6,9 +6,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TONE = import.meta.env.BASE_URL + 'images/face-tone.png';
 const DOT = [
+  'rgba(238,240,255,.18)',
   'rgba(238,240,255,.64)',
-  'rgba(238,240,255,.84)',
-  'rgba(255,255,255,.99)',
+  'rgba(255,255,255,1)',
   '#ffc62e',
 ];
 const NAME = 'MOHAMED RABEA';
