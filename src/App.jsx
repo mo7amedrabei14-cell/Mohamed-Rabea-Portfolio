@@ -481,6 +481,10 @@ function HzProject({ n, kicker, title, summary, label, img, alt, onImageOpen, ta
   </article>;
 }
 
+function Next({ href, en, ar, rtl }) {
+  return <a className="hz-next" href={href} aria-label={rtl ? ar : en} data-reveal><span>{rtl ? ar : en}</span><i aria-hidden="true">↓</i></a>;
+}
+
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -675,22 +679,19 @@ function App() {
 
     <main id="main">
       <section className="hero" id="top">
+        <canvas className="hz-field" aria-hidden="true" />
         <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <h1 className="hz-hero-name">
-          <span className="sr-only">{c.name}</span>
-          {rtl ? <span className="hz-word" aria-hidden="true"><i className="hz-aw">{c.name.replace(/\.$/, '')}</i></span>
-            : ['MOHAMED', 'RABEA'].map((w) => <span className="hz-word" key={w} aria-hidden="true">{[...w].map((ch, k) => <i className="hz-ch" key={k}>{ch}</i>)}</span>)}
-        </h1>
-        <div className="hz-row">
-          <p className="hz-lead">{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</p>
+        <div className="hz-hint"><i className="hz-pulse" aria-hidden="true" />{rtl ? 'حرّك المؤشر لترى كيف ينتظم المشهد' : 'Move your cursor to reveal the hidden order'}</div>
+        <div className="hz-hero-bottom">
+          <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</h1>
           <div className="hz-side">
             <p className="hero-intro">{c.heroIntro}</p>
             <div className="hero-actions">
-            <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
-            <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
+              <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
+              <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
+            </div>
           </div>
-          </div>
-          {!rtl && <svg className="hz-badge" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="hzc" d="M60 60m-47 0a47 47 0 1 1 94 0a47 47 0 1 1-94 0" /></defs><text><textPath href="#hzc">{(c.brandTag + ' · ').repeat(2)}</textPath></text><circle cx="60" cy="60" r="5" /></svg>}
+          <div className="hz-state" data-labels={(rtl ? ['صفوف وأعمدة', 'اتجاهات', 'الصورة التشغيلية'] : ['Rows & columns', 'Patterns', 'The operational picture']).join('|')}><b>01 / 03</b><span>{rtl ? 'صفوف وأعمدة' : 'Rows & columns'}</span></div>
         </div>
       </section>
 
@@ -708,6 +709,7 @@ function App() {
             <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
             <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
           </div>
+          <Next href="#work" rtl={rtl} en="What changes when the data becomes a decision?" ar="ماذا يتغيّر حين تتحول البيانات إلى قرار؟" />
         </div>
       </section>
 
@@ -741,6 +743,7 @@ function App() {
             </HzProject>
           </div>
           <p className="hz-note">{c.artLabel}</p>
+          <Next href="#capabilities" rtl={rtl} en="You have seen the work. What makes it possible?" ar="رأيت نماذج العمل؛ فما الذي يجعلها ممكنة؟" />
         </div>
       </section>
 
@@ -777,6 +780,7 @@ function App() {
             <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
             <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
           </div>
+          <Next href="#experience" rtl={rtl} en="Which experiences shaped this way of thinking?" ar="ما التجارب التي صنعت طريقة التفكير هذه؟" />
         </div>
       </section>
 
@@ -787,6 +791,7 @@ function App() {
             <span className="hz-tl-line" aria-hidden="true" />
             {[['01', c.exp1Title, c.exp1Org, c.exp1Date, c.exp1Desc], ['02', c.exp2Title, c.exp2Org, c.exp2Date, c.exp2Desc], ['03', c.exp3Title, c.exp3Org, c.exp3Date, c.exp3Desc], ['04', c.exp4Title, c.exp4Org, c.exp4Date, c.exp4Desc]].map((it) => <article className="hz-job" key={it[0]}><span className="hz-dot" aria-hidden="true" /><time>{it[3]}</time><div className="hz-job-t"><h3>{it[1]}</h3><p>{it[2]}</p></div><p className="hz-job-b">{it[4]}</p></article>)}
           </div>
+          <Next href="#education" rtl={rtl} en="What is behind the decisions?" ar="ما الذي يقف خلف هذه القرارات؟" />
         </div>
       </section>
 
@@ -805,6 +810,7 @@ function App() {
             <p>{c.languageDetails}</p>
           </div>
         </div>
+        <div className="hz-wrap hz-edu-next"><Next href="#contact" rtl={rtl} en="What could we build from here?" ar="ماذا يمكن أن نبني انطلاقًا من هنا؟" /></div>
       </section>
 
       <section className="hz-sec hz-contact" id="contact">
