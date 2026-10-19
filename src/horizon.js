@@ -163,13 +163,18 @@ export function startHorizon() {
     CH.forEach((s, i) => {
       const rect = rects[i];
       const style = getComputedStyle(s);
+      const range = document.createRange();
+      range.selectNodeContents(s);
+      const textRect = range.getBoundingClientRect();
+      range.detach?.();
       const metrics = g2.measureText(s.textContent);
       const fontSize = parseFloat(style.fontSize) || rect.height;
-      const ascent = metrics.fontBoundingBoxAscent || fontSize * .8;
-      const descent = metrics.fontBoundingBoxDescent || fontSize * .2;
-      const lineHeight = parseFloat(style.lineHeight) || fontSize;
-      const leading = (lineHeight - ascent - descent) / 2;
-      const baselineY = rect.top + leading + ascent;
+      // Use the actual ink metrics and the rendered text-fragment bounds, not the
+      // wrapper's line box. This prevents the sampled glyph mask drifting vertically.
+      const ascent = metrics.actualBoundingBoxAscent || metrics.fontBoundingBoxAscent || fontSize * .8;
+      const descent = metrics.actualBoundingBoxDescent || metrics.fontBoundingBoxDescent || fontSize * .2;
+      const textCenterY = textRect.height ? textRect.top + textRect.height / 2 : rect.top + rect.height / 2;
+      const baselineY = textCenterY + (ascent - descent) / 2;
       g2.fillText(s.textContent, rect.left + rect.width / 2, baselineY);
     });
     const y0 = Math.max(0, Math.floor(Math.min(...rects.map((r) => r.top)) - 10)), y1 = Math.min(vh, Math.ceil(Math.max(...rects.map((r) => r.bottom)) + 10));
