@@ -246,8 +246,11 @@ html.is-scrolled .site .site-header {
 .site .hz-work .hz-head { margin-bottom: clamp(42px, 6vw, 86px); }
 .site .hz-work .hz-head h2 { max-width: 880px; }
 .site .hz-stack { gap: clamp(32px, 5vw, 76px); }
-.site .hz-card {
-  top: calc(84px + var(--i) * 20px);
+.site .hz-card { top: 84px; }
+.site .hz-card:nth-child(2) { top: 104px; }
+.site .hz-card:nth-child(3) { top: 124px; }
+.site .hz-card--spacing-reference {
+  top: 84px;
   gap: clamp(24px, 3.5vw, 56px);
   padding: clamp(20px, 3vw, 44px);
   border: 1px solid rgba(210,164,135,.19);
