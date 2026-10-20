@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { startHorizon } from './horizon.js';
 
 const links = {
@@ -672,8 +673,8 @@ function App() {
           <Mark onOpen={openImage} />
           <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span>
         </a>
-        <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
-        <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
+        <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} aria-controls="primary-navigation" onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
+        <nav id="primary-navigation" className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
           {c.nav.map((item) => <a key={item.id} href={'#' + item.id} onClick={closeMenu}>{item.label}</a>)}
           <button className="language-toggle" onClick={toggleLanguage} aria-label={c.localeAria}>{c.languageName}<span>↗</span></button>
           <a className="nav-contact" href="#contact" onClick={closeMenu} onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
@@ -743,7 +744,7 @@ function App() {
         </div>
       </section>
 
-      {showPresentationEmbed && <section className="embedded-presentation-section" id="live-presentation" role="dialog" aria-modal="true" aria-labelledby="embedded-presentation-title">
+      {showPresentationEmbed && createPortal(<section className="embedded-presentation-section" id="live-presentation" role="dialog" aria-modal="true" aria-labelledby="embedded-presentation-title">
         <div className="section-wrap">
           <div className="embedded-presentation-heading">
             <div>
@@ -765,7 +766,7 @@ function App() {
           </div>
           <a className="text-link embedded-presentation-external" href={links.presentationLive} target="_blank" rel="noreferrer">{c.openPresentationInNewTab}<Arrow diagonal /></a>
         </div>
-      </section>}
+      </section>, document.body)}
 
       <section className="hz-sec hz-cap" id="capabilities">
         <div className="hz-wrap">
@@ -850,11 +851,11 @@ function App() {
     <footer className="site-footer">
       <div className="section-wrap footer-inner"><a className="brand brand--footer" href="#top"><Mark /><span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span></a><p>{c.footerNote}</p><a href="#top" className="footer-top">{c.backTop}<Arrow diagonal /></a><span className="footer-year">© {new Date().getFullYear()}</span></div>
     </footer>
-    {lightboxImage && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={rtl ? 'عرض الصورة بالحجم الكامل' : 'Full-screen image viewer'} onClick={closeImage}>
+    {lightboxImage && createPortal(<div className="image-lightbox" role="dialog" aria-modal="true" aria-label={rtl ? 'عرض الصورة بالحجم الكامل' : 'Full-screen image viewer'} onClick={closeImage}>
       <button className="image-lightbox-close" type="button" onClick={closeImage} aria-label={rtl ? 'إغلاق الصورة' : 'Close image'}>×</button>
       <img className="image-lightbox-full" src={lightboxImage.src} alt={lightboxImage.alt} onClick={(event) => event.stopPropagation()} />
       <span className="image-lightbox-hint">{rtl ? 'اضغط خارج الصورة أو Esc للإغلاق' : 'Click outside the image or press Esc to close'}</span>
-    </div>}
+    </div>, document.body)}
   </div>;
 }
 

@@ -303,17 +303,21 @@ export function startHorizon() {
   const clockId = setInterval(tickClock, 1000);
   off.push(() => clearInterval(clockId));
 
+  let projectStackMotion;
   const ctx = gsap.context(() => {
     if (reduced) return;
     gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
     const cards = gsap.utils.toArray('.hz-file');
-    cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
+    projectStackMotion = gsap.matchMedia();
+    projectStackMotion.add('(min-width: 981px) and (hover: hover) and (pointer: fine)', () => {
+      cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
+    });
     gsap.fromTo('.hz-tl-line', { scaleY: 0 }, { scaleY: 1, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: '.hz-ledger', start: 'top 70%', end: 'bottom 60%', scrub: true } });
     gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
     ScrollTrigger.create({ onUpdate: (s) => skew(gsap.utils.clamp(-9, 9, s.getVelocity() / -260)) });
   });
-  off.push(() => ctx.revert());
+  off.push(() => { projectStackMotion?.revert(); ctx.revert(); });
 
   // Tall case files must stay readable: stick them where their bottom edge is visible.
   const fixStick = () => document.querySelectorAll('.hz-file').forEach((el, i) => { el.style.top = `${Math.min(92 + i * 26, innerHeight - el.offsetHeight - 24)}px`; });
