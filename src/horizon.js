@@ -205,7 +205,7 @@ function startField(hero, seed, coarse, still) {
     }
     if (!still && time > manualUntil) {
       lx = w * (.5 + .32 * Math.sin(time * .00022));
-      ly = h * (.405 + .23 * Math.sin(time * .00031 + 1.1));
+      ly = h * (.30 + .08 * Math.sin(time * .00031 + 1.1));
     }
     for (const p of particles) {
       if (!still && !p.locked && clickStep !== 1 && Math.hypot(p.x - lx, p.y - ly) < radius) {
