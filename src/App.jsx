@@ -463,20 +463,25 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
   </div>;
 }
 
-function HzProject({ n, kicker, title, summary, label, img, alt, onImageOpen, tags, actions, children }) {
+function HzFile({ n, kicker, title, summary, label, img, alt, onImageOpen, tags, actions, facts, chips }) {
   const open = (e) => onImageOpen({ src: e.currentTarget.src, alt: e.currentTarget.alt });
-  return <article className="hz-card" style={{ '--i': Number(n) - 1 }}>
-    <div className="hz-card-media">
-      <div className="hz-card-bar"><i /><i /><i /><span>{label}</span></div>
-      <img src={`${import.meta.env.BASE_URL}images/${img}`} alt={alt} role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} />
-    </div>
-    <div className="hz-card-body">
-      <div className="hz-card-top"><span className="hz-card-n">{n}</span><span className="hz-kicker">{kicker}</span></div>
-      <h3>{title}</h3>
-      <p className="hz-proj-sum">{summary}</p>
-      {children}
-      <div className="hz-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
-      <div className="hz-proj-actions">{actions}</div>
+  return <article className="hz-file hz-spot" style={{ '--i': Number(n) - 1 }}>
+    <header className="hz-file-head"><span className="hz-file-id">FILE {n}</span><span className="hz-kicker">{kicker}</span></header>
+    <div className="hz-file-body">
+      <div className="hz-file-left">
+        <figure className="hz-file-media hz-tilt">
+          <div className="hz-win-bar"><i /><i /><i /><span>{label}</span></div>
+          <div className="hz-reveal"><img src={`${import.meta.env.BASE_URL}images/${img}`} alt={alt} role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} /></div>
+        </figure>
+        {chips && <ul className="hz-chips">{chips.map((m) => <li key={m}>{m}</li>)}</ul>}
+        <div className="hz-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
+      </div>
+      <div className="hz-file-info">
+        <h3>{title}</h3>
+        <p className="hz-proj-sum">{summary}</p>
+        <dl className="hz-facts">{facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+        <div className="hz-proj-actions">{actions}</div>
+      </div>
     </div>
   </article>;
 }
@@ -661,6 +666,8 @@ function App() {
   const closeMenu = () => setMenuOpen(false);
 
   return <div className={rtl ? 'site site--ar' : 'site site--en'}>
+    <div className="hz-bg" aria-hidden="true"><i /><i /><i /></div>
+    <div className="hz-grain" aria-hidden="true" />
     <a className="skip-link" href="#main">{rtl ? 'تجاوز إلى المحتوى' : 'Skip to content'}</a>
     <header className="site-header">
       <div className="header-inner">
@@ -679,11 +686,11 @@ function App() {
 
     <main id="main">
       <section className="hero" id="top">
-        <canvas className="hz-field" aria-hidden="true" />
-        <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <div className="hz-hint" data-hints={(rtl ? ['مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط', 'الطبقة التالية — اجمع النقاط ثم اضغط', 'الطبقة الأخيرة — اضغط لتتناثر النقاط من جديد'] : ['Sweep the circle across the dots — each one locks in place. Then click', 'Next layer — collect again, then click', 'Final layer — click to scatter everything']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط' : 'Sweep the circle across the dots — each one locks in place. Then click'}</span></div>
+        <canvas className="hz-field" aria-hidden="true" data-sentences={rtl ? 'أهلاً بك في عملي.|فوضى تدخل. نظام يخرج.' : 'Welcome to my work.|Noise in. Order out.'} />
+        <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span className="hz-live"><i aria-hidden="true" /><span>{rtl ? 'مباشر' : 'Live'}</span></span><span>{c.brandTag}</span></div>
+        <div className="hz-hint" data-hints={(rtl ? ['مرّر الدائرة لتجمع النقاط · اضغط لإنهائها', 'اكتملت الجملة — اضغط للجملة التالية', 'اضغط لتتناثر النقاط وتبدأ من جديد'] : ['Sweep to collect the dots · click to finish', 'Sentence formed — click for the next one', 'Click to scatter and start again']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'مرّر الدائرة لتجمع النقاط · اضغط لإنهائها' : 'Sweep to collect the dots · click to finish'}</span></div>
         <div className="hz-hero-bottom">
-          <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span className="hz-ln" key={t}>{t}</span>)}</h1>
+          <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</h1>
           <div className="hz-side">
             <p className="hero-intro">{c.heroIntro}</p>
             <div className="hero-actions">
@@ -691,7 +698,7 @@ function App() {
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
           </div>
-          <div className="hz-state" data-labels={(rtl ? ['صفوف وأعمدة', 'اتجاهات', 'صورة العمليات'] : ['Rows & columns', 'Trends', 'The operations picture']).join('|')}><b>01 / 03</b><span>{rtl ? 'صفوف وأعمدة' : 'Rows & columns'}</span></div>
+          <div className="hz-state" data-labels={(rtl ? ['تجميع', 'اكتملت'] : ['Collecting', 'Formed']).join('|')}><b>01 / 02</b><span>{rtl ? 'تجميع — 0%' : 'Collecting — 0%'}</span></div>
         </div>
       </section>
 
@@ -701,10 +708,14 @@ function App() {
         </div></div>
       </div>
 
+      <section className="hz-reel" aria-label={rtl ? 'ريل الإشارة' : 'Signal reel'}>
+        <div className="hz-wrap"><div className="hz-reel-frame hz-spot"><video src={`${import.meta.env.BASE_URL}media/signal-reel.mp4`} muted loop playsInline preload="none" aria-label={rtl ? 'فيديو موشن قصير' : 'Short motion piece'} /><span className="hz-reel-tag">{rtl ? 'ريل · ٠١' : 'REEL · 01'}</span></div></div>
+      </section>
+
       <section className="hz-sec hz-man" id="signal">
         <div className="hz-wrap">
           <div className="hz-label" data-reveal><i>01</i>{c.smallLabel}</div>
-          <p className="hz-manifesto" aria-label={c.bridge.join(', ')}>{c.bridge.map((ph) => <span className="ph" key={ph} aria-hidden="true">{ph.split(' ').map((w, i) => <span className="w" key={i}>{w}</span>)}</span>)}</p>
+          <p className="hz-manifesto"><span className="sr-only">{c.bridge.join(', ')}</span>{c.bridge.map((ph) => <span className="ph" key={ph} aria-hidden="true">{ph.split(' ').map((w, i) => <span className="w" key={i}>{w}</span>)}</span>)}</p>
           <div className="hz-method" data-reveal>
             <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
             <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
@@ -717,30 +728,18 @@ function App() {
         <div className="hz-wrap">
           <div className="hz-head" data-reveal><div><div className="hz-label"><i>02</i>{c.workEyebrow}</div><h2>{c.workTitle}</h2></div><p>{c.workIntro}</p></div>
           <div className="hz-stack">
-            <HzProject n="01" kicker={c.eocKicker} title={c.eocTitle} summary={c.eocSummary} label={c.platformLabel} img="05-operations-overview.png" alt="Real screenshot of the EOC Smart Command Center operations overview" onImageOpen={openImage}
+            <HzFile n="01" kicker={c.eocKicker} title={c.eocTitle} summary={c.eocSummary} label={c.platformLabel} img="05-operations-overview.png" alt="Real screenshot of the EOC Smart Command Center operations overview" onImageOpen={openImage}
+              facts={[[rtl ? 'المشكلة' : 'The problem', c.eocProblem], [rtl ? 'النظام' : 'The system', c.eocSolution], [rtl ? 'دوري' : 'My role', c.eocContribution]]}
+              chips={c.eocModules}
               tags={['React 19', 'Vite', 'Python', 'FastAPI', 'PostgreSQL', 'JWT', 'OpenAPI', 'Leaflet']}
-              actions={<a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>}>
-              <ul className="hz-chips">{c.eocModules.map((m) => <li key={m}>{m}</li>)}</ul>
-              <details className="hz-fold"><summary>{c.details}</summary><p>{c.eocSolution}</p><p>{c.eocContribution}</p></details>
-            </HzProject>
-            <HzProject n="02" kicker={c.analyticsKicker} title={c.analyticsTitle} summary={c.analyticsSummary} label={c.dataLabel} img="dashboard_blurred_final.png" alt="Screenshot of the Power BI operational analytics dashboard" onImageOpen={openImage}
-              tags={['Power BI', 'Power Query', 'Excel', 'QGIS']}>
-              <ol className="hz-list">
-                <li><i>01</i><div><b>{c.analyticsMain}</b><span>{c.analyticsMainDesc}</span></div></li>
-                <li><i>02</i><div><b>{c.village}</b><span>{c.villageDesc}</span></div></li>
-                <li><i>03</i><div><b>{c.departments}</b><span>{c.departmentsDesc}</span></div></li>
-              </ol>
-              <details className="hz-fold"><summary>{c.analyticsApproach}</summary><p>{c.analyticsWorkflow}</p></details>
-            </HzProject>
-            <HzProject n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
+              actions={<a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>} />
+            <HzFile n="02" kicker={c.analyticsKicker} title={c.analyticsTitle} summary={c.analyticsSummary} label={c.dataLabel} img="dashboard_blurred_final.png" alt="Screenshot of the Power BI operational analytics dashboard" onImageOpen={openImage}
+              facts={[[c.analyticsMain, c.analyticsMainDesc], [c.village, c.villageDesc], [c.departments, c.departmentsDesc], [c.analyticsApproach, c.analyticsWorkflow]]}
+              tags={['Power BI', 'Power Query', 'Excel', 'QGIS']} actions={null} />
+            <HzFile n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
+              facts={[[c.presentationChallenge, c.presentationChallengeDesc], [c.presentationDesign, c.presentationDesignDesc], [c.presentationContribution, c.presentationContributionDesc]]}
               tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
-              actions={<><button className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>}>
-              <ol className="hz-list">
-                <li><i>01</i><div><b>{c.presentationChallenge}</b><span>{c.presentationChallengeDesc}</span></div></li>
-                <li><i>02</i><div><b>{c.presentationDesign}</b><span>{c.presentationDesignDesc}</span></div></li>
-                <li><i>03</i><div><b>{c.presentationContribution}</b><span>{c.presentationContributionDesc}</span></div></li>
-              </ol>
-            </HzProject>
+              actions={<><button className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>} />
           </div>
           <p className="hz-note">{c.artLabel}</p>
           <Next href="#capabilities">{rtl ? "وماذا يوجد تحت الغطاء؟" : "What is under the hood?"}</Next>
@@ -775,10 +774,10 @@ function App() {
         <div className="hz-wrap">
           <div className="hz-head" data-reveal><div><div className="hz-label"><i>03</i>{c.capabilitiesKicker}</div><h2>{c.capabilitiesTitle}</h2></div><p>{c.capabilitiesIntro}</p></div>
           <div className="hz-bento">
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--data"><i /><i /><i /><i /><i /><i /><i /></div><span className="n">01</span><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--code"><i /><i /><i /><i /><b /></div><span className="n">02</span><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--data"><i /><i /><i /><i /><i /><i /><i /></div><span className="n">01</span><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--code"><i /><i /><i /><i /><b /></div><span className="n">02</span><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
+            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
           </div>
           <Next href="#experience">{rtl ? "وأين اختُبر كل هذا؟" : "Where was it tested?"}</Next>
         </div>
@@ -819,6 +818,22 @@ function App() {
           <div className="hz-label"><i>06</i>{c.contactKicker}</div>
           <h2>{c.contactTitle}</h2>
           <p>{c.contactDesc}</p>
+          <form className="hz-terminal" dir={rtl ? 'rtl' : 'ltr'} onSubmit={(event) => {
+            event.preventDefault();
+            const fields = new FormData(event.currentTarget);
+            const name = String(fields.get('name') || '');
+            const email = String(fields.get('email') || '');
+            const message = String(fields.get('message') || '');
+            const subject = encodeURIComponent(`Portfolio inquiry from ${name}`);
+            const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+            window.location.href = `mailto:mo7amed.rabei14@gmail.com?subject=${subject}&body=${body}`;
+          }}>
+            <div className="hz-terminal-head"><span><i aria-hidden="true" />{rtl ? 'طرفية التواصل' : 'CONTACT NODE'}</span><span>{rtl ? 'آمن' : 'READY'}</span></div>
+            <label><span>{rtl ? 'الاسم' : 'Name'}</span><input autoComplete="name" name="name" required placeholder={rtl ? 'اسمك' : 'Your name'} /></label>
+            <label><span>{rtl ? 'البريد الإلكتروني' : 'Email address'}</span><input autoComplete="email" name="email" type="email" required placeholder={rtl ? 'you@example.com' : 'you@example.com'} /></label>
+            <label><span>{rtl ? 'الرسالة' : 'Message'}</span><textarea name="message" required rows="4" placeholder={rtl ? 'أخبرني بما تريد بناءه...' : 'Tell me what you have in mind...'} /></label>
+            <button className="button button--primary hz-terminal-submit" type="submit">{rtl ? 'إرسال الرسالة' : 'Send message'}<Arrow diagonal /></button>
+          </form>
           <div className="hz-contact-actions">
             <a className="button button--light" href={links.email}>{c.emailBtn}<Arrow diagonal /></a>
             <a className="button button--whatsapp" href={links.whatsapp} target="_blank" rel="noreferrer" aria-label={rtl ? "فتح محادثة واتساب" : "Open WhatsApp chat"}>

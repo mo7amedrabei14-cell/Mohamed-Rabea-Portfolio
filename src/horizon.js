@@ -7,7 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 const TONE = `${import.meta.env.BASE_URL}images/face-tone.png`;
 const ACCENT = '#ff5a3c', ICE = '#eef0ff', PERI = '#9aa6ff';
 const NAME = 'MOHAMED RABEA';
-const FIELD_N = (coarse) => (coarse ? 900 : 2600);
+const FIELD_N = (coarse) => (coarse ? 1200 : 3600);
 const rng = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
 // ---- Portrait: a hex halftone. Dot size follows the picture's brightness. ----
@@ -39,105 +39,161 @@ function halftone(tone, S, P) {
   return pts;
 }
 
-// ---- Hero: a field of dots. Sweep the circle over them — each one locks in. Click: next sentence / next layer. ----
+// ---- Hero: dots are scattered everywhere. Sweep the circle — every dot it touches locks into a sentence.
+//      Click: finish the sentence → next sentence → scatter and start again. ----
 function startField(hero, seed, coarse, still) {
   const cv = hero.querySelector('.hz-field');
   if (!cv) return () => {};
-  const g = cv.getContext('2d'), N = FIELD_N(coarse), M = Math.floor(N / 3);
+  const g = cv.getContext('2d'), N = FIELD_N(coarse), CELL = 16;
+  let sentences = ['Welcome.'], labels = [], hints = [];
   const stEl = hero.querySelector('.hz-state'), stIdx = stEl?.querySelector('b'), stTxt = stEl?.querySelector('span');
-  const labels = (stEl?.dataset.labels || '').split('|');
   const hintEl = hero.querySelector('.hz-hint'), hintTxt = hintEl?.querySelector('span');
-  const hints = (hintEl?.dataset.hints || '').split('|');
-  const lines = [...hero.querySelectorAll('.hz-ln')];
+  // Texts live in data-attributes so a language switch (React re-render) reaches the field.
+  const readCfg = () => {
+    sentences = (cv.dataset.sentences || 'Welcome.').split('|');
+    labels = (stEl?.dataset.labels || '').split('|');
+    hints = (hintEl?.dataset.hints || '').split('|');
+  };
+  readCfg();
   const touchTarget = document.createElement('div');
   touchTarget.className = 'hz-touch-target';
   touchTarget.setAttribute('aria-hidden', 'true');
-  const slots = [[], [], []], anchors = [];
-  let w = 0, h = 0, stage = 0, ptr = [0, 0, 0], lx = -999, ly = -999, lastMove = -1e9, raf = 0, vis = true, shown = '';
-  // Track touch drags separately from taps so the browser cannot turn a drag into a stage click.
+  let w = 0, h = 0, sIdx = 0, slots = [], grid = new Map(), used = 0, formed = false, lx = -999, ly = -999, lastMove = -1e9, raf = 0, vis = true, shown = '';
+  // Track touch drags separately from taps so the browser cannot turn a drag into a click.
   let activePointer = null, pointerStartX = 0, pointerStartY = 0, didDrag = false, suppressClick = false;
-  const P = Array.from({ length: N }, (_, i) => ({ i, x: seed?.[i]?.x ?? Math.random() * innerWidth, y: seed?.[i]?.y ?? Math.random() * innerHeight, vx: seed?.[i]?.vx || 0, vy: seed?.[i]?.vy || 0, hx: 0, hy: 0, ph: Math.random() * 6.28, s: 1.1 + Math.random() * 1.1, lock: 0, si: 0 }));
+  const P = Array.from({ length: N }, (_, i) => ({ i, x: seed?.[i]?.x ?? Math.random() * innerWidth, y: seed?.[i]?.y ?? Math.random() * innerHeight, vx: seed?.[i]?.vx || 0, vy: seed?.[i]?.vy || 0, hx: 0, hy: 0, ph: Math.random() * 6.28, s: 1.1 + Math.random() * 1.1, slot: -1, fl: 0, c: Math.random() < .05 ? 3 : 0 }));
 
   const setUI = () => {
-    const pct = Math.round(ptr[stage] / M * 100), txt = `${labels[stage] || ''} — ${pct}%`;
-    if (stIdx) stIdx.textContent = `0${stage + 1} / 03`;
+    const pct = Math.round(used / N * 100), last = sIdx >= sentences.length - 1;
+    const txt = formed ? (labels[1] || '') : `${labels[0] || ''} — ${pct}%`;
+    if (stIdx) stIdx.textContent = `0${sIdx + 1} / 0${sentences.length}`;
     if (stTxt && txt !== shown) { stTxt.textContent = txt; shown = txt; }
-    if (hintTxt) hintTxt.textContent = hints[stage] || '';
+    if (hintTxt) hintTxt.textContent = (formed ? (last ? hints[2] : hints[1]) : hints[0]) || '';
   };
+
+  // Turn a sentence into N target positions by sampling the pixels of rendered text.
+  const wrap = (x, text, maxW) => {
+    const lines = []; let cur = '';
+    for (const wd of text.split(' ')) { const t = cur ? `${cur} ${wd}` : wd; if (x.measureText(t).width > maxW && cur) { lines.push(cur); cur = wd; } else cur = t; }
+    lines.push(cur); return lines;
+  };
+  const buildSlots = (text) => {
+    const mob = w < 760, arabic = /[\u0600-\u06FF]/.test(text);
+    const c = document.createElement('canvas'); c.width = Math.ceil(w); c.height = Math.ceil(h);
+    const x = c.getContext('2d', { willReadFrequently: true });
+    const fam = arabic ? '"IBM Plex Sans Arabic", system-ui, sans-serif' : 'Anybody, system-ui, sans-serif';
+    const maxW = w * (mob ? .86 : .84), maxLines = mob ? 3 : 2;
+    let size = Math.min(h * (mob ? .12 : .17), w * (mob ? .18 : .1)) * (arabic ? 1.04 : 1), lines = [text];
+    for (let k = 0; k < 30; k++) { x.font = `800 ${size}px ${fam}`; lines = wrap(x, text, maxW); if (lines.length <= maxLines && lines.every((l) => x.measureText(l).width <= maxW)) break; size *= .94; }
+    const lh = size * (arabic ? 1.25 : 1.04), cy = h * (mob ? .4 : .46) - (lines.length - 1) * lh / 2;
+    x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    lines.forEach((l, i) => x.fillText(l, w / 2, cy + i * lh));
+    const y0 = Math.max(0, Math.floor(cy - lh)), y1 = Math.min(c.height, Math.ceil(cy + lh * lines.length)), W = c.width, H = y1 - y0;
+    const d = x.getImageData(0, y0, W, H).data;
+    let area = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 128) area++;
+    let step = Math.max(1.4, Math.sqrt(area / N)), pts = [];
+    for (let a = 0; a < 10; a++) {
+      pts = [];
+      for (let yy = 0; yy < H; yy += step) for (let xx = 0; xx < W; xx += step) {
+        const px = Math.min(W - 1, Math.round(xx + (Math.random() - .5) * step * .6)), py = Math.min(H - 1, Math.round(yy + (Math.random() - .5) * step * .6));
+        if (d[(py * W + px) * 4 + 3] > 128) pts.push([px, py + y0]);
+      }
+      if (pts.length >= N * .96) break;
+      step *= .92;
+    }
+    for (let i = pts.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pts[i], pts[j]] = [pts[j], pts[i]]; }
+    pts = pts.slice(0, N);
+    while (pts.length < N) { const q = pts[(Math.random() * pts.length) | 0] || [w / 2, h / 2]; pts.push([q[0] + (Math.random() - .5) * 2, q[1] + (Math.random() - .5) * 2]); }
+    slots = pts.map((q) => ({ x: q[0], y: q[1], used: false }));
+    grid = new Map();
+    slots.forEach((s, i) => { const k = ((s.x / CELL) | 0) * 4096 + ((s.y / CELL) | 0); (grid.get(k) || grid.set(k, []).get(k)).push(i); });
+  };
+  // Nearest unused slot, searching outward ring by ring on a coarse grid.
+  const nearest = (x, y) => {
+    const cx = (x / CELL) | 0, cy = (y / CELL) | 0, R = Math.ceil(Math.max(w, h) / CELL);
+    let best = -1, bd = 1e12;
+    const visit = (gx, gy) => {
+      if (gx < 0 || gy < 0) return;
+      const arr = grid.get(gx * 4096 + gy); if (!arr) return;
+      for (let k = arr.length - 1; k >= 0; k--) {
+        const s = slots[arr[k]];
+        if (s.used) { arr[k] = arr[arr.length - 1]; arr.pop(); continue; }
+        const d = (s.x - x) ** 2 + (s.y - y) ** 2;
+        if (d < bd) { bd = d; best = arr[k]; }
+      }
+    };
+    for (let r = 0; r <= R; r++) {
+      if (r === 0) visit(cx, cy);
+      else { for (let dx = -r; dx <= r; dx++) { visit(cx + dx, cy - r); visit(cx + dx, cy + r); } for (let dy = -r + 1; dy <= r - 1; dy++) { visit(cx - r, cy + dy); visit(cx + r, cy + dy); } }
+      if (best >= 0 && ((r + 1) * CELL) ** 2 > bd) break;
+    }
+    return best;
+  };
+  const lock = (p) => { const s = nearest(p.x, p.y); if (s < 0) return false; slots[s].used = true; p.slot = s; p.fl = 1; used++; return true; };
+  const complete = () => { for (const p of P) if (p.slot < 0) lock(p); formed = true; setUI(); };
   const scatter = () => {
-    for (const p of P) if (p.lock) { p.lock = 0; p.vx = (Math.random() - .5) * 30; p.vy = (Math.random() - .5) * 30; }
-    ptr = [0, 0, 0]; stage = 0;
-    lines.forEach((l, i) => l.classList.toggle('on', i === 0));
+    for (const p of P) { p.slot = -1; p.vx = (Math.random() - .5) * 34; p.vy = (Math.random() - .5) * 34; }
+    used = 0; sIdx = 0; formed = false; buildSlots(sentences[0]); setUI();
   };
-  const advance = () => { if (stage < 2) { stage++; lines[stage]?.classList.add('on'); } else scatter(); setUI(); };
+  const nextSentence = () => {
+    if (sIdx + 1 >= sentences.length) { scatter(); return; }
+    sIdx++; buildSlots(sentences[sIdx]); used = 0;
+    for (const p of P.slice().sort(() => Math.random() - .5)) { p.slot = -1; lock(p); }
+    formed = true; setUI();
+  };
+  const advance = () => { if (!formed) complete(); else nextSentence(); };
 
   const layout = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect(), mob = r.width < 760;
+    const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
     w = r.width; h = r.height;
-    if (coarse) { touchTarget.style.width = `${Math.min(w, h) * .44}px`; touchTarget.style.height = `${Math.min(w, h) * .44}px`; }
     cv.width = w * dpr; cv.height = h * dpr;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const R = rng(7);
-    // layer 1: a table
-    const gx0 = w * (mob ? .06 : .07), gx1 = w * (mob ? .94 : .4), gy0 = h * (mob ? .2 : .27), gy1 = h * (mob ? .34 : .52);
-    const cols = Math.ceil(Math.sqrt(M * (gx1 - gx0) / (gy1 - gy0))), rows = Math.ceil(M / cols);
-    // layer 2: a trend
-    const B = mob ? 10 : 16, bx0 = w * (mob ? .06 : .44), bx1 = w * (mob ? .94 : .76), base = h * (mob ? .5 : .55), bh = h * (mob ? .12 : .27), pitch = (bx1 - bx0) / B, bw = pitch * .64;
-    const hs = Array.from({ length: B }, (_, b) => .28 + .72 * Math.abs(Math.sin(b * 1.7 + .6) * Math.cos(b * .5)));
-    const sum = hs.reduce((a, b) => a + b, 0);
-    // layer 3: an operations picture
-    const cx = w * (mob ? .5 : .87), cy = h * (mob ? .64 : .38), RR = Math.min(w, h) * (mob ? .1 : .2);
-    anchors[0] = [gx0, gy0 - 14]; anchors[1] = [bx0, base + 24]; anchors[2] = [cx - RR, cy - RR * .78 - 16];
-    for (let i = 0; i < N; i++) {
-      const p = P[i], j = i % M;
-      p.hx = R() * w; p.hy = R() * h;
-      slots[0][j] = [gx0 + (j % cols + .5) * (gx1 - gx0) / cols, gy0 + (Math.floor(j / cols) + .5) * (gy1 - gy0) / rows];
-      let u = R() * sum, b = 0;
-      while (u > hs[b] && b < B - 1) { u -= hs[b]; b++; }
-      slots[1][j] = [bx0 + b * pitch + (pitch - bw) / 2 + R() * bw, base - R() * hs[b] * bh];
-      const k = Math.floor(R() ** .6 * 6) + 1, rr = RR * k / 6, an = R() * 6.2832;
-      slots[2][j] = [cx + Math.cos(an) * rr + (R() - .5) * 3, cy + Math.sin(an) * rr * .78 + (R() - .5) * 3];
-    }
+    if (coarse) { touchTarget.style.width = `${Math.min(w, h) * .44}px`; touchTarget.style.height = `${Math.min(w, h) * .44}px`; }
+    for (const p of P) { p.hx = Math.random() * w; p.hy = Math.random() * h; }
+    const keep = P.filter((p) => p.slot >= 0).sort(() => Math.random() - .5);
+    buildSlots(sentences[sIdx]); used = 0;
+    for (const p of P) p.slot = -1;
+    for (const p of keep) lock(p);
   };
 
   const frame = (t) => {
     g.clearRect(0, 0, w, h);
     const manual = t - lastMove < 2600;
-    if (!manual && !still) { lx = w * (.5 + .34 * Math.sin(t * .00021)); ly = h * (.46 + .26 * Math.sin(t * .00033 + 1.3)); }
-    const RL = Math.min(w, h) * (coarse ? .22 : .16);
+    if (!manual && !still && !formed) { lx = w * (.5 + .34 * Math.sin(t * .00021)); ly = h * (.46 + .26 * Math.sin(t * .00033 + 1.3)); }
+    const RL = Math.min(w, h) * (coarse ? .22 : .17), R2 = RL * RL, canCollect = !formed && !still && (manual || used < N * .1);
     if (coarse) touchTarget.style.transform = `translate3d(${lx - RL}px, ${ly - RL}px, 0)`;
     for (const p of P) {
-      if (p.lock) {
-        const s = slots[p.lock - 1][p.si % M];
-        p.vx += (s[0] - p.x) * .06 + Math.sin(t * .002 + p.ph) * .012;
-        p.vy += (s[1] - p.y) * .06 + Math.cos(t * .0018 + p.ph) * .012;
-        p.vx *= .84; p.vy *= .84;
+      if (p.slot >= 0) {
+        const s = slots[p.slot];
+        p.vx += (s.x - p.x) * .07 + Math.sin(t * .002 + p.ph) * .01;
+        p.vy += (s.y - p.y) * .07 + Math.cos(t * .0018 + p.ph) * .01;
+        p.vx *= .82; p.vy *= .82;
+        if (p.fl > .02) p.fl *= .9;
       } else {
         p.vx += Math.sin(p.y * .007 + t * .0005 + p.ph) * .035 + (p.hx - p.x) * .0007;
         p.vy += Math.cos(p.x * .007 - t * .0004 + p.ph) * .035 + (p.hy - p.y) * .0007;
-        const dx = lx - p.x, dy = ly - p.y;
-        if (!still && dx * dx + dy * dy < RL * RL && ptr[stage] < (manual ? M : M * .16)) { p.lock = stage + 1; p.si = ptr[stage]++; }
         p.vx *= .93; p.vy *= .93;
+        if (canCollect) { const dx = lx - p.x, dy = ly - p.y; if (dx * dx + dy * dy < R2) lock(p); }
       }
       p.x += p.vx; p.y += p.vy;
     }
     g.fillStyle = 'rgba(238,240,255,.3)';
-    for (const p of P) if (!p.lock) g.fillRect(p.x, p.y, p.s, p.s);
-    const cols = [ICE, PERI, ACCENT];
-    for (let s = 1; s <= 3; s++) { g.fillStyle = cols[s - 1]; for (const p of P) if (p.lock === s) g.fillRect(p.x, p.y, p.s + .5, p.s + .5); }
-    g.font = '500 11px "DM Mono", monospace'; g.textBaseline = 'alphabetic';
-    for (let s = 0; s < 3; s++) if (ptr[s] > 0 || still) { g.fillStyle = 'rgba(238,240,255,.72)'; g.fillText(`0${s + 1}  ${(labels[s] || '').toUpperCase()}`, anchors[s][0], anchors[s][1]); }
-    if (!still) {
-      g.lineWidth = 1; g.strokeStyle = 'rgba(238,240,255,.82)';
+    for (const p of P) if (p.slot < 0) g.fillRect(p.x, p.y, p.s, p.s);
+    g.fillStyle = ICE;
+    for (const p of P) if (p.slot >= 0 && p.c !== 3) { const z = p.s * .8 + 1 + p.fl * 1.8; g.fillRect(p.x - z / 2, p.y - z / 2, z, z); }
+    g.fillStyle = ACCENT;
+    for (const p of P) if (p.slot >= 0 && p.c === 3) { const z = p.s * .8 + 1.1 + p.fl * 1.8; g.fillRect(p.x - z / 2, p.y - z / 2, z, z); }
+    if (!still && !formed) {
+      g.lineWidth = 1; g.strokeStyle = 'rgba(238,240,255,.5)';
       g.beginPath(); g.arc(lx, ly, RL, 0, 6.2832); g.stroke();
       g.beginPath(); g.moveTo(lx - 6, ly); g.lineTo(lx + 6, ly); g.moveTo(lx, ly - 6); g.lineTo(lx, ly + 6); g.stroke();
-      if ((t | 0) % 6 === 0) setUI();
     }
+    if (!still) { if ((t | 0) % 6 === 0) setUI(); if (!formed && used >= N * .94) complete(); }
   };
   const loop = (t) => { if (vis) frame(t); raf = requestAnimationFrame(loop); };
 
   layout();
-  if (still) { P.forEach((p) => { p.lock = Math.floor(p.i / M) + 1; if (p.lock > 3) p.lock = 3; p.si = p.i % M; }); for (let k = 0; k < 90; k++) frame(k * 16); lines.forEach((l) => l.classList.add('on')); hintEl?.remove(); stEl?.remove(); return () => {}; }
+  if (still) { for (const p of P) lock(p); formed = true; for (const p of P) { const s = slots[p.slot]; p.x = s.x; p.y = s.y; } frame(0); hintEl?.remove(); stEl?.remove(); return () => {}; }
   setUI();
   if (coarse) {
     // Only the moving circle captures a touch. Swipes elsewhere remain normal page scrolling.
@@ -188,6 +244,10 @@ function startField(hero, seed, coarse, still) {
     advance();
   };
   let rt; const onResize = () => { clearTimeout(rt); rt = setTimeout(layout, 150); };
+  const mo = new MutationObserver(() => { readCfg(); sIdx = Math.min(sIdx, sentences.length - 1); shown = ''; layout(); setUI(); });
+  mo.observe(cv, { attributes: true, attributeFilter: ['data-sentences'] });
+  if (stEl) mo.observe(stEl, { attributes: true, attributeFilter: ['data-labels'] });
+  if (hintEl) mo.observe(hintEl, { attributes: true, attributeFilter: ['data-hints'] });
   const io = new IntersectionObserver(([en]) => { vis = en.isIntersecting; });
   io.observe(hero);
   addEventListener('pointermove', onMove, { passive: true });
@@ -200,7 +260,7 @@ function startField(hero, seed, coarse, still) {
   hero.addEventListener('click', onClick);
   raf = requestAnimationFrame(loop);
   return () => {
-    cancelAnimationFrame(raf); io.disconnect(); clearTimeout(rt);
+    cancelAnimationFrame(raf); io.disconnect(); mo.disconnect(); clearTimeout(rt);
     removeEventListener('pointermove', onMove);
     if (coarse) {
       touchTarget.removeEventListener('pointerdown', onPointerDown);
@@ -246,8 +306,9 @@ export function startHorizon() {
   const ctx = gsap.context(() => {
     if (reduced) return;
     gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
-    const cards = gsap.utils.toArray('.hz-card');
+    const cards = gsap.utils.toArray('.hz-file');
     cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
+    gsap.utils.toArray('.hz-reveal').forEach((el) => gsap.fromTo(el, { '--r': '0px' }, { '--r': '9px', ease: 'none', scrollTrigger: { trigger: el, start: 'top 90%', end: 'top 40%', scrub: true, onLeave: () => el.classList.add('is-clear'), onEnterBack: () => el.classList.remove('is-clear') } }));
     gsap.fromTo('.hz-tl-line', { scaleY: 0 }, { scaleY: 1, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: '.hz-ledger', start: 'top 70%', end: 'bottom 60%', scrub: true } });
     gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
@@ -255,9 +316,27 @@ export function startHorizon() {
   });
   off.push(() => ctx.revert());
 
+  // Tall case files must stay readable: stick them where their bottom edge is visible.
+  const fixStick = () => document.querySelectorAll('.hz-file').forEach((el, i) => { el.style.top = `${Math.min(92 + i * 26, innerHeight - el.offsetHeight - 24)}px`; });
+  fixStick();
+  addEventListener('resize', fixStick);
+  const fro = new ResizeObserver(fixStick);
+  document.querySelectorAll('.hz-file').forEach((el) => fro.observe(el));
+  off.push(() => { removeEventListener('resize', fixStick); fro.disconnect(); });
+  const reel = document.querySelector('.hz-reel video');
+  if (reel) {
+    const hide = () => reel.closest('.hz-reel')?.setAttribute('hidden', '');
+    // preload="none" never raises an error event, so ask the server whether the file really exists.
+    fetch(reel.currentSrc || reel.src, { method: 'HEAD' }).then((r) => { if (!r.ok || !/video/.test(r.headers.get('content-type') || '')) hide(); }).catch(hide);
+    if (reduced) reel.controls = true;
+    else { const rio = new IntersectionObserver(([en]) => { if (en.isIntersecting) reel.play().catch(() => {}); else reel.pause(); }, { threshold: .35 }); rio.observe(reel); off.push(() => rio.disconnect()); }
+  }
+  const tilt = (e) => { const m = e.target.closest?.('.hz-tilt'); if (!m) return; const r = m.getBoundingClientRect(); m.style.setProperty('--tx', `${((e.clientX - r.left) / r.width - .5) * 7}deg`); m.style.setProperty('--ty', `${-((e.clientY - r.top) / r.height - .5) * 6}deg`); };
+  const untilt = (e) => { const m = e.target.closest?.('.hz-tilt'); if (m) { m.style.setProperty('--tx', '0deg'); m.style.setProperty('--ty', '0deg'); } };
+  if (!coarse && !reduced) { addEventListener('pointermove', tilt, { passive: true }); addEventListener('pointerout', untilt); off.push(() => { removeEventListener('pointermove', tilt); removeEventListener('pointerout', untilt); }); }
+
   const reveal = () => {
-    gsap.from('.hz-meta, .hz-hint, .hz-side > *, .hz-state', { y: 32, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: .08, delay: .5 });
-    setTimeout(() => hero.querySelector('.hz-ln')?.classList.add('on'), 450);
+    gsap.from('.hz-meta, .hz-hint, .hz-lead span, .hz-side > *, .hz-state', { y: 32, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: .08, delay: .5 });
   };
   const cleanup = () => { dead = true; stopField?.(); off.forEach((f) => f()); if (tick) gsap.ticker.remove(tick); lenis?.destroy(); };
 
