@@ -308,7 +308,6 @@ export function startHorizon() {
     gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
     const cards = gsap.utils.toArray('.hz-file');
     cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
-    gsap.utils.toArray('.hz-reveal').forEach((el) => gsap.fromTo(el, { '--r': '0px' }, { '--r': '9px', ease: 'none', scrollTrigger: { trigger: el, start: 'top 90%', end: 'top 40%', scrub: true, onLeave: () => el.classList.add('is-clear'), onEnterBack: () => el.classList.remove('is-clear') } }));
     gsap.fromTo('.hz-tl-line', { scaleY: 0 }, { scaleY: 1, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: '.hz-ledger', start: 'top 70%', end: 'bottom 60%', scrub: true } });
     gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });

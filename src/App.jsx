@@ -42,7 +42,7 @@ const copy = {
     openDemo: 'View interactive presentation',
     embeddedPresentationEyebrow: 'LIVE INTERACTIVE PRESENTATION',
     embeddedPresentationTitle: 'Explore the presentation here.',
-    embeddedPresentationDesc: 'The interactive EOC presentation is now available inside this portfolio. Scroll through it below, or open a separate tab if needed.',
+    embeddedPresentationDesc: 'The interactive EOC presentation is available here, or open it in a separate tab if needed.',
     openPresentationInNewTab: 'Open in a separate tab',
     hidePresentation: 'Hide presentation',
     openReport: 'Open interactive report',
@@ -208,7 +208,7 @@ const copy = {
     openDemo: 'شاهد العرض التفاعلي',
     embeddedPresentationEyebrow: 'العرض التفاعلي المباشر',
     embeddedPresentationTitle: 'استكشف العرض من هنا.',
-    embeddedPresentationDesc: 'أصبح العرض التفاعلي لمركز العمليات متاحًا داخل البورتفوليو. يمكنك تصفحه بالأسفل أو فتحه في تبويب مستقل عند الحاجة.',
+    embeddedPresentationDesc: 'أصبح العرض التفاعلي لمركز العمليات متاحًا هنا، أو يمكنك فتحه في تبويب مستقل عند الحاجة.',
     openPresentationInNewTab: 'فتح في تبويب مستقل',
     hidePresentation: 'إخفاء العرض',
     openReport: 'افتح التقرير التفاعلي',
@@ -497,7 +497,8 @@ function App() {
   const [hoveredRole, setHoveredRole] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
-  const presentationEmbedRef = useRef(null);
+  const presentationTriggerRef = useRef(null);
+  const presentationCloseButtonRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
   useEffect(() => startHorizon(), []);
@@ -511,26 +512,22 @@ function App() {
         : 'MR';
   const openImage = (image) => setLightboxImage(image);
   const closeImage = () => setLightboxImage(null);
-  const openEmbeddedPresentation = () => {
-    if (showPresentationEmbed) {
-      presentationEmbedRef.current?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
-      return;
-    }
-    setShowPresentationEmbed(true);
-  };
+  const openEmbeddedPresentation = () => setShowPresentationEmbed(true);
 
   useEffect(() => {
     if (!showPresentationEmbed) return undefined;
-    const section = presentationEmbedRef.current;
-    if (!section) return undefined;
-    section.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
-    return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setShowPresentationEmbed(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    presentationCloseButtonRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+      presentationTriggerRef.current?.focus();
+    };
   }, [showPresentationEmbed]);
 
   useEffect(() => {
@@ -739,28 +736,28 @@ function App() {
             <HzFile n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
               facts={[[c.presentationChallenge, c.presentationChallengeDesc], [c.presentationDesign, c.presentationDesignDesc], [c.presentationContribution, c.presentationContributionDesc]]}
               tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
-              actions={<><button className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>} />
+              actions={<><button ref={presentationTriggerRef} className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation} aria-haspopup="dialog">{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>} />
           </div>
           <p className="hz-note">{c.artLabel}</p>
           <Next href="#capabilities">{rtl ? "وماذا يوجد تحت الغطاء؟" : "What is under the hood?"}</Next>
         </div>
       </section>
 
-      {showPresentationEmbed && <section className="embedded-presentation-section" id="live-presentation" ref={presentationEmbedRef}>
+      {showPresentationEmbed && <section className="embedded-presentation-section" id="live-presentation" role="dialog" aria-modal="true" aria-labelledby="embedded-presentation-title">
         <div className="section-wrap">
           <div className="embedded-presentation-heading">
             <div>
               <div className="eyebrow"><span className="eyebrow-dot" />{c.embeddedPresentationEyebrow}</div>
-              <h2>{c.embeddedPresentationTitle}</h2>
+              <h2 id="embedded-presentation-title">{c.embeddedPresentationTitle}</h2>
               <p>{c.embeddedPresentationDesc}</p>
             </div>
-            <button className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
+            <button ref={presentationCloseButtonRef} className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
           </div>
           <div className="embedded-presentation-frame">
             <iframe
               src={links.presentationLive}
               title={c.presentationTitle}
-              loading="lazy"
+              loading="eager"
               allow="fullscreen; autoplay; clipboard-write"
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
