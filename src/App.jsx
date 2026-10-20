@@ -351,8 +351,8 @@ function Arrow({ diagonal = false }) {
   </svg>;
 }
 
-function Mark({ onOpen }) {
-  return <img className="brand-portrait image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
+function Mark() {
+  return <img className="brand-portrait" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="" width="38" height="38" />;
 }
 
 function trackArtPointer(event) {
@@ -437,7 +437,7 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
   if (type === 'platform') {
     return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
       <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
-      <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
+      <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget }); } }} aria-label="Open project image full screen" />
       <div className="art-note">{c.artLabel}</div>
     </div>;
   }
@@ -449,8 +449,8 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
         src={`${import.meta.env.BASE_URL}images/dashboard_blurred_final.png`}
         alt="Screenshot of the Power BI operational analytics dashboard"
         role="button" tabIndex={0}
-        onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })}
-        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }}
+        onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget })}
+        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget }); } }}
         aria-label="Open project image full screen"
       />
       <div className="art-note">{c.artLabel}</div>
@@ -458,13 +458,13 @@ function ProjectArt({ type, copy: c, onImageOpen }) {
   }
   return <div className="art art--photo art--presentation" aria-label={c.presentationLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
     <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
-    <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
+    <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt, trigger: event.currentTarget }); } }} aria-label="Open project image full screen" />
     <div className="art-note">{c.artLabel}</div>
   </div>;
 }
 
 function HzProject({ n, kicker, title, summary, label, img, alt, onImageOpen, tags, actions, children }) {
-  const open = (e) => onImageOpen({ src: e.currentTarget.src, alt: e.currentTarget.alt });
+  const open = (e) => onImageOpen({ src: e.currentTarget.src, alt: e.currentTarget.alt, trigger: e.currentTarget });
   return <article className="hz-card" style={{ '--i': Number(n) - 1 }}>
     <div className="hz-card-media">
       <div className="hz-card-bar"><i /><i /><i /><span>{label}</span></div>
@@ -493,6 +493,12 @@ function App() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
   const presentationEmbedRef = useRef(null);
+  const presentationOpenerRef = useRef(null);
+  const presentationHideRef = useRef(null);
+  const presentationReturnFocusRef = useRef(null);
+  const presentationWasOpenRef = useRef(false);
+  const lightboxCloseRef = useRef(null);
+  const imageReturnFocusRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
   useEffect(() => startHorizon(), []);
@@ -504,39 +510,84 @@ function App() {
       : activeRole === 'humanitarian'
         ? 'EOC'
         : 'MR';
-  const openImage = (image) => setLightboxImage(image);
+  const openImage = (image) => {
+    imageReturnFocusRef.current = image.trigger || document.activeElement;
+    setLightboxImage(image);
+  };
   const closeImage = () => setLightboxImage(null);
   const openEmbeddedPresentation = () => {
+    presentationReturnFocusRef.current = document.activeElement || presentationOpenerRef.current;
     if (showPresentationEmbed) {
       presentationEmbedRef.current?.scrollIntoView({
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
         block: 'start',
       });
+      presentationHideRef.current?.focus({ preventScroll: true });
       return;
     }
     setShowPresentationEmbed(true);
   };
 
   useEffect(() => {
-    if (!showPresentationEmbed) return undefined;
+    if (!showPresentationEmbed) {
+      if (presentationWasOpenRef.current) {
+        const opener = presentationReturnFocusRef.current || presentationOpenerRef.current;
+        if (opener?.isConnected) opener.focus({ preventScroll: true });
+        presentationReturnFocusRef.current = null;
+        presentationWasOpenRef.current = false;
+      }
+      return undefined;
+    }
+    presentationWasOpenRef.current = true;
     const section = presentationEmbedRef.current;
     if (!section) return undefined;
     section.scrollIntoView({
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
       block: 'start',
     });
-    return undefined;
+    const focusFrame = requestAnimationFrame(() => presentationHideRef.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(focusFrame);
   }, [showPresentationEmbed]);
 
   useEffect(() => {
     if (!lightboxImage) return undefined;
     const previousOverflow = document.body.style.overflow;
+    const backgroundNodes = [...document.querySelectorAll('.site-header, #main, .site-footer, .embedded-presentation-section, .skip-link')];
+    const previousInert = backgroundNodes.map((node) => node.inert);
     document.body.style.overflow = 'hidden';
-    const onKeyDown = (event) => { if (event.key === 'Escape') closeImage(); };
+    backgroundNodes.forEach((node) => { node.inert = true; });
+    lightboxCloseRef.current?.focus({ preventScroll: true });
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeImage();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const dialog = document.querySelector('.image-lightbox');
+      const focusable = dialog ? [...dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter((node) => !node.hasAttribute('disabled')) : [];
+      if (!focusable.length) {
+        event.preventDefault();
+        lightboxCloseRef.current?.focus();
+        return;
+      }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog?.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog?.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener('keydown', onKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
+      backgroundNodes.forEach((node, index) => { node.inert = previousInert[index]; });
       window.removeEventListener('keydown', onKeyDown);
+      const previousFocus = imageReturnFocusRef.current;
+      imageReturnFocusRef.current = null;
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, [lightboxImage]);
 
@@ -665,11 +716,11 @@ function App() {
     <header className="site-header">
       <div className="header-inner">
         <a className="brand" href="#top" onClick={closeMenu} aria-label="Mohamed Rabea — home">
-          <Mark onOpen={openImage} />
+          <Mark />
           <span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span>
         </a>
-        <button className="menu-toggle" aria-label={c.menuAria} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
-        <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'}>
+        <button className="menu-toggle" aria-label={c.menuAria} aria-controls="main-nav" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
+        <nav id="main-nav" className={menuOpen ? 'nav nav--open' : 'nav'} aria-label={rtl ? 'التنقل الرئيسي' : 'Main navigation'} onKeyDown={(event) => { if (event.key === 'Escape') { closeMenu(); document.querySelector('.menu-toggle')?.focus(); } }}>
           {c.nav.map((item) => <a key={item.id} href={'#' + item.id} onClick={closeMenu}>{item.label}</a>)}
           <button className="language-toggle" onClick={toggleLanguage} aria-label={c.localeAria}>{c.languageName}<span>↗</span></button>
           <a className="nav-contact" href="#contact" onClick={closeMenu} onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{rtl ? 'لنتحدث' : 'Let’s talk'} <Arrow diagonal /></a>
@@ -677,11 +728,11 @@ function App() {
       </div>
     </header>
 
-    <main id="main">
-      <section className="hero" id="top">
+    <main id="main" tabIndex={-1}>
+      <section className="hero" id="top" data-phrases={(rtl ? ['أهلًا بك', 'من الفوضى إلى الوضوح'] : ['Hello, curious mind.', 'Noise in. Order out.']).join('|')}>
         <canvas className="hz-field" aria-hidden="true" />
         <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span>{c.brandTag}</span></div>
-        <div className="hz-hint" data-hints={(rtl ? ['مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط', 'الطبقة التالية — اجمع النقاط ثم اضغط', 'الطبقة الأخيرة — اضغط لتتناثر النقاط من جديد'] : ['Sweep the circle across the dots — each one locks in place. Then click', 'Next layer — collect again, then click', 'Final layer — click to scatter everything']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'مرّر الدائرة على النقاط — كل نقطة تثبت مكانها، ثم اضغط' : 'Sweep the circle across the dots — each one locks in place. Then click'}</span></div>
+        <div className="hz-hint" data-hints={(rtl ? ['حرّك العدسة لتجميع الرسالة الأولى.', 'اكتملت الإشارة الأولى. اضغط لكشف الثانية.', 'تتجمع الإشارة الثانية. اضغط مرة أخرى لتناثر النقاط والبدء من جديد.'] : ['Sweep the lens to collect the first message.', 'The first signal is assembled. Press again to reveal the second.', 'The second signal is collecting. Press once more to scatter and restart.']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'حرّك العدسة لتجميع الرسالة الأولى.' : 'Sweep the lens. Collect the dots. Find the signal.'}</span><button className="hz-advance" type="button" data-hz-advance aria-label={rtl ? 'الانتقال بين رسائل النقاط وإعادة التجميع' : 'Advance the signal and reset the dot field'}>{rtl ? 'التالي' : 'Next signal'} <span aria-hidden="true">↗</span></button></div>
         <div className="hz-hero-bottom">
           <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span className="hz-ln" key={t}>{t}</span>)}</h1>
           <div className="hz-side">
@@ -691,7 +742,7 @@ function App() {
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
           </div>
-          <div className="hz-state" data-labels={(rtl ? ['صفوف وأعمدة', 'اتجاهات', 'صورة العمليات'] : ['Rows & columns', 'Trends', 'The operations picture']).join('|')}><b>01 / 03</b><span>{rtl ? 'صفوف وأعمدة' : 'Rows & columns'}</span></div>
+          <div className="hz-state" data-labels={(rtl ? ['الإشارة تتجمع', 'ثبتت الرسالة الأولى', 'الرسالة الثانية تتجمع'] : ['Collecting signal', 'First signal captured', 'Second signal collecting']).join('|')}><b>01 / 03</b><span>{rtl ? 'الإشارة تتجمع' : 'Collecting signal'}</span></div>
         </div>
       </section>
 
@@ -704,7 +755,7 @@ function App() {
       <section className="hz-sec hz-man" id="signal">
         <div className="hz-wrap">
           <div className="hz-label" data-reveal><i>01</i>{c.smallLabel}</div>
-          <p className="hz-manifesto" aria-label={c.bridge.join(', ')}>{c.bridge.map((ph) => <span className="ph" key={ph} aria-hidden="true">{ph.split(' ').map((w, i) => <span className="w" key={i}>{w}</span>)}</span>)}</p>
+          <p className="hz-manifesto"><span className="sr-only">{c.bridge.join('. ')}</span>{c.bridge.map((ph) => <span className="ph" key={ph} aria-hidden="true">{ph.split(' ').map((w, i) => <span className="w" key={i}>{w}</span>)}</span>)}</p>
           <div className="hz-method" data-reveal>
             <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
             <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
@@ -734,7 +785,7 @@ function App() {
             </HzProject>
             <HzProject n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
               tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
-              actions={<><button className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>}>
+              actions={<><button ref={presentationOpenerRef} className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation}>{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>}>
               <ol className="hz-list">
                 <li><i>01</i><div><b>{c.presentationChallenge}</b><span>{c.presentationChallengeDesc}</span></div></li>
                 <li><i>02</i><div><b>{c.presentationDesign}</b><span>{c.presentationDesignDesc}</span></div></li>
@@ -755,7 +806,7 @@ function App() {
               <h2>{c.embeddedPresentationTitle}</h2>
               <p>{c.embeddedPresentationDesc}</p>
             </div>
-            <button className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
+            <button ref={presentationHideRef} className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
           </div>
           <div className="embedded-presentation-frame">
             <iframe
@@ -838,8 +889,8 @@ function App() {
     <footer className="site-footer">
       <div className="section-wrap footer-inner"><a className="brand brand--footer" href="#top"><Mark /><span className="brand-copy"><strong>MOHAMED RABEA</strong><small>{c.brandTag}</small></span></a><p>{c.footerNote}</p><a href="#top" className="footer-top">{c.backTop}<Arrow diagonal /></a><span className="footer-year">© {new Date().getFullYear()}</span></div>
     </footer>
-    {lightboxImage && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={rtl ? 'عرض الصورة بالحجم الكامل' : 'Full-screen image viewer'} onClick={closeImage}>
-      <button className="image-lightbox-close" type="button" onClick={closeImage} aria-label={rtl ? 'إغلاق الصورة' : 'Close image'}>×</button>
+    {lightboxImage && <div className="image-lightbox" tabIndex={-1} role="dialog" aria-modal="true" aria-label={rtl ? 'عرض الصورة بالحجم الكامل' : 'Full-screen image viewer'} onClick={closeImage}>
+      <button ref={lightboxCloseRef} className="image-lightbox-close" type="button" onClick={closeImage} aria-label={rtl ? 'إغلاق الصورة' : 'Close image'}>×</button>
       <img className="image-lightbox-full" src={lightboxImage.src} alt={lightboxImage.alt} onClick={(event) => event.stopPropagation()} />
       <span className="image-lightbox-hint">{rtl ? 'اضغط خارج الصورة أو Esc للإغلاق' : 'Click outside the image or press Esc to close'}</span>
     </div>}

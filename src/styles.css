@@ -333,7 +333,7 @@ button { color: inherit; }
   .capability-card { min-height: 310px; }
   .education-grid { gap: 35px; }
 }
-@media (max-width: 760px) {
+@media (max-width: 820px) {
   html { scroll-padding-top: 75px; }
   .site-header { height: 72px; }
   .header-inner { width: calc(100% - 34px); gap: 12px; }
@@ -425,6 +425,7 @@ button { color: inherit; }
 .image-lightbox-full { display: block; max-width: 100%; max-height: calc(100dvh - 100px); width: auto; height: auto; object-fit: contain; object-position: center; box-shadow: 0 24px 90px rgba(0,0,0,.45); cursor: zoom-out; }
 .image-lightbox-close { position: absolute; top: max(14px, env(safe-area-inset-top)); inset-inline-end: max(16px, env(safe-area-inset-right)); width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; background: rgba(255,255,255,.08); color: white; font: 300 32px/1 var(--sans, sans-serif); cursor: pointer; display: grid; place-items: center; transition: background .18s ease, transform .18s ease; }
 .image-lightbox-close:hover { background: rgba(255,255,255,.18); transform: scale(1.04); }
+.image-lightbox-close:focus-visible { outline: 2px solid #ff5a3c; outline-offset: 4px; }
 .image-lightbox-hint { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 16px; right: 16px; color: rgba(255,255,255,.65); text-align: center; font: 10px var(--mono); pointer-events: none; }
 @keyframes image-lightbox-in { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 600px) { .image-lightbox { padding: 14px; } .image-lightbox-full { max-height: calc(100dvh - 90px); } .image-lightbox-close { width: 42px; height: 42px; } }
@@ -504,7 +505,7 @@ button { color: inherit; }
 .embedded-presentation-external { display: inline-flex; margin-top: 18px; }
 .site--ar .embedded-presentation-heading h2,
 .site--ar .embedded-presentation-heading p { letter-spacing: 0; }
-@media (max-width: 760px) {
+@media (max-width: 820px) {
   .embedded-presentation-section { padding: 58px 0 64px; scroll-margin-top: 76px; }
   .embedded-presentation-heading { align-items: start; flex-direction: column; gap: 18px; margin-bottom: 20px; }
   .embedded-presentation-heading h2 { font-size: 34px; }

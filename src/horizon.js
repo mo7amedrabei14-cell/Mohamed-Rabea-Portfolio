@@ -43,173 +43,337 @@ function halftone(tone, S, P) {
 function startField(hero, seed, coarse, still) {
   const cv = hero.querySelector('.hz-field');
   if (!cv) return () => {};
-  const g = cv.getContext('2d'), N = FIELD_N(coarse), M = Math.floor(N / 3);
-  const stEl = hero.querySelector('.hz-state'), stIdx = stEl?.querySelector('b'), stTxt = stEl?.querySelector('span');
-  const labels = (stEl?.dataset.labels || '').split('|');
-  const hintEl = hero.querySelector('.hz-hint'), hintTxt = hintEl?.querySelector('span');
-  const hints = (hintEl?.dataset.hints || '').split('|');
-  const lines = [...hero.querySelectorAll('.hz-ln')];
+  const g = cv.getContext('2d');
+  if (!g) return () => {};
+  const N = FIELD_N(coarse);
+  const stEl = hero.querySelector('.hz-state');
+  const stIdx = stEl?.querySelector('b');
+  const stTxt = stEl?.querySelector('span');
+  const hintEl = hero.querySelector('.hz-hint');
+  const hintTxt = hintEl?.querySelector(':scope > span');
+  const advanceControl = hero.querySelector('[data-hz-advance]');
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   const touchTarget = document.createElement('div');
   touchTarget.className = 'hz-touch-target';
   touchTarget.setAttribute('aria-hidden', 'true');
-  const slots = [[], [], []], anchors = [];
-  let w = 0, h = 0, stage = 0, ptr = [0, 0, 0], lx = -999, ly = -999, lastMove = -1e9, raf = 0, vis = true, shown = '';
-  // Track touch drags separately from taps so the browser cannot turn a drag into a stage click.
-  let activePointer = null, pointerStartX = 0, pointerStartY = 0, didDrag = false, suppressClick = false;
-  const P = Array.from({ length: N }, (_, i) => ({ i, x: seed?.[i]?.x ?? Math.random() * innerWidth, y: seed?.[i]?.y ?? Math.random() * innerHeight, vx: seed?.[i]?.vx || 0, vy: seed?.[i]?.vy || 0, hx: 0, hy: 0, ph: Math.random() * 6.28, s: 1.1 + Math.random() * 1.1, lock: 0, si: 0 }));
+  touchTarget.style.touchAction = 'none';
 
+  let w = 0, h = 0, stage = 0, clickStep = 0, assigned = 0;
+  let lx = 0, ly = 0, manualUntil = 0, raf = 0, visible = true, running = false, disposed = false;
+  let activePointer = null, pointerStartX = 0, pointerStartY = 0, didDrag = false, suppressClick = false;
+  let phrases = [];
+  let labels = (stEl?.dataset.labels || 'Collecting signal|Signal captured|Second signal').split('|');
+  let hints = (hintEl?.dataset.hints || 'Sweep the lens to collect the first message.|The first signal is assembled. Press again for the next.|Collect the second signal, then press once more to scatter and reset.').split('|');
+  const particles = Array.from({ length: N }, (_, i) => ({
+    i,
+    x: seed?.[i]?.x ?? Math.random() * Math.max(1, hero.clientWidth),
+    y: seed?.[i]?.y ?? Math.random() * Math.max(1, hero.clientHeight),
+    vx: seed?.[i]?.vx || 0,
+    vy: seed?.[i]?.vy || 0,
+    tx: 0, ty: 0,
+    ph: Math.random() * 6.2832,
+    size: 1 + Math.random() * .65,
+    locked: false,
+  }));
+
+  let lastStatusText = '';
+  let lastHintText = '';
   const setUI = () => {
-    const pct = Math.round(ptr[stage] / M * 100), txt = `${labels[stage] || ''} — ${pct}%`;
-    if (stIdx) stIdx.textContent = `0${stage + 1} / 03`;
-    if (stTxt && txt !== shown) { stTxt.textContent = txt; shown = txt; }
-    if (hintTxt) hintTxt.textContent = hints[stage] || '';
+    const pct = Math.round(assigned / N * 100);
+    const index = '0' + (clickStep + 1) + ' / 03';
+    const statusText = (labels[clickStep] || labels[0] || 'Signal') + ' — ' + pct + '%';
+    const hintText = hints[clickStep] || hints[0] || '';
+    if (stIdx && stIdx.textContent !== index) stIdx.textContent = index;
+    if (stTxt && statusText !== lastStatusText) { stTxt.textContent = statusText; lastStatusText = statusText; }
+    if (hintTxt && hintText !== lastHintText) { hintTxt.textContent = hintText; lastHintText = hintText; }
   };
-  const scatter = () => {
-    for (const p of P) if (p.lock) { p.lock = 0; p.vx = (Math.random() - .5) * 30; p.vy = (Math.random() - .5) * 30; }
-    ptr = [0, 0, 0]; stage = 0;
-    lines.forEach((l, i) => l.classList.toggle('on', i === 0));
+
+  const makeTargets = () => {
+    phrases = (hero.dataset.phrases || 'Hello, curious mind.|Noise in. Order out.').split('|');
+    const phrase = phrases[stage] || phrases[0];
+    const arabic = /[\u0600-\u06ff]/.test(phrase);
+    const mask = document.createElement('canvas');
+    mask.width = Math.max(1, Math.ceil(w));
+    mask.height = Math.max(1, Math.ceil(h));
+    const brush = mask.getContext('2d', { willReadFrequently: true });
+    if (!brush) return;
+    let size = Math.max(20, Math.min(74, w * .105));
+    const family = arabic ? '"IBM Plex Sans Arabic", sans-serif' : '"DM Sans", sans-serif';
+    brush.font = '700 ' + size + 'px ' + family;
+    while (brush.measureText(phrase).width > w * .82 && size > 18) {
+      size -= 1;
+      brush.font = '700 ' + size + 'px ' + family;
+    }
+    brush.clearRect(0, 0, mask.width, mask.height);
+    brush.fillStyle = '#fff';
+    brush.textAlign = 'center';
+    brush.textBaseline = 'middle';
+    brush.direction = arabic ? 'rtl' : 'ltr';
+    brush.fillText(phrase, w * .5, h * .405);
+    const pixels = brush.getImageData(0, 0, mask.width, mask.height).data;
+    const raw = [];
+    for (let y = 0; y < mask.height; y += 2) {
+      for (let x = 0; x < mask.width; x += 2) {
+        if (pixels[(y * mask.width + x) * 4 + 3] > 100) raw.push([x, y]);
+      }
+    }
+    if (!raw.length) raw.push([w * .5, h * .405]);
+    particles.forEach((p, i) => {
+      const point = raw[Math.floor(i * raw.length / N)] || raw[raw.length - 1];
+      p.tx = point[0];
+      p.ty = point[1];
+    });
   };
-  const advance = () => { if (stage < 2) { stage++; lines[stage]?.classList.add('on'); } else scatter(); setUI(); };
 
   const layout = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect(), mob = r.width < 760;
-    w = r.width; h = r.height;
-    if (coarse) { touchTarget.style.width = `${Math.min(w, h) * .44}px`; touchTarget.style.height = `${Math.min(w, h) * .44}px`; }
-    cv.width = w * dpr; cv.height = h * dpr;
+    const rect = cv.getBoundingClientRect();
+    const oldW = w, oldH = h;
+    w = Math.max(1, rect.width || hero.clientWidth);
+    h = Math.max(1, rect.height || hero.clientHeight);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const R = rng(7);
-    // layer 1: a table
-    const gx0 = w * (mob ? .06 : .07), gx1 = w * (mob ? .94 : .4), gy0 = h * (mob ? .2 : .27), gy1 = h * (mob ? .34 : .52);
-    const cols = Math.ceil(Math.sqrt(M * (gx1 - gx0) / (gy1 - gy0))), rows = Math.ceil(M / cols);
-    // layer 2: a trend
-    const B = mob ? 10 : 16, bx0 = w * (mob ? .06 : .44), bx1 = w * (mob ? .94 : .76), base = h * (mob ? .5 : .55), bh = h * (mob ? .12 : .27), pitch = (bx1 - bx0) / B, bw = pitch * .64;
-    const hs = Array.from({ length: B }, (_, b) => .28 + .72 * Math.abs(Math.sin(b * 1.7 + .6) * Math.cos(b * .5)));
-    const sum = hs.reduce((a, b) => a + b, 0);
-    // layer 3: an operations picture
-    const cx = w * (mob ? .5 : .87), cy = h * (mob ? .64 : .38), RR = Math.min(w, h) * (mob ? .1 : .2);
-    anchors[0] = [gx0, gy0 - 14]; anchors[1] = [bx0, base + 24]; anchors[2] = [cx - RR, cy - RR * .78 - 16];
-    for (let i = 0; i < N; i++) {
-      const p = P[i], j = i % M;
-      p.hx = R() * w; p.hy = R() * h;
-      slots[0][j] = [gx0 + (j % cols + .5) * (gx1 - gx0) / cols, gy0 + (Math.floor(j / cols) + .5) * (gy1 - gy0) / rows];
-      let u = R() * sum, b = 0;
-      while (u > hs[b] && b < B - 1) { u -= hs[b]; b++; }
-      slots[1][j] = [bx0 + b * pitch + (pitch - bw) / 2 + R() * bw, base - R() * hs[b] * bh];
-      const k = Math.floor(R() ** .6 * 6) + 1, rr = RR * k / 6, an = R() * 6.2832;
-      slots[2][j] = [cx + Math.cos(an) * rr + (R() - .5) * 3, cy + Math.sin(an) * rr * .78 + (R() - .5) * 3];
+    if (oldW && oldH) {
+      particles.forEach((p) => { p.x *= w / oldW; p.y *= h / oldH; });
     }
+    lx = w * .5;
+    ly = h * .405;
+    makeTargets();
+    if (still || clickStep === 1) {
+      particles.forEach((p) => {
+        p.locked = true;
+        p.x = p.tx; p.y = p.ty; p.vx = 0; p.vy = 0;
+      });
+      assigned = N;
+    }
+    if (coarse && !still && !touchTarget.isConnected) hero.appendChild(touchTarget);
+    else if (still) touchTarget.remove();
+    setUI();
+    if (still) draw(performance.now());
   };
 
-  const frame = (t) => {
-    g.clearRect(0, 0, w, h);
-    const manual = t - lastMove < 2600;
-    if (!manual && !still) { lx = w * (.5 + .34 * Math.sin(t * .00021)); ly = h * (.46 + .26 * Math.sin(t * .00033 + 1.3)); }
-    const RL = Math.min(w, h) * (coarse ? .22 : .16);
-    if (coarse) touchTarget.style.transform = `translate3d(${lx - RL}px, ${ly - RL}px, 0)`;
-    for (const p of P) {
-      if (p.lock) {
-        const s = slots[p.lock - 1][p.si % M];
-        p.vx += (s[0] - p.x) * .06 + Math.sin(t * .002 + p.ph) * .012;
-        p.vy += (s[1] - p.y) * .06 + Math.cos(t * .0018 + p.ph) * .012;
-        p.vx *= .84; p.vy *= .84;
-      } else {
-        p.vx += Math.sin(p.y * .007 + t * .0005 + p.ph) * .035 + (p.hx - p.x) * .0007;
-        p.vy += Math.cos(p.x * .007 - t * .0004 + p.ph) * .035 + (p.hy - p.y) * .0007;
-        const dx = lx - p.x, dy = ly - p.y;
-        if (!still && dx * dx + dy * dy < RL * RL && ptr[stage] < (manual ? M : M * .16)) { p.lock = stage + 1; p.si = ptr[stage]++; }
-        p.vx *= .93; p.vy *= .93;
+  const releaseField = (nextStage) => {
+    stage = nextStage;
+    assigned = 0;
+    makeTargets();
+    particles.forEach((p) => {
+      p.locked = false;
+      p.vx += (Math.random() - .5) * 7;
+      p.vy += (Math.random() - .5) * 7;
+      if (still) {
+        p.locked = true;
+        p.x = p.tx; p.y = p.ty; p.vx = 0; p.vy = 0;
       }
-      p.x += p.vx; p.y += p.vy;
-    }
-    g.fillStyle = 'rgba(238,240,255,.3)';
-    for (const p of P) if (!p.lock) g.fillRect(p.x, p.y, p.s, p.s);
-    const cols = [ICE, PERI, ACCENT];
-    for (let s = 1; s <= 3; s++) { g.fillStyle = cols[s - 1]; for (const p of P) if (p.lock === s) g.fillRect(p.x, p.y, p.s + .5, p.s + .5); }
-    g.font = '500 11px "DM Mono", monospace'; g.textBaseline = 'alphabetic';
-    for (let s = 0; s < 3; s++) if (ptr[s] > 0 || still) { g.fillStyle = 'rgba(238,240,255,.72)'; g.fillText(`0${s + 1}  ${(labels[s] || '').toUpperCase()}`, anchors[s][0], anchors[s][1]); }
-    if (!still) {
-      g.lineWidth = 1; g.strokeStyle = 'rgba(238,240,255,.82)';
-      g.beginPath(); g.arc(lx, ly, RL, 0, 6.2832); g.stroke();
-      g.beginPath(); g.moveTo(lx - 6, ly); g.lineTo(lx + 6, ly); g.moveTo(lx, ly - 6); g.lineTo(lx, ly + 6); g.stroke();
-      if ((t | 0) % 6 === 0) setUI();
-    }
+    });
+    if (still) assigned = N;
+    manualUntil = 0;
+    setUI();
+    if (still) draw(performance.now());
   };
-  const loop = (t) => { if (vis) frame(t); raf = requestAnimationFrame(loop); };
 
-  layout();
-  if (still) { P.forEach((p) => { p.lock = Math.floor(p.i / M) + 1; if (p.lock > 3) p.lock = 3; p.si = p.i % M; }); for (let k = 0; k < 90; k++) frame(k * 16); lines.forEach((l) => l.classList.add('on')); hintEl?.remove(); stEl?.remove(); return () => {}; }
-  setUI();
-  if (coarse) {
-    // Only the moving circle captures a touch. Swipes elsewhere remain normal page scrolling.
-    touchTarget.style.transform = 'translate3d(-1000px, -1000px, 0)';
-    hero.appendChild(touchTarget);
-  }
-  const placePointer = (e, clampToField = false) => {
-    const r = cv.getBoundingClientRect();
-    if (!clampToField && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) return;
-    lx = Math.max(0, Math.min(w, e.clientX - r.left));
-    ly = Math.max(0, Math.min(h, e.clientY - r.top));
-    lastMove = performance.now();
-  };
-  const onMove = (e) => {
-    if (e.pointerType === 'touch') {
-      if (activePointer !== e.pointerId) return;
-      if (Math.hypot(e.clientX - pointerStartX, e.clientY - pointerStartY) > 6) didDrag = true;
-      placePointer(e, true);
+  const advance = () => {
+    if (clickStep === 0) {
+      clickStep = 1;
+      particles.forEach((p) => {
+        p.locked = true;
+        if (still) { p.x = p.tx; p.y = p.ty; p.vx = 0; p.vy = 0; }
+      });
+      assigned = N;
+      setUI();
+      if (still) draw(performance.now());
       return;
     }
-    // Keep the original desktop hover behavior independent from touch interaction.
-    if (activePointer !== null) return;
-    placePointer(e);
+    if (clickStep === 1) {
+      clickStep = 2;
+      releaseField(1);
+      return;
+    }
+    clickStep = 0;
+    releaseField(0);
   };
-  const onPointerDown = (e) => {
-    if (e.pointerType !== 'touch' || e.target.closest('a,button,input,textarea,select')) return;
-    activePointer = e.pointerId;
-    pointerStartX = e.clientX;
-    pointerStartY = e.clientY;
+
+  const draw = (time) => {
+    if (!w || !h) return;
+    g.clearRect(0, 0, w, h);
+    const radius = Math.min(w, h) * (coarse ? .22 : .16);
+    if (!still && !touchTarget.isConnected && coarse) hero.appendChild(touchTarget);
+    if (coarse && touchTarget.isConnected) {
+      touchTarget.style.width = (radius * 2) + 'px';
+      touchTarget.style.height = (radius * 2) + 'px';
+      touchTarget.style.transform = 'translate3d(' + (lx - radius) + 'px,' + (ly - radius) + 'px,0)';
+    }
+    if (!still && time > manualUntil) {
+      lx = w * (.5 + .32 * Math.sin(time * .00022));
+      ly = h * (.405 + .23 * Math.sin(time * .00031 + 1.1));
+    }
+    for (const p of particles) {
+      if (!still && !p.locked && clickStep !== 1 && Math.hypot(p.x - lx, p.y - ly) < radius) {
+        p.locked = true;
+        assigned = Math.min(N, assigned + 1);
+        setUI();
+      }
+      if (p.locked) {
+        p.vx = (p.vx + (p.tx - p.x) * .055) * .79;
+        p.vy = (p.vy + (p.ty - p.y) * .055) * .79;
+      } else if (!still) {
+        p.vx = (p.vx + Math.sin(time * .00045 + p.ph) * .025 + (Math.sin(p.i * 2.3) * w - p.x) * .00012) * .985;
+        p.vy = (p.vy + Math.cos(time * .00037 + p.ph) * .025 + (Math.cos(p.i * 1.7) * h - p.y) * .00012) * .985;
+        if (p.x < -2) p.x = w + 2;
+        if (p.x > w + 2) p.x = -2;
+        if (p.y < -2) p.y = h + 2;
+        if (p.y > h + 2) p.y = -2;
+      }
+      if (!still) { p.x += p.vx; p.y += p.vy; }
+      g.fillStyle = p.locked ? (stage === 0 ? ICE : ACCENT) : (p.i % 31 === 0 ? PERI : 'rgba(238,240,255,.28)');
+      g.fillRect(p.x, p.y, p.locked ? 1.7 : p.size, p.locked ? 1.7 : p.size);
+    }
+    if (!still) {
+      g.strokeStyle = 'rgba(238,240,255,.7)';
+      g.lineWidth = 1;
+      g.beginPath(); g.arc(lx, ly, radius, 0, 6.2832); g.stroke();
+      g.beginPath();
+      g.moveTo(lx - 6, ly); g.lineTo(lx + 6, ly);
+      g.moveTo(lx, ly - 6); g.lineTo(lx, ly + 6);
+      g.stroke();
+    }
+  };
+
+  const loop = (time) => {
+    if (disposed || still || !visible || document.hidden) { running = false; return; }
+    draw(time);
+    raf = requestAnimationFrame(loop);
+  };
+  const startLoop = () => {
+    if (!running && !still && visible && !document.hidden && !disposed) {
+      running = true;
+      raf = requestAnimationFrame(loop);
+    }
+  };
+  const stopLoop = () => {
+    running = false;
+    cancelAnimationFrame(raf);
+  };
+  const onDocumentVisibility = () => {
+    if (document.hidden) stopLoop();
+    else startLoop();
+  };
+
+  const placePointer = (event, force = false) => {
+    const rect = cv.getBoundingClientRect();
+    if (!force && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) return;
+    lx = Math.max(0, Math.min(w, event.clientX - rect.left));
+    ly = Math.max(0, Math.min(h, event.clientY - rect.top));
+    manualUntil = performance.now() + 2600;
+  };
+  const onPointerMove = (event) => {
+    if (event.pointerType === 'touch') {
+      if (activePointer !== event.pointerId) return;
+      if (Math.hypot(event.clientX - pointerStartX, event.clientY - pointerStartY) > 6) didDrag = true;
+      placePointer(event, true);
+      return;
+    }
+    if (activePointer === null) placePointer(event);
+  };
+  const onPointerDown = (event) => {
+    if (event.pointerType !== 'touch') return;
+    activePointer = event.pointerId;
+    pointerStartX = event.clientX;
+    pointerStartY = event.clientY;
     didDrag = false;
     suppressClick = false;
-    placePointer(e, true);
-    try { touchTarget.setPointerCapture(e.pointerId); } catch { /* Older browsers may not expose pointer capture. */ }
+    placePointer(event, true);
+    try { touchTarget.setPointerCapture(event.pointerId); } catch { /* Pointer capture may not be supported. */ }
   };
-  const onPointerEnd = (e) => {
-    if (activePointer !== e.pointerId) return;
+  const onPointerEnd = (event) => {
+    if (activePointer !== event.pointerId) return;
     suppressClick = didDrag;
     activePointer = null;
     didDrag = false;
   };
-  const onClick = (e) => {
-    if (e.target.closest('a,button') || !hero.contains(e.target)) return;
+  const onClick = (event) => {
+    if (!hero.contains(event.target) || event.target.closest('a,button')) return;
     if (suppressClick) {
       suppressClick = false;
-      e.preventDefault();
+      event.preventDefault();
       return;
     }
     advance();
   };
-  let rt; const onResize = () => { clearTimeout(rt); rt = setTimeout(layout, 150); };
-  const io = new IntersectionObserver(([en]) => { vis = en.isIntersecting; });
-  io.observe(hero);
-  addEventListener('pointermove', onMove, { passive: true });
+  const onMotionChange = (event) => {
+    still = event.matches;
+    if (still) {
+      stopLoop();
+      layout();
+      draw(performance.now());
+    } else {
+      layout();
+      particles.forEach((p) => {
+        if (clickStep === 1) {
+          p.locked = true; p.x = p.tx; p.y = p.ty; p.vx = 0; p.vy = 0;
+        } else {
+          p.locked = false; p.vx += (Math.random() - .5) * 2; p.vy += (Math.random() - .5) * 2;
+        }
+      });
+      assigned = clickStep === 1 ? N : 0;
+      manualUntil = 0;
+      setUI();
+      startLoop();
+    }
+  };
+
+  const languageObserver = new MutationObserver((records) => {
+    const changed = new Set(records.map((record) => record.attributeName));
+    labels = (stEl?.dataset.labels || '').split('|');
+    hints = (hintEl?.dataset.hints || '').split('|');
+    if (changed.has('data-phrases')) {
+      clickStep = 0;
+      releaseField(0);
+    } else {
+      setUI();
+    }
+  });
+  languageObserver.observe(hero, { attributes: true, subtree: true, attributeFilter: ['data-phrases', 'data-labels', 'data-hints'] });
+  layout();
+  const resizeObserver = new ResizeObserver(layout);
+  resizeObserver.observe(hero);
+  const intersection = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (visible) startLoop();
+    else stopLoop();
+  });
+  intersection.observe(hero);
+  addEventListener('pointermove', onPointerMove, { passive: true });
   if (coarse) {
     touchTarget.addEventListener('pointerdown', onPointerDown);
     touchTarget.addEventListener('pointerup', onPointerEnd);
     touchTarget.addEventListener('pointercancel', onPointerEnd);
   }
-  addEventListener('resize', onResize);
   hero.addEventListener('click', onClick);
-  raf = requestAnimationFrame(loop);
+  advanceControl?.addEventListener('click', advance);
+  motionPreference.addEventListener?.('change', onMotionChange);
+  document.addEventListener('visibilitychange', onDocumentVisibility);
+  if (still) draw(performance.now());
+  else startLoop();
+  document.fonts.ready.then(() => { if (!disposed) layout(); });
+
   return () => {
-    cancelAnimationFrame(raf); io.disconnect(); clearTimeout(rt);
-    removeEventListener('pointermove', onMove);
+    disposed = true;
+    cancelAnimationFrame(raf);
+    resizeObserver.disconnect();
+    intersection.disconnect();
+    languageObserver.disconnect();
+    removeEventListener('pointermove', onPointerMove);
+    hero.removeEventListener('click', onClick);
+    advanceControl?.removeEventListener('click', advance);
+    motionPreference.removeEventListener?.('change', onMotionChange);
+    document.removeEventListener('visibilitychange', onDocumentVisibility);
     if (coarse) {
       touchTarget.removeEventListener('pointerdown', onPointerDown);
       touchTarget.removeEventListener('pointerup', onPointerEnd);
       touchTarget.removeEventListener('pointercancel', onPointerEnd);
-      touchTarget.remove();
     }
-    removeEventListener('resize', onResize);
-    hero.removeEventListener('click', onClick);
+    touchTarget.remove();
   };
 }
 
@@ -217,20 +381,21 @@ export function startHorizon() {
   const root = document.documentElement;
   const hero = document.querySelector('.hero');
   if (!hero) return () => {};
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = motionPreference.matches;
   const coarse = matchMedia('(pointer: coarse)').matches;
   const off = [];
   let lenis, tick, dead = false, stopField = null;
 
   const startScroll = () => {
-    if (reduced || coarse || lenis || dead) return;
+    if (motionPreference.matches || coarse || lenis || dead) return;
     lenis = new Lenis({ lerp: 0.085, anchors: { offset: -84 } });
     lenis.on('scroll', ScrollTrigger.update);
     tick = (t) => lenis.raf(t * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
   };
-  const beginField = (seed) => { if (!stopField) stopField = startField(hero, seed, coarse, reduced); };
+  const beginField = (seed) => { if (!stopField) stopField = startField(hero, seed, coarse, motionPreference.matches); };
 
   const spot = (e) => { const c = e.target.closest?.('.hz-spot'); if (!c) return; const r = c.getBoundingClientRect(); c.style.setProperty('--sx', `${e.clientX - r.left}px`); c.style.setProperty('--sy', `${e.clientY - r.top}px`); };
   addEventListener('pointermove', spot, { passive: true });
@@ -243,8 +408,12 @@ export function startHorizon() {
   const clockId = setInterval(tickClock, 1000);
   off.push(() => clearInterval(clockId));
 
-  const ctx = gsap.context(() => {
-    if (reduced) return;
+  let ctx;
+  const buildScrollAnimations = () => {
+    ctx?.revert();
+    ctx = gsap.context(() => {
+
+    if (motionPreference.matches) return;
     gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
     const cards = gsap.utils.toArray('.hz-card');
     cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
@@ -252,13 +421,54 @@ export function startHorizon() {
     gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
     ScrollTrigger.create({ onUpdate: (s) => skew(gsap.utils.clamp(-9, 9, s.getVelocity() / -260)) });
-  });
-  off.push(() => ctx.revert());
-
-  const reveal = () => {
-    gsap.from('.hz-meta, .hz-hint, .hz-side > *, .hz-state', { y: 32, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: .08, delay: .5 });
-    setTimeout(() => hero.querySelector('.hz-ln')?.classList.add('on'), 450);
+    });
   };
+  buildScrollAnimations();
+  off.push(() => ctx?.revert());
+  const reveal = () => {
+    if (motionPreference.matches) return;
+    gsap.from('.hz-meta, .hz-hint, .hz-side > *, .hz-state', { y: 24, opacity: 0, duration: .85, ease: 'expo.out', stagger: .07, delay: .25 });
+  };
+  const onMotionPreference = (event) => {
+    if (event.matches) {
+      const skip = document.querySelector('.hz-curtain .hz-skip');
+      if (skip) {
+        ctx?.revert();
+        if (tick) gsap.ticker.remove(tick);
+        tick = null;
+        lenis?.destroy();
+        lenis = null;
+        if (done) {
+          // A user may enable reduced motion during the exit transition itself.
+          gsap.killTweensOf(cur);
+          gsap.killTweensOf(cv);
+          cancelAnimationFrame(raf);
+          cur.remove();
+          cv.remove();
+          root.classList.remove('hz-intro');
+          removeEventListener('keydown', onKey);
+          restoreIntroBackground();
+          document.querySelector('#main')?.focus({ preventScroll: true });
+          startScroll();
+        } else {
+          skip.click();
+        }
+        return;
+      }
+      ctx?.revert();
+      if (tick) gsap.ticker.remove(tick);
+      tick = null;
+      lenis?.destroy();
+      lenis = null;
+    } else {
+      if (!root.classList.contains('hz-intro')) {
+        buildScrollAnimations();
+        startScroll();
+      }
+    }
+  };
+  motionPreference.addEventListener?.('change', onMotionPreference);
+  off.push(() => motionPreference.removeEventListener?.('change', onMotionPreference));
   const cleanup = () => { dead = true; stopField?.(); off.forEach((f) => f()); if (tick) gsap.ticker.remove(tick); lenis?.destroy(); };
 
   if (reduced) { beginField(null); return cleanup; }
@@ -269,8 +479,22 @@ export function startHorizon() {
   const g = cv.getContext('2d');
   const cur = document.createElement('div');
   cur.className = 'hz-curtain';
-  cur.innerHTML = '<div class="hz-top"><span>Field record</span><span>Cairo · EG</span></div><div class="hz-one" aria-hidden="true"></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">Skip</button></div>';
+  cur.setAttribute('role', 'dialog');
+  cur.setAttribute('aria-modal', 'true');
+  cur.setAttribute('aria-label', document.documentElement.lang === 'ar' ? 'مقدمة الموقع' : 'Portfolio introduction');
+  cv.setAttribute('aria-hidden', 'true');
+  const introArabic = document.documentElement.lang === 'ar';
+  cur.innerHTML = '<div class="hz-top"><span>' + (introArabic ? 'سجل ميداني' : 'Field record') + '</span><span>Cairo · EG</span></div><div class="hz-one" aria-hidden="true"></div><div class="hz-name" aria-hidden="true"></div><div class="hz-bottom"><b class="hz-count">000</b><button class="hz-skip" type="button">' + (introArabic ? 'تخطّ المقدمة' : 'Skip intro') + '</button></div>';
   document.body.append(cur, cv);
+  const introBackgroundNodes = [...document.querySelectorAll('.site-header, #main, .site-footer, .embedded-presentation-section, .skip-link')];
+  const introPreviousInert = introBackgroundNodes.map((node) => node.inert);
+  introBackgroundNodes.forEach((node) => { node.inert = true; });
+  let introBackgroundRestored = false;
+  const restoreIntroBackground = () => {
+    if (introBackgroundRestored) return;
+    introBackgroundRestored = true;
+    introBackgroundNodes.forEach((node, index) => { node.inert = introPreviousInert[index]; });
+  };
   const one = cur.querySelector('.hz-one'), nameEl = cur.querySelector('.hz-name'), count = cur.querySelector('.hz-count');
   const L = [...NAME].map((ch) => { const s = document.createElement('i'); s.className = ch === ' ' ? 'sp' : 'ch'; s.textContent = ch === ' ' ? '' : ch; nameEl.append(s); return s; });
   const CH = L.filter((s) => s.classList.contains('ch'));
@@ -371,23 +595,51 @@ export function startHorizon() {
   const finish = () => {
     if (done || dead) return;
     done = true; phase = 'release';
-    const step = Math.max(1, Math.floor(P.length / FIELD_N));
-    const seed = P.filter((_, i) => i % step === 0).slice(0, FIELD_N).map((p) => ({ x: p.x, y: p.y, vx: p.vx, vy: p.vy }));
-    root.classList.remove('hz-intro');
+    const step = Math.max(1, Math.floor(P.length / FIELD_N(coarse)));
+    const seed = P.filter((_, i) => i % step === 0).slice(0, FIELD_N(coarse)).map((p) => ({ x: p.x, y: p.y, vx: p.vx, vy: p.vy }));
+    removeEventListener('pointermove', onMove);
+    removeEventListener('resize', onResize);
+    if (motionPreference.matches) {
+      root.classList.remove('hz-intro');
+      removeEventListener('keydown', onKey);
+      restoreIntroBackground();
+      cancelAnimationFrame(raf);
+      reveal();
+      beginField(seed.length ? seed : null);
+      cur.remove();
+      cv.remove();
+      document.querySelector('#main')?.focus({ preventScroll: true });
+      startScroll();
+      return;
+    }
     reveal();
     beginField(seed.length ? seed : null);
-    gsap.fromTo(cur, { clipPath: 'circle(150% at 50% 42%)' }, { clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut', onComplete: () => { cur.remove(); startScroll(); } });
+    gsap.fromTo(cur, { clipPath: 'circle(150% at 50% 42%)' }, { clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut', onComplete: () => {
+      cur.remove();
+      root.classList.remove('hz-intro');
+      removeEventListener('keydown', onKey);
+      restoreIntroBackground();
+      document.querySelector('#main')?.focus({ preventScroll: true });
+      startScroll();
+    } });
     gsap.to(cv, { opacity: 0, duration: .5, delay: .2, onComplete: () => { cancelAnimationFrame(raf); cv.remove(); } });
   };
 
   const onMove = (e) => { mx = e.clientX; my = e.clientY; };
   const onResize = () => { size(); if (phase === 'gather') aim(); };
-  const onKey = (e) => { if (e.key === 'Escape') finish(); };
+  const onKey = (e) => {
+    if (e.key === 'Escape') { finish(); return; }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      cur.querySelector('.hz-skip')?.focus({ preventScroll: true });
+    }
+  };
   size();
   addEventListener('pointermove', onMove, { passive: true });
   addEventListener('resize', onResize);
   addEventListener('keydown', onKey);
   cur.querySelector('.hz-skip').addEventListener('click', finish);
+  cur.querySelector('.hz-skip').focus({ preventScroll: true });
   raf = requestAnimationFrame(loop);
   timers.push(setTimeout(expand, tExpand), setTimeout(finish, total + 400));
   tone.catch(() => finish());
@@ -397,6 +649,7 @@ export function startHorizon() {
     removeEventListener('pointermove', onMove); removeEventListener('resize', onResize); removeEventListener('keydown', onKey);
     cleanup();
     cv.remove(); cur.remove();
+    restoreIntroBackground();
     root.classList.remove('hz-intro');
   };
 }
