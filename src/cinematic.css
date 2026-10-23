@@ -1,0 +1,124 @@
+:root {
+  /* Brand Palette */
+  --moonlit-silver: #C0C0C0;
+  --charcoal-grey: #2A2A2A;
+  --signal-red: #E10600;
+  --deep-void: #0A0A0A;
+  --soft-silver: rgba(192, 192, 192, 0.1);
+  --accent-glow: rgba(225, 6, 0, 0.3);
+
+  /* Semantic Tokens */
+  --bg-primary: var(--deep-void);
+  --bg-secondary: var(--charcoal-grey);
+  --text-primary: var(--moonlit-silver);
+  --text-secondary: rgba(192, 192, 192, 0.6);
+  --accent: var(--signal-red);
+  --border-color: rgba(192, 192, 192, 0.2);
+
+  /* Typography */
+  --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'Inter', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-s: 1rem;
+  --space-m: 2rem;
+  --space-l: 4rem;
+  --space-xl: 8rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* cinematic layout */
+.shell {
+  width: min(1400px, calc(100% - 80px));
+  margin-inline: auto;
+}
+
+/* Cinematic Typography */
+h1, h2, h3 {
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.text-oversized {
+  font-size: clamp(3rem, 10vw, 8rem);
+  line-height: 0.9;
+}
+
+.text-tiny {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* Buttons & Interactivity */
+.btn-cinematic {
+  position: relative;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: var(--moonlit-silver);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+.btn-cinematic:hover {
+  background: var(--moonlit-silver);
+  color: var(--deep-void);
+  border-color: var(--moonlit-silver);
+}
+
+.btn-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-accent:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Aura & Effects */
+.aura-glow {
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+  mix-blend-mode: screen;
+}
+
+.glass-panel {
+  background: rgba(42, 42, 42, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+}
+
+/* Cinematic Scroll */
+.section-transition {
+  padding: var(--space-xl) 0;
+  position: relative;
+}

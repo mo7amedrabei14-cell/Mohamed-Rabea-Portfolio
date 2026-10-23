@@ -1,0 +1,1 @@
+# Design System - Mohamed Rabea Portfolio 2026\n\n## Colors\n- Primary: #C0C0C0 (Moonlit Silver)\n- Secondary: #2A2A2A (Charcoal Grey)\n- Accent: #E10600 (Signal Red)\n\n## Core Philosophy\nTurning Noise into Order. Cinematic, Technical, Editorial.
