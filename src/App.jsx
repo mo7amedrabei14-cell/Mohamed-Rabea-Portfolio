@@ -1,6 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { startHorizon } from './horizon.js';
+import { lazy, Suspense } from 'react';
+import { startEcho } from './echo.js';
+import { ReportModal, ReportImage } from './components/ReportTiles.jsx';
+import { powerBiReports } from './powerbi.js';
+
+// ReactBits ScrambledText ships GSAP SplitText + ScrambleText, so it loads in its own chunk while the intro plays.
+const loadScrambled = () => import('./components/ScrambledText.jsx');
+const ScrambledText = lazy(loadScrambled);
 
 const links = {
   systemRepo: 'https://github.com/mo7amedrabei14-cell/eoc-system',
@@ -353,74 +361,13 @@ function Arrow({ diagonal = false }) {
 }
 
 function Mark({ onOpen }) {
-  return <img className="brand-portrait image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/Personal.jpg`} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen?.({ src: `${import.meta.env.BASE_URL}images/Personal.jpg`, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
-}
-
-function trackArtPointer(event) {
-  const surface = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
-  const rect = surface.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-
-  // Direct DOM updates keep pointer motion smooth without causing React re-renders.
-  surface.style.setProperty('--art-pointer-x', `${x * 100}%`);
-  surface.style.setProperty('--art-pointer-y', `${y * 100}%`);
-  surface.style.setProperty('--art-shift-x', `${(0.5 - x) * 8}px`);
-  surface.style.setProperty('--art-shift-y', `${(0.5 - y) * 6}px`);
-}
-
-function resetArtPointer(event) {
-  const surface = event.currentTarget;
-  surface.style.setProperty('--art-pointer-x', '50%');
-  surface.style.setProperty('--art-pointer-y', '50%');
-  surface.style.setProperty('--art-shift-x', '0px');
-  surface.style.setProperty('--art-shift-y', '0px');
-}
-
-
-function trackHeroPointer(event) {
-  const surface = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
-  const rect = surface.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-  const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-
-  surface.style.setProperty('--hero-pointer-x', `${x * 100}%`);
-  surface.style.setProperty('--hero-pointer-y', `${y * 100}%`);
-  surface.style.setProperty('--hero-drift-x', `${(0.5 - x) * 14}px`);
-  surface.style.setProperty('--hero-drift-y', `${(0.5 - y) * 10}px`);
-  surface.style.setProperty('--hero-drift-reverse-x', `${(x - 0.5) * 10}px`);
-  surface.style.setProperty('--hero-drift-reverse-y', `${(y - 0.5) * 8}px`);
-}
-
-function resetHeroPointer(event) {
-  const surface = event.currentTarget;
-  surface.style.setProperty('--hero-pointer-x', '50%');
-  surface.style.setProperty('--hero-pointer-y', '50%');
-  surface.style.setProperty('--hero-drift-x', '0px');
-  surface.style.setProperty('--hero-drift-y', '0px');
-  surface.style.setProperty('--hero-drift-reverse-x', '0px');
-  surface.style.setProperty('--hero-drift-reverse-y', '0px');
+  const src = `${import.meta.env.BASE_URL}images/Personal.webp`;
+  return <img className="brand-portrait image-zoom-trigger" src={src} alt="Mohamed Rabea" width="38" height="38" role="button" tabIndex={0} onClick={() => onOpen?.({ src, alt: 'Mohamed Rabea' })} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen?.({ src, alt: 'Mohamed Rabea' }); } }} aria-label="Open portrait full screen" />;
 }
 
 function trackMagneticPointer(event) {
   const control = event.currentTarget;
-  if (
-    event.pointerType === 'touch' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return;
-
+  if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const rect = control.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   const x = (event.clientX - rect.left - rect.width / 2) / (rect.width / 2);
@@ -428,92 +375,54 @@ function trackMagneticPointer(event) {
   control.style.setProperty('--magnetic-x', `${Math.max(-1, Math.min(1, x)) * 5}px`);
   control.style.setProperty('--magnetic-y', `${Math.max(-1, Math.min(1, y)) * 4}px`);
 }
-
 function resetMagneticPointer(event) {
   event.currentTarget.style.setProperty('--magnetic-x', '0px');
   event.currentTarget.style.setProperty('--magnetic-y', '0px');
 }
 
-function ProjectArt({ type, copy: c, onImageOpen }) {
-  if (type === 'platform') {
-    return <div className="art art--photo art--platform" aria-label={c.platformLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
-      <div className="art-caption">{c.platformLabel}<span>01 / 03</span></div>
-      <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/05-operations-overview.png`} alt="Real screenshot of the EOC Smart Command Center operations overview" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
-      <div className="art-note">{c.artLabel}</div>
-    </div>;
-  }
-  if (type === 'analytics') {
-    return <div className="art art--photo art--analytics" aria-label={c.dataLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
-      <div className="art-caption">{c.dataLabel}<span>02 / 03</span></div>
-      <img
-        className="art-photo image-zoom-trigger"
-        src={`${import.meta.env.BASE_URL}images/dashboard_blurred_final.png`}
-        alt="Screenshot of the Power BI operational analytics dashboard"
-        role="button" tabIndex={0}
-        onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })}
-        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }}
-        aria-label="Open project image full screen"
-      />
-      <div className="art-note">{c.artLabel}</div>
-    </div>;
-  }
-  return <div className="art art--photo art--presentation" aria-label={c.presentationLabel} onPointerMove={trackArtPointer} onPointerLeave={resetArtPointer}>
-    <div className="art-caption">{c.presentationLabel}<span>03 / 03</span></div>
-    <img className="art-photo image-zoom-trigger" src={`${import.meta.env.BASE_URL}images/pres.png`} alt="Screenshot of the EOC interactive presentation" role="button" tabIndex={0} onClick={(event) => onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onImageOpen({ src: event.currentTarget.src, alt: event.currentTarget.alt }); } }} aria-label="Open project image full screen" />
-    <div className="art-note">{c.artLabel}</div>
-  </div>;
-}
+const IMG = (name) => `${import.meta.env.BASE_URL}images/${name}`;
 
-function HzFile({ n, kicker, title, summary, label, img, alt, onImageOpen, tags, actions, facts, chips }) {
+function Case({ n, kicker, title, summary, img, alt, facts = [], chips, tags = [], actions, onImageOpen, figure }) {
   const open = (e) => onImageOpen({ src: e.currentTarget.src, alt: e.currentTarget.alt });
-  return <article className="hz-file hz-spot" style={{ '--i': Number(n) - 1 }}>
-    <header className="hz-file-head"><span className="hz-file-id">FILE {n}</span><span className="hz-kicker">{kicker}</span></header>
-    <div className="hz-file-body">
-      <div className="hz-file-left">
-        <figure className="hz-file-media hz-tilt">
-          <div className="hz-win-bar"><i /><i /><i /><span>{label}</span></div>
-          <div className="hz-reveal"><img src={`${import.meta.env.BASE_URL}images/${img}`} alt={alt} role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} /></div>
-        </figure>
-        {chips && <ul className="hz-chips">{chips.map((m) => <li key={m}>{m}</li>)}</ul>}
-        <div className="hz-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
-      </div>
-      <div className="hz-file-info">
-        <h3>{title}</h3>
-        <p className="hz-proj-sum">{summary}</p>
-        <dl className="hz-facts">{facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
-        <div className="hz-proj-actions">{actions}</div>
-      </div>
+  return <article className="ec-case" data-reveal>
+    <div className="ec-case-n" aria-hidden="true">{n}</div>
+    <div className="ec-case-body">
+      <span className="ec-tag">{kicker}</span>
+      <h3>{title}</h3>
+      {summary && <p className="ec-case-sum">{summary}</p>}
+      {facts.length > 0 && <dl className="ec-facts">{facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
+      {chips && <ul className="ec-chips">{chips.map((m) => <li key={m}>{m}</li>)}</ul>}
+      <div className="ec-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
+      <div className="ec-actions">{actions}</div>
     </div>
+    {figure ?? <figure className="ec-case-fig"><img src={IMG(img)} alt={alt} loading="lazy" role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} /></figure>}
   </article>;
-}
-
-function Next({ href, children }) {
-  return <a className="hz-next" href={href} data-reveal><span>{children}</span><i aria-hidden="true">↓</i></a>;
 }
 
 function App() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [hoveredRole, setHoveredRole] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showPresentationEmbed, setShowPresentationEmbed] = useState(false);
+  const [activeReport, setActiveReport] = useState(null);
+  const [introDone, setIntroDone] = useState(false);
+  const reportFocusRef = useRef(null);
   const presentationTriggerRef = useRef(null);
   const presentationCloseButtonRef = useRef(null);
   const c = copy[lang];
   const rtl = lang === 'ar';
   useEffect(() => startHorizon(), []);
-  const activeRole = hoveredRole || selectedRole;
-  const heroRoleMark = activeRole === 'data'
-    ? 'BI'
-    : activeRole === 'software'
-      ? 'FS'
-      : activeRole === 'humanitarian'
-        ? 'EOC'
-        : 'MR';
-  const openImage = (image) => setLightboxImage(image);
-  const closeImage = () => setLightboxImage(null);
-  const openEmbeddedPresentation = () => setShowPresentationEmbed(true);
+  useEffect(() => startEcho(), []);
+  useEffect(() => { loadScrambled(); }, []);
+  useEffect(() => {
+    // The intro announces itself: "reveal" as the circle starts closing, "done" when it is gone.
+    const reveal = () => setIntroDone(true);
+    const end = () => setIntroDone(true);
+    window.addEventListener('ec-intro-reveal', reveal);
+    window.addEventListener('ec-intro-done', end);
+    const safety = setTimeout(end, 24000);
+    return () => { window.removeEventListener('ec-intro-reveal', reveal); window.removeEventListener('ec-intro-done', end); clearTimeout(safety); };
+  }, []);
 
   useEffect(() => {
     if (!showPresentationEmbed) return undefined;
@@ -657,15 +566,23 @@ function App() {
   }, []);
 
 
+
+  const openReport = (report, trigger) => { reportFocusRef.current = trigger; setActiveReport(report); };
+  const closeReport = () => { setActiveReport(null); reportFocusRef.current?.focus(); };
   const toggleLanguage = () => {
     setLang((previous) => previous === 'en' ? 'ar' : 'en');
     setMenuOpen(false);
   };
   const closeMenu = () => setMenuOpen(false);
+  const jobs = [[c.exp1Title, c.exp1Org, c.exp1Date, c.exp1Desc], [c.exp3Title, c.exp3Org, c.exp3Date, c.exp3Desc], [c.exp2Title, c.exp2Org, c.exp2Date, c.exp2Desc], [c.exp4Title, c.exp4Org, c.exp4Date, c.exp4Desc]];
+  const projects = [['01', c.eocKicker, c.eocTitle, '05-operations-overview.webp'], ['02', c.analyticsKicker, c.analyticsTitle, 'dashboard_blurred_final.webp'], ['03', c.presentationKicker, c.presentationTitle, 'pres.webp']];
+  const total = projects.length + powerBiReports.length;
+  const nodes = [[c.skillDataList[0], c.skillData], [c.skillDataList[1], c.skillData], [c.skillBuildList[0], c.skillBuild], [c.skillBuildList[1], c.skillBuild], [c.skillHumanList[3], c.skillHuman], [c.skillHumanList[0], c.skillHuman]];
+  const groups = [[c.skillData, c.skillDataDesc, c.skillDataList], [c.skillBuild, c.skillBuildDesc, c.skillBuildList], [c.skillHuman, c.skillHumanDesc, c.skillHumanList], [c.skillComms, c.skillCommsDesc, c.skillCommsList]];
+  const openImage = (image) => setLightboxImage(image);
+  const closeImage = () => setLightboxImage(null);
 
   return <div className={rtl ? 'site site--ar' : 'site site--en'}>
-    <div className="hz-bg" aria-hidden="true"><i /><i /><i /></div>
-    <div className="hz-grain" aria-hidden="true" />
     <a className="skip-link" href="#main">{rtl ? 'تجاوز إلى المحتوى' : 'Skip to content'}</a>
     <header className="site-header">
       <div className="header-inner">
@@ -687,17 +604,18 @@ function App() {
         <canvas className="hz-field" aria-hidden="true" data-sentences={rtl ? 'أهلاً بك في عملي.|فوضى تدخل. نظام يخرج.' : 'Welcome to my work.|Noise in. Order out.'} />
         <div className="hz-meta"><span>Cairo · EG — <time className="hz-clock">--:--:--</time></span><span className="hz-live"><i aria-hidden="true" /><span>{rtl ? 'مباشر' : 'Live'}</span></span><span>{c.brandTag}</span></div>
         <div className="hz-hint" data-hints={(rtl ? ['مرّر الدائرة لتجمع النقاط · اضغط لإنهائها', 'اكتملت الجملة — اضغط للجملة التالية', 'اضغط لتتناثر النقاط وتبدأ من جديد'] : ['Sweep to collect the dots · click to finish', 'Sentence formed — click for the next one', 'Click to scatter and start again']).join('|')}><i className="hz-pulse" /><span>{rtl ? 'مرّر الدائرة لتجمع النقاط · اضغط لإنهائها' : 'Sweep to collect the dots · click to finish'}</span></div>
-        <div className="hz-hero-bottom">
-          <h1 className="hz-lead"><span className="sr-only">{c.name} — </span>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t) => <span key={t}>{t}</span>)}</h1>
-          <div className="hz-side">
-            <p className="hero-intro">{c.heroIntro}</p>
-            <div className="hero-actions">
+        <h1 className="sr-only">{c.name} — {c.heroLine1} {c.heroLine2} {c.heroLine3}</h1>
+        <div className="ec-phrases" aria-hidden="true">
+          {introDone && <Suspense fallback={null}>{[c.heroLine1, c.heroLine2, c.heroLine3].map((t, i) => <div className="ec-phrase-row" key={`${lang}-${i}`}><span className="ec-idx">0{i + 1}</span><ScrambledText className="ec-phrase" radius={120} duration={1.2} speed={0.5} scrambleChars=".:" effect="scramble" intro>{t}</ScrambledText></div>)}</Suspense>}
+        </div>
+        <div className={`ec-hero-cta${introDone ? ' is-in' : ''}`}>
+          <p className="hero-intro">{c.heroIntro}</p>
+          <div className="hero-actions">
             <a className="button button--primary" href="#work" onPointerMove={trackMagneticPointer} onPointerLeave={resetMagneticPointer}>{c.primary}<Arrow diagonal /></a>
             <a className="text-link" href="#contact">{c.secondary}<Arrow /></a>
           </div>
-          </div>
-          <div className="hz-state" data-labels={(rtl ? ['تجميع', 'اكتملت'] : ['Collecting', 'Formed']).join('|')}><b>01 / 02</b><span>{rtl ? 'تجميع — 0%' : 'Collecting — 0%'}</span></div>
         </div>
+        <div className="hz-state" data-labels={(rtl ? ['تجميع', 'اكتملت'] : ['Collecting', 'Formed']).join('|')}><b>01 / 02</b><span>{rtl ? 'تجميع — 0%' : 'Collecting — 0%'}</span></div>
       </section>
 
       <div className="hz-marquee" aria-hidden="true">
@@ -706,115 +624,84 @@ function App() {
         </div></div>
       </div>
 
-      <section className="hz-reel" aria-label={rtl ? 'ريل الإشارة' : 'Signal reel'}>
-        <div className="hz-wrap"><div className="hz-reel-frame hz-spot"><video src={`${import.meta.env.BASE_URL}media/signal-reel.mp4`} muted loop playsInline preload="none" aria-label={rtl ? 'فيديو موشن قصير' : 'Short motion piece'} /><span className="hz-reel-tag">{rtl ? 'ريل · ٠١' : 'REEL · 01'}</span></div></div>
-      </section>
-
-      <section className="hz-sec hz-man" id="signal">
-        <div className="hz-wrap">
-          <div className="hz-label" data-reveal><i>01</i>{c.smallLabel}</div>
-          <p className="hz-manifesto"><span className="sr-only">{c.bridge.join(', ')}</span>{c.bridge.map((ph) => <span className="ph" key={ph} aria-hidden="true">{ph.split(' ').map((w, i) => <span className="w" key={i}>{w}</span>)}</span>)}</p>
-          <div className="hz-method" data-reveal>
-            <div><div className="hz-label hz-label--sm">{c.signal}</div><p>{c.signalDesc}</p></div>
-            <ol className="hz-route">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b><span>{st}</span></li>)}</ol>
-          </div>
-          <Next href="#work">{rtl ? "كيف يبدو هذا في أنظمة حقيقية؟" : "How does that look in real systems?"}</Next>
+      <section className="ec-about" id="about" aria-label={rtl ? 'نبذة' : 'About'}>
+        <div className="ec-about-card">
+          <span className="ec-tag">01 — {c.smallLabel}</span>
+          <h2 className="ec-huge">{rtl ? 'من أنا' : 'About me'}</h2>
+          <p className="ec-lede">{c.heroIntro}</p>
+          <ul className="ec-bridge">{c.bridge.map((b) => <li key={b}>{b}</li>)}</ul>
+          <div className="ec-method"><div><span className="ec-tag">{c.signal}</span><p>{c.signalDesc}</p></div>
+            <ol className="ec-steps">{c.process.map((st, i) => <li key={st}><b>{String(i + 1).padStart(2, '0')}</b>{st}</li>)}</ol></div>
+          <ul className="ec-stats"><li><b>2021 —</b>{c.exp1Title}</li><li><b>27</b>{c.analyticsMain}</li><li><b>03</b>{rtl ? 'عمليات استجابة ميدانية' : 'Field response missions'}</li></ul>
         </div>
       </section>
 
-      <section className="hz-sec hz-work" id="work">
-        <div className="hz-wrap">
-          <div className="hz-head" data-reveal><div><div className="hz-label"><i>02</i>{c.workEyebrow}</div><h2>{c.workTitle}</h2></div><p>{c.workIntro}</p></div>
-          <div className="hz-stack">
-            <HzFile n="01" kicker={c.eocKicker} title={c.eocTitle} summary={c.eocSummary} label={c.platformLabel} img="05-operations-overview.png" alt="Real screenshot of the EOC Smart Command Center operations overview" onImageOpen={openImage}
-              facts={[[rtl ? 'المشكلة' : 'The problem', c.eocProblem], [rtl ? 'النظام' : 'The system', c.eocSolution], [rtl ? 'دوري' : 'My role', c.eocContribution]]}
-              chips={c.eocModules}
-              tags={['React 19', 'Vite', 'Python', 'FastAPI', 'PostgreSQL', 'JWT', 'OpenAPI', 'Leaflet']}
-              actions={<a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>} />
-            <HzFile n="02" kicker={c.analyticsKicker} title={c.analyticsTitle} summary={c.analyticsSummary} label={c.dataLabel} img="dashboard_blurred_final.png" alt="Screenshot of the Power BI operational analytics dashboard" onImageOpen={openImage}
-              facts={[[c.analyticsMain, c.analyticsMainDesc], [c.village, c.villageDesc], [c.departments, c.departmentsDesc], [c.analyticsApproach, c.analyticsWorkflow]]}
-              tags={['Power BI', 'Power Query', 'Excel', 'QGIS']} actions={null} />
-            <HzFile n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} label={c.presentationLabel} img="pres.png" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
-              facts={[[c.presentationChallenge, c.presentationChallengeDesc], [c.presentationDesign, c.presentationDesignDesc], [c.presentationContribution, c.presentationContributionDesc]]}
-              tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
-              actions={<><button ref={presentationTriggerRef} className="text-link presentation-scroll-trigger" type="button" onClick={openEmbeddedPresentation} aria-haspopup="dialog">{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>} />
+      <section className="ec-work" id="work">
+        <div className="ec-reel" aria-label={rtl ? 'ريل المشروعات' : 'Project reel'}>
+          <div className="ec-reel-top"><div><span className="ec-tag">02 — {c.workEyebrow}</span><h2 className="ec-huge">{c.workTitle}</h2></div><span className="ec-count"><b>01</b> / {String(total).padStart(2, '0')} — {rtl ? 'مرّر لتدير الريل' : 'Scroll to turn the reel'}</span></div>
+          <div className="ec-rail">
+            {projects.map(([n, k, t, img]) => <a className="ec-card" href="#work-files" key={n}><img src={IMG(img)} alt="" width="1600" height="900" loading="lazy" decoding="async" /><span className="ec-cap"><small>FILE {n} · {k}</small><strong>{t}</strong></span></a>)}
+            {powerBiReports.map((r, i) => <button type="button" className="ec-card" key={r.id} onClick={(e) => openReport(r, e.currentTarget)} aria-haspopup="dialog"><ReportImage name={r.img} alt="" /><span className="ec-cap"><small>FILE {String(i + 4).padStart(2, '0')} · Power BI</small><strong>{r.title}</strong></span></button>)}
           </div>
-          <p className="hz-note">{c.artLabel}</p>
-          <Next href="#capabilities">{rtl ? "وماذا يوجد تحت الغطاء؟" : "What is under the hood?"}</Next>
+          <div className="ec-bar" aria-hidden="true"><i /></div>
+        </div>
+        <div className="ec-cases" id="work-files">
+          <Case n="01" kicker={c.eocKicker} title={c.eocTitle} summary={c.eocSummary} img="05-operations-overview.webp" alt="Real screenshot of the EOC Smart Command Center operations overview" onImageOpen={openImage}
+            facts={[[rtl ? 'المشكلة' : 'The problem', c.eocProblem], [rtl ? 'النظام' : 'The system', c.eocSolution], [rtl ? 'دوري' : 'My role', c.eocContribution]]}
+            chips={c.eocModules} tags={['React 19', 'Vite', 'Python', 'FastAPI', 'PostgreSQL', 'JWT', 'OpenAPI', 'Leaflet']}
+            actions={<a className="button button--dark" href={links.systemRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a>} />
+          <Case n="02" kicker={c.analyticsKicker} title={c.analyticsTitle} summary={c.analyticsSummary} img="dashboard_blurred_final.webp" alt="Screenshot of the Power BI operational analytics dashboard" onImageOpen={openImage}
+            facts={[[c.analyticsMain, c.analyticsMainDesc], [c.village, c.villageDesc], [c.departments, c.departmentsDesc], [c.analyticsApproach, c.analyticsWorkflow]]}
+            tags={['Power BI', 'Power Query', 'Excel', 'QGIS']} actions={null} />
+          <Case n="03" kicker={c.presentationKicker} title={c.presentationTitle} summary={c.presentationSummary} img="pres.webp" alt="Screenshot of the EOC interactive presentation" onImageOpen={openImage}
+            facts={[[c.presentationChallenge, c.presentationChallengeDesc], [c.presentationDesign, c.presentationDesignDesc], [c.presentationContribution, c.presentationContributionDesc]]}
+            tags={['React 19', 'TypeScript', 'Vite', 'Framer Motion', 'Recharts']}
+            actions={<><button ref={presentationTriggerRef} className="button button--dark presentation-scroll-trigger" type="button" onClick={() => setShowPresentationEmbed(true)} aria-haspopup="dialog">{c.openDemo}<Arrow /></button><a className="text-link" href={links.presentationRepo} target="_blank" rel="noreferrer">{c.openSource}<Arrow diagonal /></a></>} />
+          {powerBiReports.map((r, i) => {
+            const d = rtl && r.ar ? { ...r, ...r.ar } : r;
+            const open = (e) => openReport(r, e.currentTarget);
+            return <Case key={r.id} n={String(i + 4).padStart(2, '0')} kicker={d.kicker || (rtl ? 'تقرير Power BI منشور' : 'Power BI · Published report')} title={d.title} summary={d.summary} facts={d.facts} chips={d.chips} tags={d.tags || ['Power BI']} onImageOpen={openImage}
+              figure={<figure className="ec-case-fig"><button type="button" className="ec-case-open" onClick={open} aria-haspopup="dialog" aria-label={`${rtl ? 'افتح التقرير التفاعلي' : 'Open the interactive report'}: ${d.title}`}><ReportImage name={r.img} alt="" /><span className="ec-case-open-cta">{rtl ? 'افتح التقرير التفاعلي' : 'Open interactive report'} →</span></button></figure>}
+              actions={<><button className="button button--dark" type="button" onClick={open} aria-haspopup="dialog">{rtl ? 'افتح التقرير' : 'Open interactive report'}<Arrow /></button><a className="text-link" href={r.url} target="_blank" rel="noreferrer">{rtl ? 'فتح الأصل في تبويب جديد' : 'Open original in a new tab'}<Arrow diagonal /></a></>} />;
+          })}
+          <p className="ec-note">{c.artLabel}</p>
+        </div>
+      </section>
+      {activeReport && <ReportModal report={activeReport} rtl={rtl} onClose={closeReport} />}
+
+      <section className="ec-tools" id="capabilities">
+        <div className="ec-ring-stage">
+          <div className="ec-cap-top"><div><span className="ec-tag">03 — {c.capabilitiesKicker}</span><h2 className="ec-huge">{rtl ? 'الأدوات' : 'Toolkit'}</h2></div><span className="ec-count"><b>01</b> / 06 — {rtl ? 'مرّر لتدير الحلقة' : 'Scroll to turn the ring'}</span></div>
+          <div className="ec-ring">{nodes.map(([t, d], i) => <div className="ec-node" style={{ '--i': i }} key={t}><b>{String(i + 1).padStart(2, '0')}</b><strong>{t}</strong><small>{d}</small></div>)}</div>
+        </div>
+        <div className="hz-wrap"><div className="ec-groups">{groups.map(([t, d, list], i) => <article key={t} data-reveal><b>{String(i + 1).padStart(2, '0')}</b><h3>{t}</h3><p>{d}</p><ul>{list.map((x) => <li key={x}>{x}</li>)}</ul></article>)}</div></div>
+      </section>
+
+      <section className="ec-exp" id="experience">
+        <div className="ec-ghost" aria-hidden="true"><span>{rtl ? 'الخبرة — قسطل · أرقين · العريش — الاستجابة — الخبرة — قسطل · أرقين · العريش — ' : 'Experience — Qostol · Arqeen · El-Arish — Field response — Experience — Qostol · Arqeen · El-Arish — '}</span></div>
+        <div className="ec-exp-pin">
+          <div className="ec-exp-head"><span className="ec-tag">04 — {c.experienceKicker}</span><h2 className="ec-huge ec-huge--sm">{rtl ? 'أين اختُبر كل هذا' : 'Where it was tested'}</h2><p>{c.experienceIntro}</p></div>
+          <div className="ec-track">{jobs.map(([t, org, date, desc], i) => <article className="ec-job" key={t}><div><time>{String(i + 1).padStart(2, '0')} — {date}</time><h3>{t}</h3><span className="org">{org}</span></div><p>{desc}</p></article>)}</div>
         </div>
       </section>
 
-      {showPresentationEmbed && createPortal(<section className="embedded-presentation-section" id="live-presentation" role="dialog" aria-modal="true" aria-labelledby="embedded-presentation-title">
-        <div className="section-wrap">
-          <div className="embedded-presentation-heading">
-            <div>
-              <div className="eyebrow"><span className="eyebrow-dot" />{c.embeddedPresentationEyebrow}</div>
-              <h2 id="embedded-presentation-title">{c.embeddedPresentationTitle}</h2>
-              <p>{c.embeddedPresentationDesc}</p>
-            </div>
-            <button ref={presentationCloseButtonRef} className="presentation-hide-button" type="button" onClick={() => setShowPresentationEmbed(false)}>{c.hidePresentation}</button>
-          </div>
-          <div className="embedded-presentation-frame">
-            <iframe
-              src={links.presentationLive}
-              title={c.presentationTitle}
-              loading="eager"
-              allow="fullscreen; autoplay; clipboard-write"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
-          <a className="text-link embedded-presentation-external" href={links.presentationLive} target="_blank" rel="noreferrer">{c.openPresentationInNewTab}<Arrow diagonal /></a>
-        </div>
-      </section>, document.body)}
-
-      <section className="hz-sec hz-cap" id="capabilities">
-        <div className="hz-wrap">
-          <div className="hz-head" data-reveal><div><div className="hz-label"><i>03</i>{c.capabilitiesKicker}</div><h2>{c.capabilitiesTitle}</h2></div><p>{c.capabilitiesIntro}</p></div>
-          <div className="hz-bento">
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--data"><i /><i /><i /><i /><i /><i /><i /></div><span className="n">01</span><h3>{c.skillData}</h3><p>{c.skillDataDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillDataList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--code"><i /><i /><i /><i /><b /></div><span className="n">02</span><h3>{c.skillBuild}</h3><p>{c.skillBuildDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillBuildList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--pulse"><i /><i /><i /><b /></div><span className="n">03</span><h3>{c.skillHuman}</h3><p>{c.skillHumanDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillHumanList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-            <article className="hz-spot hz-b" data-reveal><div className="hz-viz hz-viz--slides"><i /><i /><i /></div><span className="n">04</span><h3>{c.skillComms}</h3><p>{c.skillCommsDesc}</p><div className="hz-meter" aria-hidden="true"><i /></div><ul>{c.skillCommsList.map((x) => <li key={x}>{x}</li>)}</ul></article>
-          </div>
-          <Next href="#experience">{rtl ? "وأين اختُبر كل هذا؟" : "Where was it tested?"}</Next>
-        </div>
-      </section>
-
-      <section className="hz-sec hz-exp" id="experience">
-        <div className="hz-wrap">
-          <div className="hz-head" data-reveal><div><div className="hz-label"><i>04</i>{c.experienceKicker}</div><h2>{c.experienceTitle}</h2></div><p>{c.experienceIntro}</p></div>
-          <div className="hz-ledger">
-            <span className="hz-tl-line" aria-hidden="true" />
-            {[['01', c.exp1Title, c.exp1Org, c.exp1Date, c.exp1Desc], ['02', c.exp2Title, c.exp2Org, c.exp2Date, c.exp2Desc], ['03', c.exp3Title, c.exp3Org, c.exp3Date, c.exp3Desc], ['04', c.exp4Title, c.exp4Org, c.exp4Date, c.exp4Desc]].map((it) => <article className="hz-job" key={it[0]}><span className="hz-dot" aria-hidden="true" /><time>{it[3]}</time><div className="hz-job-t"><h3>{it[1]}</h3><p>{it[2]}</p></div><p className="hz-job-b">{it[4]}</p></article>)}
-          </div>
-          <Next href="#education">{rtl ? "وما الذي شكّل هذا النهج؟" : "What shaped this approach?"}</Next>
-        </div>
-      </section>
-
-      <section className="hz-sec hz-edu" id="education">
-        <div className="hz-wrap hz-edu-grid">
-          <div data-reveal>
-            <div className="hz-label"><i>05</i>{c.educationKicker}</div>
-            <h2>{c.educationTitle}</h2>
+      <section className="ec-edu" id="education">
+        <div className="hz-wrap ec-edu-grid">
+          <div data-reveal><span className="ec-tag">05 — {c.educationKicker}</span><h2 className="ec-huge ec-huge--sm">{c.educationTitle}</h2>
             <div className="hz-edu-item"><span>01</span><div><h3>{c.education}</h3><p>{c.educationOrg}</p><small>{c.educationStatus}</small></div></div>
-            <div className="hz-edu-item"><span>02</span><div><h3>{c.course}</h3><p>{c.courseOrg}</p><small>{c.courseDetails}</small></div></div>
-          </div>
-          <div className="hz-panel" data-reveal>
-            <div className="hz-label hz-label--sm">{c.trainingLabel}</div>
-            <ul>{c.trainings.map((t) => <li key={t}>{t}</li>)}</ul>
-            <div className="hz-label hz-label--sm">{c.languagesLabel}</div>
-            <p>{c.languageDetails}</p>
-          </div>
-          <Next href="#contact">{rtl ? "هل نبني شيئًا معًا؟" : "Shall we build something?"}</Next>
+            <div className="hz-edu-item"><span>02</span><div><h3>{c.course}</h3><p>{c.courseOrg}</p><small>{c.courseDetails}</small></div></div></div>
+          <div className="hz-panel" data-reveal><div className="hz-label hz-label--sm">{c.trainingLabel}</div><ul>{c.trainings.map((t) => <li key={t}>{t}</li>)}</ul><div className="hz-label hz-label--sm">{c.languagesLabel}</div><p>{c.languageDetails}</p></div>
         </div>
       </section>
 
-      <section className="hz-sec hz-contact" id="contact">
-        <div className="hz-big" aria-hidden="true">{rtl ? '' : 'LET’S TALK'}</div>
-        <div className="hz-wrap" data-reveal>
-          <div className="hz-label"><i>06</i>{c.contactKicker}</div>
-          <h2>{c.contactTitle}</h2>
+      <section className="ec-contact hz-contact" id="contact">
+        <div className="ec-contact-top">
+          <svg className="ec-signal" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><polyline className="ec-signal-line" points="0,60 1200,60" /><circle className="ec-signal-dot" cx="1188" cy="60" r="5" /></svg>
+          <div className="ec-big" aria-hidden="true">{rtl ? 'لنتحدث' : 'LET’S TALK'}</div>
+        </div>
+        <div className="hz-wrap">
+          <span className="ec-tag">06 — {c.contactKicker}</span>
+          <h2 className="ec-huge ec-huge--sm">{c.contactTitle}</h2>
           <p>{c.contactDesc}</p>
           <form className="hz-terminal" dir={rtl ? 'rtl' : 'ltr'} onSubmit={(event) => {
             event.preventDefault();
@@ -860,3 +747,4 @@ function App() {
 }
 
 export default App;
+

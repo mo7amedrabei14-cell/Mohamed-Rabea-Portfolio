@@ -1,0 +1,34 @@
+{
+  "probes": {
+    "h1": [
+      "Mohamed Rabea. — Clear data. Better decisions. Systems that work."
+    ],
+    "headings": [
+      "H3 Mohamed Rabea",
+      "H2 About me",
+      "H2 Built around real needs.",
+      "H3 EOC Smart Command Center",
+      "H3 Power BI & Operational Analytics",
+      "H3 EOC Interactive Presentation",
+      "H3 Published reports you can explore",
+      "H2 Toolkit",
+      "H3 Data & Business Intelligence",
+      "H3 Full-Stack Development",
+      "H3 Humanitarian Operations",
+      "H3 Communication & Design",
+      "H2 Where it was tested",
+      "H3 Emergency Operations Center Supervisor",
+      "H3 Field missions & emergency response",
+      "H3 Fundraising Member",
+      "H3 Activity Coordinator",
+      "H2 Learning across disciplines.",
+      "H3 Civil Engineering student",
+      "H3 Structural Design Course",
+      "H2 Let’s make complex work clearer."
+    ],
+    "buttonsNoName": [],
+    "imgsNoAlt": [],
+    "tabbables": 40
+  },
+  "errors": []
+}

@@ -5,9 +5,9 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 
 const TONE = `${import.meta.env.BASE_URL}images/face-tone.png`;
-const ACCENT = '#ff5a3c', ICE = '#eef0ff', PERI = '#9aa6ff';
+const ACCENT = '#E10600', ICE = '#C0C0C0', PERI = '#8c8c8c';
 const NAME = 'MOHAMED RABEA';
-const FIELD_N = (coarse) => (coarse ? 1200 : 3600);
+const FIELD_N = (coarse) => (coarse ? 800 : 2200);
 const rng = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
 // ---- Portrait: a hex halftone. Dot size follows the picture's brightness. ----
@@ -144,7 +144,7 @@ function startField(hero, seed, coarse, still) {
   const advance = () => { if (!formed) complete(); else nextSentence(); };
 
   const layout = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 1.5), r = cv.getBoundingClientRect();
     w = r.width; h = r.height;
     cv.width = w * dpr; cv.height = h * dpr;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -306,26 +306,11 @@ export function startHorizon() {
   let projectStackMotion;
   const ctx = gsap.context(() => {
     if (reduced) return;
-    gsap.fromTo('.hz-manifesto .w', { opacity: .14 }, { opacity: 1, ease: 'none', stagger: .12, scrollTrigger: { trigger: '.hz-manifesto', start: 'top 82%', end: 'bottom 46%', scrub: true } });
-    const cards = gsap.utils.toArray('.hz-file');
-    projectStackMotion = gsap.matchMedia();
-    projectStackMotion.add('(min-width: 981px) and (hover: hover) and (pointer: fine)', () => {
-      cards.forEach((card, i) => { if (cards[i + 1]) gsap.to(card, { scale: .93, opacity: .5, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: cards[i + 1], start: 'top 82%', end: 'top 14%', scrub: true } }); });
-    });
-    gsap.fromTo('.hz-tl-line', { scaleY: 0 }, { scaleY: 1, ease: 'none', transformOrigin: '50% 0', scrollTrigger: { trigger: '.hz-ledger', start: 'top 70%', end: 'bottom 60%', scrub: true } });
-    gsap.utils.toArray('.hz-job').forEach((el) => ScrollTrigger.create({ trigger: el, start: 'top 68%', onEnter: () => el.classList.add('is-on'), onLeaveBack: () => el.classList.remove('is-on') }));
     const skew = gsap.quickTo('.hz-skew', 'skewX', { duration: .5, ease: 'power3.out' });
     ScrollTrigger.create({ onUpdate: (s) => skew(gsap.utils.clamp(-9, 9, s.getVelocity() / -260)) });
   });
   off.push(() => { projectStackMotion?.revert(); ctx.revert(); });
 
-  // Tall case files must stay readable: stick them where their bottom edge is visible.
-  const fixStick = () => document.querySelectorAll('.hz-file').forEach((el, i) => { el.style.top = `${Math.min(92 + i * 26, innerHeight - el.offsetHeight - 24)}px`; });
-  fixStick();
-  addEventListener('resize', fixStick);
-  const fro = new ResizeObserver(fixStick);
-  document.querySelectorAll('.hz-file').forEach((el) => fro.observe(el));
-  off.push(() => { removeEventListener('resize', fixStick); fro.disconnect(); });
   const reel = document.querySelector('.hz-reel video');
   if (reel) {
     const hide = () => reel.closest('.hz-reel')?.setAttribute('hidden', '');
@@ -343,7 +328,7 @@ export function startHorizon() {
   };
   const cleanup = () => { dead = true; stopField?.(); off.forEach((f) => f()); if (tick) gsap.ticker.remove(tick); lenis?.destroy(); };
 
-  if (reduced) { beginField(null); return cleanup; }
+  if (reduced) { beginField(null); setTimeout(() => { window.dispatchEvent(new Event('ec-intro-reveal')); window.dispatchEvent(new Event('ec-intro-done')); }, 60); return cleanup; }
 
   // ---- Intro: one letter cycles fast through the name → it unfolds into the name → the name melts into dots → the dots become a halftone portrait → we go in ----
   root.classList.add('hz-intro');
@@ -359,25 +344,50 @@ export function startHorizon() {
   gsap.set(CH, { opacity: 0 });
   const LET = [...NAME.replace(' ', '')];
 
+  let sweep = null, gL = 0, gW = 1;
   let vw = 0, vh = 0, P = [], raf = 0, phase = 'cycle', mx = -999, my = -999, done = false, tGather = 0, S = 600, PG = 5;
-  const T0 = performance.now(), total = 7600, timers = [];
-  const size = () => { const dpr = Math.min(devicePixelRatio || 1, 2); vw = innerWidth; vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
-  const portraitBox = () => { S = Math.min(vh * .74, vw * .92, 700); PG = Math.max(3, Math.min(5.2, S / 140)); };
+  const T0 = performance.now(), total = 12800, timers = [];
+  const size = () => { const dpr = Math.min(devicePixelRatio || 1, 1.5); vw = innerWidth; vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  const portraitBox = () => { S = Math.min(vh * .74, vw * .92, 640); PG = Math.max(3.4, Math.min(5.6, S / 120)); };
   const aim = () => { portraitBox(); for (const p of P) { p.tx = vw / 2 + p.q[0] * S; p.ty = vh * .46 + p.q[1] * S; } };
   const tone = loadTone();
 
   const draw = (t) => {
     g.clearRect(0, 0, vw, vh);
+    // Signal: a red line that starts as noise and settles once the name is written.
+    if (phase !== 'release') {
+      const amp = phase === 'cycle' ? 16 : phase === 'expand' ? 8 : phase === 'dots' ? 2.5 : phase === 'gather' ? 2.5 * (1 - Math.min(1, (performance.now() - tGather) / 1800)) : 0;
+      g.strokeStyle = 'rgba(225,6,0,.85)'; g.lineWidth = 1.3; g.beginPath();
+      const y0 = vh * .86;
+      for (let x = 0; x <= vw; x += 8) {
+        const n = Math.sin(x * .045 + t * .012) * .5 + Math.sin(x * .11 - t * .021) * .35 + Math.sin(x * .27 + t * .04) * .15;
+        const edge = Math.min(1, x / (vw * .15), (vw - x) / (vw * .15));
+        const y = y0 + n * amp * edge;
+        if (x) g.lineTo(x, y); else g.moveTo(x, y);
+      }
+      g.stroke();
+    }
+    // The name turns into dots one column at a time, left → right: a thin red line marks the front.
+    let front = -1e9;
+    if (sweep) {
+      const q = Math.min(1, (performance.now() - sweep.t0) / sweep.dur), ease = q < .5 ? 4 * q * q * q : 1 - (-2 * q + 2) ** 3 / 2;
+      front = sweep.left - sweep.band + ease * (sweep.right - sweep.left + sweep.band * 2);
+      sweep.rects.forEach((r, i) => { if (!sweep.gone.has(i) && r.left + r.width / 2 <= front + sweep.band * .5) { sweep.gone.add(i); gsap.to(CH[i], { opacity: 0, duration: .32 }); } });
+      if (q < 1) { g.fillStyle = 'rgba(225,6,0,.7)'; g.fillRect(front + sweep.band * .5 - 1, sweep.top, 2, sweep.bot - sweep.top); }
+    }
     if (!P.length) return;
     const e = phase === 'gather' ? Math.min(1, (performance.now() - tGather) / 2600) : 0;
     const k = phase === 'gather' ? .006 + .02 * e ** 1.2 : phase === 'dots' ? 0 : .02;
     const sw = phase === 'gather' ? (1 - e) * .28 : 0;
     const buckets = [[], [], [], [], [], [], [], [], [], [], [], []], acc = [];
+    const gt = phase === 'gather' ? performance.now() - tGather : 0;
     for (const p of P) {
+      if (!p.on) { if (sweep && p.x0 <= front + sweep.band * .5) { p.on = true; p.vx = (Math.random() - .5) * 2.6; p.vy = (Math.random() - .5) * 2.6; } else if (phase === 'gather') p.on = true; else continue; }
       const dx = mx - p.x, dy = my - p.y, d2 = dx * dx + dy * dy;
       if (phase !== 'dots' && d2 < 15000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 15000) * 2.6; p.vx -= dx / d * f; p.vy -= dy / d * f; }
-      p.vx += (p.tx - p.x) * k + Math.sin(t * .0017 + p.y * .013) * sw;
-      p.vy += (p.ty - p.y) * k + Math.cos(t * .0015 + p.x * .011) * sw;
+      const wake = phase !== 'gather' || gt >= p.gd, kk = wake ? k : 0, ss = wake ? sw : 0;
+      p.vx += (p.tx - p.x) * kk + Math.sin(t * .0017 + p.y * .013) * ss;
+      p.vy += (p.ty - p.y) * kk + Math.cos(t * .0015 + p.x * .011) * ss;
       p.vx *= .88; p.vy *= .88; p.x += p.vx; p.y += p.vy;
       p.cr += (p.rt - p.cr) * .05;
       (p.c ? acc : buckets[Math.min(11, (p.cr * 2.6) | 0)]).push(p);
@@ -394,7 +404,7 @@ export function startHorizon() {
   LET.forEach((ch, i) => timers.push(setTimeout(() => {
     if (dead || done) return;
     one.textContent = ch; one.classList.toggle('last', i === LET.length - 1);
-    gsap.fromTo(one, { scale: 1.12, opacity: .2, filter: 'blur(8px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: .1, ease: 'power2.out', overwrite: true });
+    gsap.fromTo(one, { scale: 1.12, opacity: .2, filter: 'blur(8px)', textShadow: '-10px 0 0 rgba(225,6,0,.9), 10px 0 0 rgba(192,192,192,.45)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', textShadow: '0px 0 0 rgba(225,6,0,0), 0px 0 0 rgba(192,192,192,0)', duration: .1, ease: 'power2.out', overwrite: true });
   }, 300 + i * STEP)));
   const tExpand = 300 + LET.length * STEP + 300;
 
@@ -403,7 +413,7 @@ export function startHorizon() {
     if (dead || done) return;
     phase = 'expand';
     gsap.to(one, { scale: .3, opacity: 0, duration: .35, ease: 'power3.in' });
-    gsap.fromTo(CH, { x: (i, el) => vw / 2 - (el.getBoundingClientRect().left + el.offsetWidth / 2), scale: 1, opacity: 0 }, { x: 0, y: 0, scale: 1, opacity: 1, filter: 'none', duration: 1.1, ease: 'expo.out', delay: .12, stagger: { each: .05, from: 'center' }, onComplete: () => {
+    gsap.fromTo(CH, { x: -30, scale: 1, opacity: 0 }, { x: 0, y: 0, scale: 1, opacity: 1, filter: 'none', duration: .75, ease: 'power3.out', delay: .1, stagger: { each: .06, from: 'start' }, onComplete: () => {
       // Lock the complete name in place before the pixel-morph begins.
       gsap.set(CH, { x: 0, y: 0, scale: 1, opacity: 1, filter: 'none' });
       timers.push(setTimeout(toDots, 450));
@@ -444,9 +454,11 @@ export function startHorizon() {
     for (let i = shape.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [shape[i], shape[j]] = [shape[j], shape[i]]; }
     P = pts.map((p, i) => { const q = shape[i % shape.length] || [vw / 2, vh / 2]; return { ...p, rt: 1.3, cr: 1.1 + Math.random() * .5, x: q[0], y: q[1], vx: 0, vy: 0, tx: q[0], ty: q[1] }; });
     phase = 'dots';
-    // Dots inherit the exact letter positions and stay still; only then do they gather into the portrait.
-    gsap.to(CH, { opacity: 0, duration: .3 });
-    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); aim(); P.forEach((p) => { p.rt = p.r; }); }, 500));
+    // Dots inherit the exact letter positions. A front sweeps left → right: letters turn into dots column by column, then the dots leave for the portrait in the same direction.
+    const left = Math.min(...rects.map((r) => r.left)), right = Math.max(...rects.map((r) => r.right));
+    P.forEach((p) => { p.x0 = p.x; p.on = false; p.gd = 0; });
+    sweep = { t0: performance.now(), dur: 1700, left, right, band: (right - left) * .08, rects, gone: new Set(), top: Math.min(...rects.map((r) => r.top)) - 6, bot: Math.max(...rects.map((r) => r.bottom)) + 6 };
+    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); gL = left; gW = Math.max(1, right - left); aim(); P.forEach((p) => { p.rt = p.r; p.gd = (p.x0 - gL) / gW * 950; }); sweep = null; timers.push(setTimeout(finish, 6800)); }, 2250));
   };
 
   // 5. we go in
@@ -458,7 +470,11 @@ export function startHorizon() {
     root.classList.remove('hz-intro');
     reveal();
     beginField(seed.length ? seed : null);
-    gsap.fromTo(cur, { clipPath: 'circle(150% at 50% 42%)' }, { clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut', onComplete: () => { cur.remove(); startScroll(); } });
+    const ring = document.createElement('div'); ring.className = 'ec-wipe-ring';
+    const RD = 2 * 1.5 * Math.sqrt((vw * vw + vh * vh) / 2); ring.style.width = ring.style.height = `${RD}px`; document.body.append(ring);
+    gsap.fromTo(ring, { scale: 1, opacity: 1 }, { scale: .001, duration: 1.35, ease: 'expo.inOut', onComplete: () => ring.remove() });
+    timers.push(setTimeout(() => window.dispatchEvent(new Event('ec-intro-reveal')), 450));
+    gsap.fromTo(cur, { clipPath: 'circle(150% at 50% 42%)' }, { clipPath: 'circle(0% at 50% 42%)', duration: 1.35, ease: 'expo.inOut', onComplete: () => { cur.remove(); window.dispatchEvent(new Event('ec-intro-done')); startScroll(); } });
     gsap.to(cv, { opacity: 0, duration: .5, delay: .2, onComplete: () => { cancelAnimationFrame(raf); cv.remove(); } });
   };
 

@@ -1,0 +1,136 @@
+{
+  "docH": 19343,
+  "vh": 900,
+  "imgs": [
+    {
+      "src": "http://127.0.0.1:5174/images/Personal.jpg",
+      "ok": true,
+      "w": 1280,
+      "h": 1280,
+      "alt": "Mohamed Rabea",
+      "loading": "auto"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/badge-portrait.png",
+      "ok": true,
+      "w": 520,
+      "h": 650,
+      "alt": "Mohamed Rabea",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/Personal.jpg",
+      "ok": true,
+      "w": 1280,
+      "h": 1280,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/05-operations-overview.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/dashboard_blurred_final.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/pres.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/Psy%20supp.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/rise%20in%20water.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/sanbsa.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/05-operations-overview.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "Real screenshot of the EOC Smart Command Center operations overview",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/dashboard_blurred_final.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "Screenshot of the Power BI operational analytics dashboard",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/pres.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "Screenshot of the EOC interactive presentation",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/Psy%20supp.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/rise%20in%20water.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/sanbsa.png",
+      "ok": false,
+      "w": 0,
+      "h": 0,
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "http://127.0.0.1:5174/images/Personal.jpg",
+      "ok": true,
+      "w": 1280,
+      "h": 1280,
+      "alt": "Mohamed Rabea",
+      "loading": "auto"
+    }
+  ],
+  "canvases": 4,
+  "iframes": []
+}

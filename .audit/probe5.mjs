@@ -1,0 +1,15 @@
+import puppeteer from 'puppeteer-core';
+const b = await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox','--hide-scrollbars'],defaultViewport:{width:1440,height:900}});
+const p = await b.newPage();
+await p.goto('http://127.0.0.1:5174/',{waitUntil:'networkidle2'});
+await new Promise(r=>setTimeout(r,1200)); await p.keyboard.press('Escape'); await new Promise(r=>setTimeout(r,4500));
+const sample = async (label)=>{const s=await p.screenshot({encoding:'base64'});return await p.evaluate(async (b64)=>{const img=new Image();img.src='data:image/png;base64,'+b64;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d');g.drawImage(img,0,0);const px=(x,y)=>{const d=g.getImageData(x,y,1,1).data;return d[0]+','+d[1]+','+d[2];};return {hero:px(300,400),hero2:px(720,120)};},s);};
+const withAurora = await sample('with');
+await p.evaluate(()=>{document.querySelector('.rb-aurora__canvas').style.display='none';});
+await new Promise(r=>setTimeout(r,500));
+const without = await sample('without');
+await p.evaluate(()=>{document.querySelector('.rb-aurora__canvas').style.display='';document.querySelector('.hz-field').style.display='none';});
+await new Promise(r=>setTimeout(r,500));
+const noField = await sample('nofield');
+console.log(JSON.stringify({withAurora,without,noField}));
+await b.close();
