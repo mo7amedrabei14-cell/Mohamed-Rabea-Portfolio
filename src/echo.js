@@ -67,7 +67,7 @@ export function startEcho() {
           if (bar) bar.style.transform = `scaleX(${n > 1 ? t / (n - 1) : 1})`;
         };
         place(0);
-        ScrollTrigger.create({ trigger: reel, start: 'top top', end: () => `+=${window.innerHeight * (n - 1) * 0.9}`, pin: true, refreshPriority: 10, invalidateOnRefresh: true, onUpdate: (s) => place(s.progress * (n - 1)), onRefresh: (s) => place(s.progress * (n - 1)) });
+        ScrollTrigger.create({ trigger: reel, start: 'top top', end: () => `+=${window.innerHeight * (n - 1) * 0.9}`, pin: true, anticipatePin: 1, refreshPriority: 10, invalidateOnRefresh: true, onUpdate: (s) => place(s.progress * (n - 1)), onRefresh: (s) => place(s.progress * (n - 1)) });
       }
       // 2. Hexagonal toolkit ring
       const stage = document.querySelector('.ec-ring-stage');
@@ -76,7 +76,7 @@ export function startEcho() {
         const count = stage.querySelector('.ec-count b');
         const spin = (p) => { gsap.set(ring, { rotationY: -p * 300 * dir() }); if (count) count.textContent = String(Math.min(6, Math.round(p * 5) + 1)).padStart(2, '0'); };
         spin(0);
-        ScrollTrigger.create({ trigger: stage, start: 'top top', end: () => `+=${window.innerHeight * 3}`, pin: true, refreshPriority: 9, invalidateOnRefresh: true, onUpdate: (s) => spin(s.progress), onRefresh: (s) => spin(s.progress) });
+        ScrollTrigger.create({ trigger: stage, start: 'top top', end: () => `+=${window.innerHeight * 3}`, pin: true, anticipatePin: 1, refreshPriority: 9, invalidateOnRefresh: true, onUpdate: (s) => spin(s.progress), onRefresh: (s) => spin(s.progress) });
       }
       // 3. Horizontal experience track
       const pin = document.querySelector('.ec-exp-pin');
@@ -84,21 +84,32 @@ export function startEcho() {
       if (pin && track) {
         const dist = () => Math.max(0, track.scrollWidth - window.innerWidth + 80);
         const slide = (p) => gsap.set(track, { x: -dist() * p * dir() });
-        ScrollTrigger.create({ trigger: pin, start: 'top top', end: () => `+=${dist()}`, pin: true, refreshPriority: 8, invalidateOnRefresh: true, onUpdate: (s) => slide(s.progress), onRefresh: (s) => slide(s.progress) });
+        ScrollTrigger.create({ trigger: pin, start: 'top top', end: () => `+=${dist()}`, pin: true, anticipatePin: 1, refreshPriority: 8, invalidateOnRefresh: true, onUpdate: (s) => slide(s.progress), onRefresh: (s) => slide(s.progress) });
       }
       return undefined;
     });
   });
 
-  // Layout settles late (intro, fonts, images): measure again afterwards.
-  const refresh = () => ScrollTrigger.refresh();
-  const timers = [600, 2500, 6000].map((ms) => setTimeout(refresh, ms));
+  // Layout can settle late (intro, fonts, images). Measure again — but never while the page is moving, which is what makes pinned scenes jump.
+  let lastH = document.documentElement.scrollHeight, pending = 0;
+  const safeRefresh = () => {
+    clearTimeout(pending);
+    if (ScrollTrigger.isScrolling()) { pending = setTimeout(safeRefresh, 350); return; }
+    lastH = document.documentElement.scrollHeight;
+    ScrollTrigger.refresh();
+  };
+  const onImg = (e) => { if (e.target?.tagName === 'IMG' && document.documentElement.scrollHeight !== lastH) safeRefresh(); };
+  document.addEventListener('load', onImg, true);
+  const timers = [600].map((ms) => setTimeout(safeRefresh, ms));
+  const refresh = safeRefresh;
   window.addEventListener('load', refresh);
   window.addEventListener('ec-intro-done', refresh);
   document.fonts?.ready.then(refresh);
 
   return () => {
     timers.forEach(clearTimeout);
+    clearTimeout(pending);
+    document.removeEventListener('load', onImg, true);
     window.removeEventListener('load', refresh);
     window.removeEventListener('ec-intro-done', refresh);
     off.forEach((f) => f());

@@ -24,17 +24,32 @@ async function loadTone() {
   toneCache = { d: g.getImageData(0, 0, c.width, c.height).data, w: c.width, h: c.height };
   return toneCache;
 }
-function halftone(tone, S, P) {
-  const pts = [];
-  let row = 0;
-  for (let y = P / 2; y < S; y += P * .866, row++) {
-    for (let x = P / 2 + (row % 2 ? P / 2 : 0); x < S; x += P) {
-      const tx = Math.min(tone.w - 1, (x / S * tone.w) | 0), ty = Math.min(tone.h - 1, (y / S * tone.h) | 0), i = (ty * tone.w + tx) * 4;
-      if (tone.d[i + 3] < 140) continue;
-      const u = x / S, v = y / S, e = Math.min(1, u / .08, (1 - u) / .08, (1 - v) / .2), f = e * e * (3 - 2 * e);   // shoulders fade out instead of a hard crop
-      const r = P * .5 * Math.sqrt(tone.d[i] / 255) * .96 * f;
-      if (r > .42) pts.push({ q: [u - .5, v - .5], r, c: Math.random() < .006 ? 1 : 0 });
+// The portrait is a stipple: dots of (almost) one size whose spacing follows the picture — closer where it is bright, wider where it is dark.
+// It reads like an engraving, and has no visible grid. Dots are placed by dart-throwing with a variable minimum distance.
+function halftone(tone, S, coarse) {
+  const k = S / 640, rmin = (coarse ? 2.9 : 2.0) * k, rmax = (coarse ? 7.6 : 5.2) * k, cell = rmin / 1.5, gw = Math.ceil(S / cell) + 2;
+  const grid = new Array(gw * gw), xs = [], ys = [], rs = [], pts = [];
+  const attempts = coarse ? 190000 : 420000;
+  for (let n = 0; n < attempts; n++) {
+    const x = Math.random() * S, y = Math.random() * S, u = x / S, v = y / S;
+    const tx = Math.min(tone.w - 1, (u * tone.w) | 0), ty = Math.min(tone.h - 1, (v * tone.h) | 0), i = (ty * tone.w + tx) * 4;
+    if (tone.d[i + 3] < 140) continue;
+    const e = Math.min(1, u / .08, (1 - u) / .08, (1 - v) / .2), b = (tone.d[i] / 255) * e * e * (3 - 2 * e);   // shoulders fade out instead of a hard crop
+    if (b < .06 || Math.random() > Math.pow(b, .7) + .02) continue;
+    const r = rmin + (rmax - rmin) * Math.pow(1 - b, 1.3), cx = (x / cell) | 0, cy = (y / cell) | 0, R = Math.ceil(r / cell) + 1;
+    let ok = true;
+    for (let gx = Math.max(0, cx - R); gx <= Math.min(gw - 1, cx + R) && ok; gx++) {
+      for (let gy = Math.max(0, cy - R); gy <= Math.min(gw - 1, cy + R); gy++) {
+        const c = grid[gy * gw + gx];
+        if (!c) continue;
+        for (const j of c) { const dx = xs[j] - x, dy = ys[j] - y, rr = Math.max(r, rs[j]); if (dx * dx + dy * dy < rr * rr) { ok = false; break; } }
+        if (!ok) break;
+      }
     }
+    if (!ok) continue;
+    const j = xs.length; xs.push(x); ys.push(y); rs.push(r);
+    (grid[cy * gw + cx] || (grid[cy * gw + cx] = [])).push(j);
+    pts.push({ q: [u - .5, v - .5], r: 1.3 * k * (.8 + .5 * (1 - (r - rmin) / (rmax - rmin))), c: Math.random() < .006 ? 1 : 0 });
   }
   return pts;
 }
@@ -346,13 +361,18 @@ export function startHorizon() {
 
   let sweep = null, gL = 0, gW = 1;
   let vw = 0, vh = 0, P = [], raf = 0, phase = 'cycle', mx = -999, my = -999, done = false, tGather = 0, S = 600, PG = 5;
-  const T0 = performance.now(), total = 12800, timers = [];
-  const size = () => { const dpr = Math.min(devicePixelRatio || 1, 1.5); vw = innerWidth; vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
-  const portraitBox = () => { S = Math.min(vh * .74, vw * .92, 640); PG = Math.max(3.4, Math.min(5.6, S / 120)); };
+  const T0 = performance.now(), total = 10800, timers = [];
+  const size = () => { const dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2); vw = innerWidth; vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  const portraitBox = () => { S = Math.min(vh * .8, vw * .94, 720); };
   const aim = () => { portraitBox(); for (const p of P) { p.tx = vw / 2 + p.q[0] * S; p.ty = vh * .46 + p.q[1] * S; } };
   const tone = loadTone();
+  let stippled = null;   // { S, pts } computed while the letters are still cycling
+  tone.then((tn) => { setTimeout(() => { if (dead || done) return; portraitBox(); stippled = { S, pts: halftone(tn, S, coarse) }; }, 900); }).catch(() => {});
 
+  let lastT = 0, settled = false, settledAt = 0;
   const draw = (t) => {
+    // Motion is driven by real time, not by the frame count, so a slow machine converges to the same picture.
+    const fs = lastT ? Math.max(.5, Math.min(3, (t - lastT) / 16.67)) : 1; lastT = t;
     g.clearRect(0, 0, vw, vh);
     // Signal: a red line that starts as noise and settles once the name is written.
     if (phase !== 'release') {
@@ -377,25 +397,32 @@ export function startHorizon() {
     }
     if (!P.length) return;
     const e = phase === 'gather' ? Math.min(1, (performance.now() - tGather) / 2600) : 0;
-    const k = phase === 'gather' ? .006 + .02 * e ** 1.2 : phase === 'dots' ? 0 : .02;
+    const k = phase === 'gather' ? .006 + .02 * e ** 1.2 + (e >= 1 ? .03 : 0) : phase === 'dots' ? 0 : .02;
     const sw = phase === 'gather' ? (1 - e) * .28 : 0;
     const buckets = [[], [], [], [], [], [], [], [], [], [], [], []], acc = [];
-    const gt = phase === 'gather' ? performance.now() - tGather : 0;
+    const gt = phase === 'gather' ? performance.now() - tGather : 0, damp = Math.pow(.88, fs), crk = 1 - Math.pow(.95, fs);
+    let err = 0;
     for (const p of P) {
       if (!p.on) { if (sweep && p.x0 <= front + sweep.band * .5) { p.on = true; p.vx = (Math.random() - .5) * 2.6; p.vy = (Math.random() - .5) * 2.6; } else if (phase === 'gather') p.on = true; else continue; }
       const dx = mx - p.x, dy = my - p.y, d2 = dx * dx + dy * dy;
-      if (phase !== 'dots' && d2 < 15000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 15000) * 2.6; p.vx -= dx / d * f; p.vy -= dy / d * f; }
+      if (phase !== 'dots' && d2 < 6000) { const d = Math.sqrt(d2) || 1, f = (1 - d2 / 6000) * 1.5 * fs; p.vx -= dx / d * f; p.vy -= dy / d * f; }
       const wake = phase !== 'gather' || gt >= p.gd, kk = wake ? k : 0, ss = wake ? sw : 0;
-      p.vx += (p.tx - p.x) * kk + Math.sin(t * .0017 + p.y * .013) * ss;
-      p.vy += (p.ty - p.y) * kk + Math.cos(t * .0015 + p.x * .011) * ss;
-      p.vx *= .88; p.vy *= .88; p.x += p.vx; p.y += p.vy;
-      p.cr += (p.rt - p.cr) * .05;
+      p.vx += ((p.tx - p.x) * kk + Math.sin(t * .0017 + p.y * .013) * ss) * fs;
+      p.vy += ((p.ty - p.y) * kk + Math.cos(t * .0015 + p.x * .011) * ss) * fs;
+      p.vx *= damp; p.vy *= damp; p.x += p.vx * fs; p.y += p.vy * fs;
+      p.cr += (p.rt - p.cr) * crk;
+      if (gt > 2500) err += Math.abs(p.tx - p.x) + Math.abs(p.ty - p.y);
       (p.c ? acc : buckets[Math.min(11, (p.cr * 2.6) | 0)]).push(p);
     }
     g.fillStyle = ICE;
     for (const b of buckets) { if (!b.length) continue; g.beginPath(); for (const p of b) { g.moveTo(p.x + p.cr, p.y); g.arc(p.x, p.y, p.cr, 0, 6.2832); } g.fill(); }
     g.fillStyle = ACCENT;
     g.beginPath(); for (const p of acc) { g.moveTo(p.x + p.cr, p.y); g.arc(p.x, p.y, p.cr, 0, 6.2832); } g.fill();
+    // The intro ends once the portrait has actually formed and been on screen for a moment (never before ~4.8 s, never later than ~9 s).
+    if (phase === 'gather' && !done) {
+      if (!settled && gt > 2500 && err / P.length < 1.1) { settled = true; settledAt = performance.now(); }
+      if ((gt > 4800 && settled && performance.now() - settledAt > 1400) || gt > 9000) finish();
+    }
   };
   const loop = (t) => { const pr = Math.min(1, (performance.now() - T0) / total); count.textContent = String(Math.round(pr * 100)).padStart(3, '0'); draw(t); raf = requestAnimationFrame(loop); };
 
@@ -425,7 +452,7 @@ export function startHorizon() {
     if (dead || done) return;
     const tn = await tone; if (dead || done) return;
     portraitBox();
-    const pts = halftone(tn, S, PG);
+    const pts = stippled && stippled.S === S ? stippled.pts : halftone(tn, S, coarse);
     const rects = CH.map((s) => s.getBoundingClientRect());
     const c2 = document.createElement('canvas'); c2.width = vw; c2.height = vh;
     const g2 = c2.getContext('2d', { willReadFrequently: true });
@@ -458,7 +485,7 @@ export function startHorizon() {
     const left = Math.min(...rects.map((r) => r.left)), right = Math.max(...rects.map((r) => r.right));
     P.forEach((p) => { p.x0 = p.x; p.on = false; p.gd = 0; });
     sweep = { t0: performance.now(), dur: 1700, left, right, band: (right - left) * .08, rects, gone: new Set(), top: Math.min(...rects.map((r) => r.top)) - 6, bot: Math.max(...rects.map((r) => r.bottom)) + 6 };
-    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); gL = left; gW = Math.max(1, right - left); aim(); P.forEach((p) => { p.rt = p.r; p.gd = (p.x0 - gL) / gW * 950; }); sweep = null; timers.push(setTimeout(finish, 6800)); }, 2250));
+    timers.push(setTimeout(() => { phase = 'gather'; tGather = performance.now(); gL = left; gW = Math.max(1, right - left); aim(); P.forEach((p) => { p.rt = p.r; p.gd = (p.x0 - gL) / gW * 950; }); sweep = null; }, 2250));
   };
 
   // 5. we go in

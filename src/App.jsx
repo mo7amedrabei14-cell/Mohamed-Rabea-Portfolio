@@ -380,6 +380,7 @@ function resetMagneticPointer(event) {
   event.currentTarget.style.setProperty('--magnetic-y', '0px');
 }
 
+const CASE_DIMS = { '05-operations-overview.webp': [1600, 900], 'dashboard_blurred_final.webp': [1600, 900], 'pres.webp': [1400, 787] };
 const IMG = (name) => `${import.meta.env.BASE_URL}images/${name}`;
 
 function Case({ n, kicker, title, summary, img, alt, facts = [], chips, tags = [], actions, onImageOpen, figure }) {
@@ -395,7 +396,7 @@ function Case({ n, kicker, title, summary, img, alt, facts = [], chips, tags = [
       <div className="ec-tags">{tags.map((t) => <span key={t}>{t}</span>)}</div>
       <div className="ec-actions">{actions}</div>
     </div>
-    {figure ?? <figure className="ec-case-fig"><img src={IMG(img)} alt={alt} loading="lazy" role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} /></figure>}
+    {figure ?? <figure className="ec-case-fig"><img src={IMG(img)} alt={alt} width={CASE_DIMS[img]?.[0]} height={CASE_DIMS[img]?.[1]} loading="lazy" decoding="async" role="button" tabIndex={0} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } }} /></figure>}
   </article>;
 }
 

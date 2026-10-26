@@ -205,9 +205,8 @@ button.ec-card{border:0;padding:0;font:inherit;text-align:start;cursor:pointer}
 .ec-wipe-ring{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--signal);z-index:9995;pointer-events:none}
 
 /* Power BI projects 04–06 use the same case layout; the figure opens the report */
-.ec-case-open{display:block;position:relative;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;text-align:start}
-.ec-case-open img{display:block;width:100%;height:auto;cursor:pointer}
-.ec-case-fig .ec-ph{position:static;aspect-ratio:16/10;width:100%;height:auto}
+.ec-case-open{display:block;position:relative;width:100%;aspect-ratio:1413/793;overflow:hidden;padding:0;border:0;background:var(--charcoal);color:inherit;font:inherit;cursor:pointer;text-align:start}
+.ec-case-open img,.ec-case-open .ec-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;cursor:pointer}
 .ec-case-open-cta{position:absolute;inset-inline:0;bottom:0;padding:56px 20px 16px;background:linear-gradient(0deg,var(--bg),transparent);font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--silver)}
 .ec-case-open:hover .ec-case-open-cta,.ec-case-open:focus-visible .ec-case-open-cta{color:var(--signal)}
 .ec-case-open:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
