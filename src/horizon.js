@@ -12,44 +12,57 @@ const rng = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^
 
 // ---- Portrait: a hex halftone. Dot size follows the picture's brightness. ----
 let toneCache;
-async function loadTone() {
-  if (toneCache) return toneCache;
+const toneCaches = {};
+async function loadTone(file = 'face-tone.png') {
+  if (toneCaches[file]) return toneCaches[file];
   const img = new Image();
-  img.src = TONE;
+  img.src = `${import.meta.env.BASE_URL}images/${file}`;
   await img.decode();
   const c = document.createElement('canvas');
   c.width = img.width; c.height = img.height;
   const g = c.getContext('2d', { willReadFrequently: true });
   g.drawImage(img, 0, 0);
-  toneCache = { d: g.getImageData(0, 0, c.width, c.height).data, w: c.width, h: c.height };
-  return toneCache;
+  toneCaches[file] = { d: g.getImageData(0, 0, c.width, c.height).data, w: c.width, h: c.height };
+  return toneCaches[file];
 }
-// The portrait is a stipple: dots of (almost) one size whose spacing follows the picture — closer where it is bright, wider where it is dark.
-// It reads like an engraving, and has no visible grid. Dots are placed by dart-throwing with a variable minimum distance.
-function halftone(tone, S, coarse) {
-  const k = S / 640, rmin = (coarse ? 2.9 : 2.0) * k, rmax = (coarse ? 7.6 : 5.2) * k, cell = rmin / 1.5, gw = Math.ceil(S / cell) + 2;
-  const grid = new Array(gw * gw), xs = [], ys = [], rs = [], pts = [];
-  const attempts = coarse ? 190000 : 420000;
-  for (let n = 0; n < attempts; n++) {
-    const x = Math.random() * S, y = Math.random() * S, u = x / S, v = y / S;
-    const tx = Math.min(tone.w - 1, (u * tone.w) | 0), ty = Math.min(tone.h - 1, (v * tone.h) | 0), i = (ty * tone.w + tx) * 4;
-    if (tone.d[i + 3] < 140) continue;
-    const e = Math.min(1, u / .08, (1 - u) / .08, (1 - v) / .2), b = (tone.d[i] / 255) * e * e * (3 - 2 * e);   // shoulders fade out instead of a hard crop
-    if (b < .06 || Math.random() > Math.pow(b, .7) + .02) continue;
-    const r = rmin + (rmax - rmin) * Math.pow(1 - b, 1.3), cx = (x / cell) | 0, cy = (y / cell) | 0, R = Math.ceil(r / cell) + 1;
-    let ok = true;
-    for (let gx = Math.max(0, cx - R); gx <= Math.min(gw - 1, cx + R) && ok; gx++) {
-      for (let gy = Math.max(0, cy - R); gy <= Math.min(gw - 1, cy + R); gy++) {
-        const c = grid[gy * gw + gx];
-        if (!c) continue;
-        for (const j of c) { const dx = xs[j] - x, dy = ys[j] - y, rr = Math.max(r, rs[j]); if (dx * dx + dy * dy < rr * rr) { ok = false; break; } }
-        if (!ok) break;
-      }
+// Portrait style A (default) — the original: a hex halftone, dot size follows the brightness of the photo. Untouched on purpose.
+function halftoneA(tone, S, P) {
+  const pts = [];
+  let row = 0;
+  for (let y = P / 2; y < S; y += P * .866, row++) {
+    for (let x = P / 2 + (row % 2 ? P / 2 : 0); x < S; x += P) {
+      const tx = Math.min(tone.w - 1, (x / S * tone.w) | 0), ty = Math.min(tone.h - 1, (y / S * tone.h) | 0), i = (ty * tone.w + tx) * 4;
+      if (tone.d[i + 3] < 140) continue;
+      const u = x / S, v = y / S, e = Math.min(1, u / .08, (1 - u) / .08, (1 - v) / .2), f = e * e * (3 - 2 * e);   // shoulders fade out instead of a hard crop
+      const r = P * .5 * Math.sqrt(tone.d[i] / 255) * .96 * f;
+      if (r > .42) pts.push({ q: [u - .5, v - .5], r, c: Math.random() < .006 ? 1 : 0 });
     }
-    if (!ok) continue;
-    const j = xs.length; xs.push(x); ys.push(y); rs.push(r);
-    (grid[cy * gw + cx] || (grid[cy * gw + cx] = [])).push(j);
-    pts.push({ q: [u - .5, v - .5], r: 1.3 * k * (.8 + .5 * (1 - (r - rmin) / (rmax - rmin))), c: Math.random() < .006 ? 1 : 0 });
+  }
+  return pts;
+}
+
+// Portrait style B — the same halftone, finer, with local contrast (unsharp mask) added.
+function enhanceTone(tone) {
+  if (tone.e) return tone.e;
+  const { w, h, d } = tone, n = w * h, g = new Float32Array(n), t = new Float32Array(n), bl = new Float32Array(n), R = 5, K = 2 * R + 1;
+  for (let i = 0; i < n; i++) g[i] = d[i * 4] / 255;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let k = -R; k <= R; k++) s += g[y * w + Math.min(w - 1, Math.max(0, x + k))]; t[y * w + x] = s / K; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let k = -R; k <= R; k++) s += t[Math.min(h - 1, Math.max(0, y + k)) * w + x]; bl[y * w + x] = s / K; }
+  const e = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const l = Math.min(1, Math.max(0, g[i] + .75 * (g[i] - bl[i]))); e[i] = Math.pow(Math.max(0, (l - .06) / .94), .8); }
+  return (tone.e = e);
+}
+function halftoneB(tone, S, P) {
+  const pts = [], E = enhanceTone(tone);
+  let row = 0;
+  for (let y = P / 2; y < S; y += P * .866, row++) {
+    for (let x = P / 2 + (row % 2 ? P / 2 : 0); x < S; x += P) {
+      const tx = Math.min(tone.w - 1, (x / S * tone.w) | 0), ty = Math.min(tone.h - 1, (y / S * tone.h) | 0), i = (ty * tone.w + tx) * 4;
+      if (tone.d[i + 3] < 140) continue;
+      const u = x / S, v = y / S, e = Math.min(1, u / .08, (1 - u) / .08, (1 - v) / .2), f = e * e * (3 - 2 * e);
+      const r = P * .5 * Math.sqrt(E[ty * tone.w + tx]) * 1.02 * f;
+      if (r > .42) pts.push({ q: [u - .5, v - .5], r, c: Math.random() < .006 ? 1 : 0 });
+    }
   }
   return pts;
 }
@@ -363,11 +376,23 @@ export function startHorizon() {
   let vw = 0, vh = 0, P = [], raf = 0, phase = 'cycle', mx = -999, my = -999, done = false, tGather = 0, S = 600, PG = 5;
   const T0 = performance.now(), total = 10800, timers = [];
   const size = () => { const dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2); vw = innerWidth; vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
-  const portraitBox = () => { S = Math.min(vh * .8, vw * .94, 720); };
+  const portraitBox = () => {
+    if (style === 'a') { S = Math.min(vh * .74, vw * .92, 700); PG = Math.max(3, Math.min(5.2, S / 140)); }
+    else { S = Math.min(vh * .78, vw * .92, 700); PG = coarse ? 4.8 : 3.6; }
+  };
+  const makePts = (tn) => {
+    portraitBox();
+    if (style === 'a') return halftoneA(tn, S, PG);
+    let q = halftoneB(tn, S, PG); const max = coarse ? 4500 : 11500;
+    while (q.length > max && PG < 9) { PG *= 1.05; q = halftoneB(tn, S, PG); }
+    return q;
+  };
   const aim = () => { portraitBox(); for (const p of P) { p.tx = vw / 2 + p.q[0] * S; p.ty = vh * .46 + p.q[1] * S; } };
-  const tone = loadTone();
+  // Portrait style: default is the original halftone (A). Add ?portrait=b to the address to compare a finer, higher-contrast version.
+  const style = new URLSearchParams(location.search).get('portrait') === 'b' ? 'b' : 'a';
+  const tone = loadTone('face-tone.png');
   let stippled = null;   // { S, pts } computed while the letters are still cycling
-  tone.then((tn) => { setTimeout(() => { if (dead || done) return; portraitBox(); stippled = { S, pts: halftone(tn, S, coarse) }; }, 900); }).catch(() => {});
+  tone.then((tn) => { setTimeout(() => { if (dead || done) return; portraitBox(); stippled = { S, pts: makePts(tn) }; }, 900); }).catch(() => {});
 
   let lastT = 0, settled = false, settledAt = 0;
   const draw = (t) => {
@@ -452,7 +477,7 @@ export function startHorizon() {
     if (dead || done) return;
     const tn = await tone; if (dead || done) return;
     portraitBox();
-    const pts = stippled && stippled.S === S ? stippled.pts : halftone(tn, S, coarse);
+    const pts = stippled && stippled.S === S ? stippled.pts : makePts(tn);
     const rects = CH.map((s) => s.getBoundingClientRect());
     const c2 = document.createElement('canvas'); c2.width = vw; c2.height = vh;
     const g2 = c2.getContext('2d', { willReadFrequently: true });
