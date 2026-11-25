@@ -247,7 +247,7 @@ export function PresentationModal({
             </div>
           ) : mode === 'srcdoc' ? (
             <iframe
-              className="ec-modal-frame ec-modal-frame--dark"
+              className={`ec-modal-frame ec-modal-frame--dark${frameReady ? ' is-ready' : ''}`}
               ref={frameRef}
               srcDoc={srcDocHtml}
               title={title}
@@ -261,7 +261,7 @@ export function PresentationModal({
             />
           ) : mode === 'direct' ? (
             <iframe
-              className="ec-modal-frame ec-modal-frame--dark"
+              className={`ec-modal-frame ec-modal-frame--dark${frameReady ? ' is-ready' : ''}`}
               ref={frameRef}
               src={url}
               title={title}
