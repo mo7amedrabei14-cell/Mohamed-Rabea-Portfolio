@@ -58,3 +58,31 @@ jobs:
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify-presentation:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependency
+        run: npm install --no-save --package-lock=false playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify presentation modal in a real browser
+        env:
+          SITE_URL: https://mo7amedrabei14-cell.github.io/Mohamed-Rabea-Portfolio/
+        run: node tools/verify-presentation.mjs
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-modal-browser-diagnostics
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
