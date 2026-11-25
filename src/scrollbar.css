@@ -5,9 +5,12 @@
  */
 
 :root {
+  scrollbar-gutter: stable;
+}
+
+* {
   scrollbar-width: thin;
   scrollbar-color: #c0c0c0 #0d0d0d;
-  scrollbar-gutter: stable;
 }
 
 /* Chromium / Safari */
@@ -79,8 +82,3 @@
   height: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *::-webkit-scrollbar-thumb {
-    scroll-behavior: auto;
-  }
-}
