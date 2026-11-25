@@ -5,6 +5,7 @@ import './styles.css';
 import './motion.css';
 import './horizon.css';
 import './ds.css';
+import './upgrade.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

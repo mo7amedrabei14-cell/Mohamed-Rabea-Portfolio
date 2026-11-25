@@ -136,7 +136,7 @@ const en = {
           label: 'Operations overview / real interface',
           code: 'SYS-01',
         },
-        links: [{ label: 'Explore source code', href: LINKS.systemRepo, external: true, style: 'solid' }],
+        links: [],
         tone: 'dark',
       },
       {
@@ -454,7 +454,7 @@ const ar = {
           label: 'نظرة عامة على العمليات / واجهة حقيقية',
           code: 'SYS-01',
         },
-        links: [{ label: 'استكشف الشيفرة المصدرية', href: LINKS.systemRepo, external: true, style: 'solid' }],
+        links: [],
         tone: 'dark',
       },
       {

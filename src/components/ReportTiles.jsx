@@ -38,9 +38,14 @@ export function ReportTile({ report, index, onOpen, rtl }) {
 export function ReportModal({ report, rtl, onClose }) {
   const closeRef = useRef(null);
   const panelRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
     const prev = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    window.__portfolioLenis?.stop?.();
     const onKey = (e) => {
       if (e.key === 'Escape') { onClose(); return; }
       if (e.key !== 'Tab') return;
@@ -52,19 +57,33 @@ export function ReportModal({ report, rtl, onClose }) {
     };
     window.addEventListener('keydown', onKey);
     closeRef.current?.focus();
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+    return () => {
+      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = prevHtml;
+      window.__portfolioLenis?.start?.();
+      window.removeEventListener('keydown', onKey);
+    };
   }, [onClose]);
+
   return createPortal(
-    <div className="ec-modal" role="dialog" aria-modal="true" aria-label={report.title} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="ec-modal" role="dialog" aria-modal="true" aria-label={report.title} dir={rtl ? 'rtl' : 'ltr'} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="ec-modal-panel" ref={panelRef}>
         <div className="ec-modal-bar">
-          <div><small>{rtl ? 'تقرير Power BI منشور' : 'Published Power BI report'}</small><strong>{report.title}</strong></div>
+          <div className="ec-modal-title-group"><small>{rtl ? 'تقرير Power BI منشور' : 'Published Power BI report'}</small><strong>{rtl && report.ar ? report.ar.title : report.title}</strong></div>
           <div className="ec-modal-actions">
-            <a className="text-link" href={report.url} target="_blank" rel="noreferrer">{rtl ? 'فتح الأصل في تبويب جديد' : 'Open original in a new tab'} ↗</a>
+            <a className="ec-modal-ext" href={report.url} target="_blank" rel="noreferrer">{rtl ? 'فتح الأصل في تبويب جديد' : 'Open original in a new tab'} ↗</a>
             <button ref={closeRef} type="button" className="ec-modal-close" onClick={onClose}>{rtl ? 'إغلاق' : 'Close'} <kbd>Esc</kbd></button>
           </div>
         </div>
-        <iframe className="ec-modal-frame" src={report.url} title={report.title} allowFullScreen loading="eager" />
+        <div className="ec-modal-stage">
+          {!loaded && (
+            <div className="ec-modal-loader" role="status" aria-live="polite">
+              <span className="ec-modal-spinner" aria-hidden="true" />
+              <span>{rtl ? 'جارٍ تحميل تقرير Power BI...' : 'Loading Power BI report...'}</span>
+            </div>
+          )}
+          <iframe className={`ec-modal-frame${loaded ? ' is-ready' : ''}`} src={report.url} title={report.title} allowFullScreen loading="eager" onLoad={() => setLoaded(true)} />
+        </div>
         <p className="ec-modal-hint">{rtl ? 'إن لم يظهر التقرير، استخدم رابط الفتح في تبويب جديد.' : 'If the report does not load here, use the link to open it in a new tab.'}</p>
       </div>
     </div>, document.body);

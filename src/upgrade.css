@@ -1,0 +1,1294 @@
+/* ============================================================================
+   MOHAMED RABEA PORTFOLIO — PREMIUM 3D, IDENTITY & MOTION UPGRADE LAYER
+   Strict Portfolio Palette:
+     --bg: #0D0D0D | --surface: #161616 | --charcoal: #2A2A2A
+     --silver: #C0C0C0 | --silver-hi: #EAEAEA | --signal: #E10600
+   ============================================================================ */
+
+:root {
+  --surface: #151515;
+  --surface-2: #1d1d1d;
+  --silver-hi: #eaeaea;
+  --signal-glow: rgba(225, 6, 0, 0.34);
+}
+
+/* Fix legacy button/progress conflicts */
+html::before {
+  background: linear-gradient(90deg, var(--silver) 0%, var(--signal) 100%);
+  height: 2px;
+  z-index: 1002;
+}
+
+.site-header .header-inner {
+  align-items: center;
+}
+
+/* ---------- Brand Identity Cluster (MR Logo + Separate Portrait Zoom Trigger) ---------- */
+.brand-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 18px 5px 6px;
+  border: 1px solid rgba(192, 192, 192, 0.16);
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.84);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.25s ease, transform 0.25s var(--ease);
+}
+.brand:hover {
+  border-color: rgba(225, 6, 0, 0.55);
+}
+.site--ar .brand {
+  padding: 5px 6px 5px 18px;
+}
+.brand .mr-logo {
+  flex: 0 0 auto;
+  display: block;
+}
+.brand-copy strong {
+  font: 700 11.5px var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--silver-hi);
+}
+.brand-copy small {
+  display: block !important;
+  margin-top: 2px;
+  font: 500 8.5px var(--mono);
+  letter-spacing: 0.14em;
+  color: rgba(192, 192, 192, 0.58);
+}
+
+.portrait-pill {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+  border: 1px solid rgba(192, 192, 192, 0.24);
+  border-radius: 50%;
+  background: rgba(13, 13, 13, 0.85);
+  cursor: zoom-in;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.25s ease, transform 0.28s var(--ease), box-shadow 0.25s ease;
+}
+.portrait-pill img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.portrait-pill:hover,
+.portrait-pill:focus-visible {
+  border-color: var(--signal);
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px rgba(225, 6, 0, 0.18);
+}
+
+.nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(13, 13, 13, 0.84);
+  border-color: rgba(192, 192, 192, 0.14);
+}
+.nav > a:not(.nav-contact)::after {
+  display: none;
+}
+
+/* ---------- Minimal Desktop Chapter Telemetry Rail ---------- */
+.cmd-rail {
+  position: fixed;
+  inset-inline-end: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 8px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.68);
+  border: 1px solid rgba(192, 192, 192, 0.12);
+  backdrop-filter: blur(8px);
+}
+.cmd-rail-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 4px 5px;
+  font: 500 9.5px var(--mono);
+  letter-spacing: 0.12em;
+  color: rgba(192, 192, 192, 0.45);
+  transition: color 0.2s ease;
+}
+.cmd-rail-tick {
+  width: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(192, 192, 192, 0.35);
+  transition: width 0.28s var(--ease), background 0.25s ease;
+}
+.cmd-rail-label {
+  position: absolute;
+  inset-inline-end: calc(100% + 12px);
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #141414;
+  border: 1px solid rgba(192, 192, 192, 0.22);
+  color: var(--silver-hi);
+  font: 500 10px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: opacity 0.2s ease, transform 0.25s var(--ease);
+}
+.site--ar .cmd-rail-label {
+  transform: translateX(-6px);
+}
+.cmd-rail-item:hover .cmd-rail-label,
+.cmd-rail-item:focus-visible .cmd-rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.cmd-rail-item.is-active {
+  color: var(--silver-hi);
+}
+.cmd-rail-item.is-active .cmd-rail-tick {
+  width: 18px;
+  background: var(--signal);
+  box-shadow: 0 0 10px rgba(225, 6, 0, 0.7);
+}
+.cmd-rail-num {
+  font-weight: 500;
+  direction: ltr;
+}
+@media (max-width: 1180px) {
+  .cmd-rail {
+    display: none;
+  }
+}
+
+/* ---------- Hero Polish ---------- */
+.ec-idx {
+  font: 500 12px var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--signal);
+  flex: 0 0 auto;
+}
+.site--ar .ec-phrase.scrambled-text,
+.ec-phrase--ar {
+  font-family: var(--arabic);
+  font-size: clamp(28px, 4.4vw, 72px);
+  font-weight: 700;
+  font-variation-settings: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.24;
+  color: var(--silver-hi);
+  animation: arPhraseIn 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes arPhraseIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- React Bits SpotlightCard ---------- */
+.rb-spotlight-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  --spot-x: 50%;
+  --spot-y: 50%;
+  transition: transform 0.42s var(--ease), border-color 0.3s ease, box-shadow 0.42s var(--ease);
+}
+.rb-spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(360px circle at var(--spot-x) var(--spot-y), var(--spot-color, rgba(225, 6, 0, 0.16)), transparent 58%),
+    radial-gradient(240px circle at var(--spot-x) var(--spot-y), var(--spot-silver, rgba(192, 192, 192, 0.12)), transparent 65%);
+  transition: opacity 0.35s ease;
+}
+.rb-spotlight-card > * {
+  position: relative;
+  z-index: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .rb-spotlight-card:hover::before {
+    opacity: 1;
+  }
+  .rb-spotlight-card:hover {
+    transform: translateY(-4px);
+    box-shadow: inset 0 0 0 1px rgba(192, 192, 192, 0.3), 0 24px 54px -26px rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* ---------- About Spatial Dossier ---------- */
+.ec-about-card {
+  background: linear-gradient(155deg, #1b1b1b 0%, #121212 100%);
+  box-shadow: inset 0 1px 0 rgba(192, 192, 192, 0.16), inset 0 0 0 1px rgba(192, 192, 192, 0.14), 0 36px 90px -40px rgba(0, 0, 0, 0.85);
+}
+
+.about-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+}
+
+.ec-bridge li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(13, 13, 13, 0.55);
+  color: var(--silver-hi);
+}
+.ec-bridge-num {
+  color: var(--signal);
+  font: 600 11px var(--mono);
+}
+
+.about-operator-card {
+  display: flex;
+  justify-content: flex-end;
+}
+.about-portrait-frame {
+  position: relative;
+  width: min(100%, 290px);
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 1px solid rgba(192, 192, 192, 0.22);
+  border-radius: 22px;
+  overflow: hidden;
+  background: #0d0d0d;
+  cursor: zoom-in;
+  box-shadow: 0 26px 60px -24px rgba(0, 0, 0, 0.85);
+  transition: transform 0.45s var(--ease), border-color 0.3s ease;
+}
+.about-portrait-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.04) saturate(0.92);
+  transition: transform 0.7s var(--ease), filter 0.4s ease;
+}
+.about-portrait-frame:hover {
+  transform: translateY(-4px);
+  border-color: rgba(225, 6, 0, 0.6);
+}
+.about-portrait-frame:hover img {
+  transform: scale(1.04);
+  filter: contrast(1.06) saturate(1);
+}
+.about-portrait-badge {
+  position: absolute;
+  inset-inline: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(13, 13, 13, 0.82);
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  backdrop-filter: blur(8px);
+  font: 500 10px var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--silver-hi);
+}
+
+.ec-method-brief {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(13, 13, 13, 0.65);
+  border-inline-start: 2px solid var(--signal);
+  box-shadow: inset 0 0 0 1px rgba(192, 192, 192, 0.1);
+}
+.ec-method-brief small {
+  display: block;
+  font: 600 11px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 6px;
+}
+.ec-method-brief p {
+  margin: 0 !important;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--silver-hi);
+}
+
+.ec-steps li {
+  padding: 0;
+  background: transparent;
+}
+.ec-steps button {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(192, 192, 192, 0.12);
+  border-radius: 16px;
+  background: rgba(13, 13, 13, 0.72);
+  color: var(--silver);
+  font: 700 16px var(--display);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s var(--ease);
+}
+.ec-steps li.is-active button,
+.ec-steps button:hover {
+  border-color: var(--signal);
+  background: rgba(225, 6, 0, 0.08);
+  color: var(--silver-hi);
+  transform: translateY(-2px);
+}
+.site--ar .ec-steps button {
+  font-family: var(--arabic);
+}
+
+.rb-counter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 3D Curved Project Reel Controls & Active Focus ---------- */
+.ec-reel-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ec-step-btns {
+  display: inline-flex;
+  gap: 8px;
+}
+.ec-step-btns button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(192, 192, 192, 0.26);
+  background: rgba(20, 20, 20, 0.85);
+  color: var(--silver-hi);
+  font: 600 15px var(--mono);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s var(--ease);
+}
+.ec-step-btns button:hover,
+.ec-step-btns button:focus-visible {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #0d0d0d;
+  transform: scale(1.06);
+}
+.ec-card.is-active {
+  box-shadow: inset 0 0 0 1.5px rgba(225, 6, 0, 0.65), 0 32px 74px rgba(0, 0, 0, 0.72);
+}
+
+/* ---------- Work Filter Bar (Prompt Motion shared pill aesthetics) ---------- */
+.ec-filter-bar {
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto -24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.ec-filter-pill {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  background: rgba(24, 24, 24, 0.78);
+  color: var(--s70);
+  font: 500 12px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s var(--ease);
+}
+.site--ar .ec-filter-pill {
+  font-family: var(--arabic);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.ec-filter-pill:hover {
+  border-color: rgba(192, 192, 192, 0.45);
+  color: var(--silver-hi);
+}
+.ec-filter-pill.is-active {
+  background: var(--silver-hi);
+  border-color: var(--silver-hi);
+  color: #0d0d0d;
+  font-weight: 700;
+}
+
+/* ---------- Multi-Plane SpatialFrame3D (True Z-Depth Project Showcases) ---------- */
+.sp3d-wrap {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  perspective: 1400px;
+}
+.ec-case:nth-child(even) .sp3d-wrap {
+  order: -1;
+}
+.sp3d-stage {
+  --rx: 0deg;
+  --ry: 0deg;
+  --glare-x: 50%;
+  --glare-y: 20%;
+  position: relative;
+  border-radius: 22px;
+  padding: 10px;
+  background: linear-gradient(160deg, #252525 0%, #141414 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(234, 234, 234, 0.16),
+    inset 0 0 0 1px rgba(192, 192, 192, 0.16),
+    0 34px 70px -28px rgba(0, 0, 0, 0.8);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
+  will-change: transform;
+}
+.sp3d-stage:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(234, 234, 234, 0.26),
+    inset 0 0 0 1px rgba(225, 6, 0, 0.42),
+    0 42px 86px -26px rgba(0, 0, 0, 0.9);
+}
+
+.sp3d-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px 12px;
+  transform: translateZ(16px);
+}
+.sp3d-dots {
+  display: inline-flex;
+  gap: 6px;
+}
+.sp3d-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(192, 192, 192, 0.28);
+}
+.sp3d-dots i.is-signal {
+  background: var(--signal);
+  box-shadow: 0 0 10px rgba(225, 6, 0, 0.7);
+}
+.sp3d-label {
+  font: 500 10px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(192, 192, 192, 0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sp3d-code {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.85);
+  border: 1px solid rgba(192, 192, 192, 0.24);
+  font: 600 10px var(--mono);
+  letter-spacing: 0.12em;
+  color: var(--silver-hi);
+  direction: ltr;
+  transform: translateZ(26px);
+}
+
+.sp3d-viewport {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #0d0d0d;
+  cursor: pointer;
+  transform: translateZ(10px);
+  box-shadow: inset 0 0 0 1px rgba(192, 192, 192, 0.14);
+}
+.sp3d-viewport img,
+.sp3d-viewport .ec-ph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.65s var(--ease);
+}
+.sp3d-stage:hover .sp3d-viewport img {
+  transform: scale(1.03);
+}
+
+.sp3d-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    340px circle at var(--glare-x) var(--glare-y),
+    rgba(234, 234, 234, 0.2),
+    rgba(225, 6, 0, 0.06) 40%,
+    transparent 70%
+  );
+  transition: opacity 0.35s ease;
+}
+.sp3d-stage:hover .sp3d-glare {
+  opacity: 1;
+}
+
+.sp3d-floating-cta {
+  position: absolute;
+  inset-inline-end: 14px;
+  bottom: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.86);
+  border: 1px solid rgba(192, 192, 192, 0.32);
+  backdrop-filter: blur(8px);
+  color: var(--silver-hi);
+  font: 500 11px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateZ(34px);
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+.sp3d-floating-cta i {
+  font-style: normal;
+  color: var(--signal);
+}
+.sp3d-stage:hover .sp3d-floating-cta {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #0d0d0d;
+}
+.sp3d-stage:hover .sp3d-floating-cta i {
+  color: #0d0d0d;
+}
+
+.sp3d-shadow-floor {
+  position: absolute;
+  inset-inline: 10%;
+  bottom: -16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(225, 6, 0, 0.16), transparent 72%);
+  pointer-events: none;
+  transform: translateZ(-24px);
+}
+
+/* ---------- Presentation & Report Modals (Repaired & Polished) ---------- */
+.ec-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 2.2vw, 28px);
+  background: rgba(8, 8, 8, 0.92);
+  backdrop-filter: blur(10px);
+  animation: modalFadeIn 0.22s ease-out both;
+}
+.ec-modal-panel {
+  width: min(1480px, 100%);
+  height: min(92dvh, 960px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #0d0d0d;
+  color: var(--silver-hi);
+  border: 1px solid rgba(192, 192, 192, 0.24);
+  box-shadow: 0 36px 100px rgba(0, 0, 0, 0.85);
+}
+.ec-modal-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: #141414;
+  border-bottom: 1px solid rgba(192, 192, 192, 0.14);
+}
+.ec-modal-title-group {
+  min-width: 0;
+}
+.ec-modal-ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 192, 192, 0.26);
+  background: rgba(42, 42, 42, 0.6);
+  color: var(--silver-hi);
+  font: 600 12px var(--sans);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.ec-modal-ext:hover {
+  background: var(--silver-hi);
+  border-color: var(--silver-hi);
+  color: #0d0d0d;
+}
+.ec-modal-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0d0d0d;
+}
+.ec-modal-frame {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #141414;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.ec-modal-frame.is-ready {
+  opacity: 1;
+}
+.ec-modal-frame--dark {
+  background: #0d0d0d;
+}
+.ec-modal-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #0d0d0d;
+  color: var(--silver);
+  font: 500 12px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.ec-modal-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(192, 192, 192, 0.2);
+  border-top-color: var(--signal);
+  animation: modalSpin 0.8s linear infinite;
+}
+.ec-modal-banner {
+  position: absolute;
+  inset-inline: 16px;
+  bottom: 16px;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(20, 20, 20, 0.94);
+  border: 1px solid rgba(225, 6, 0, 0.55);
+  font-size: 13px;
+  color: var(--silver-hi);
+}
+.ec-modal-banner a {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--signal);
+  color: #0d0d0d;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ec-modal-fallback {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 32px;
+}
+.ec-modal-fallback h3 {
+  margin: 0;
+  font: 700 clamp(22px, 3vw, 32px) / 1.15 var(--display);
+  color: var(--silver-hi);
+}
+.ec-modal-fallback p {
+  max-width: 480px;
+  margin: 0;
+  color: var(--s70);
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes modalSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- 3D Hexagonal Prism Readout & Capability Pillars ---------- */
+.ec-node {
+  background: linear-gradient(155deg, #242424 0%, #141414 100%);
+  box-shadow: inset 0 1px 0 rgba(234, 234, 234, 0.14), inset 0 0 0 1px rgba(192, 192, 192, 0.22);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.ec-node.is-front {
+  box-shadow: inset 0 0 0 1.5px rgba(225, 6, 0, 0.72), 0 28px 60px rgba(0, 0, 0, 0.65);
+}
+
+.ec-ring-readout {
+  position: absolute;
+  bottom: clamp(22px, 4.5vh, 44px);
+  inset-inline: clamp(20px, 4vw, 56px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-inline: auto;
+  width: fit-content;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.86);
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  font-size: 13px;
+}
+.ec-ring-readout span {
+  font: 600 11px var(--mono);
+  color: var(--signal);
+}
+.ec-ring-readout strong {
+  color: var(--silver-hi);
+  font-weight: 700;
+}
+.ec-ring-readout small {
+  color: var(--s70);
+  font: 500 11px var(--mono);
+}
+
+.ec-group-card {
+  background: linear-gradient(155deg, #1d1d1d 0%, #131313 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(192, 192, 192, 0.16);
+}
+.ec-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Capability Domain Micro-Visualizations (Silver / Charcoal / Signal Red only) */
+.cap-viz {
+  width: 68px;
+  height: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+.cap-viz--bars {
+  gap: 4px;
+}
+.cap-viz--bars i {
+  width: 6px;
+  height: var(--h);
+  border-radius: 2px 2px 0 0;
+  background: rgba(192, 192, 192, 0.42);
+  animation: capBarPulse 3.2s ease-in-out infinite;
+}
+.cap-viz--bars i.is-signal {
+  background: var(--signal);
+  box-shadow: 0 0 10px rgba(225, 6, 0, 0.55);
+}
+.cap-viz--bars i:nth-child(2) { animation-delay: -0.6s; }
+.cap-viz--bars i:nth-child(4) { animation-delay: -1.1s; }
+.cap-viz--bars i:nth-child(6) { animation-delay: -1.8s; }
+
+.cap-viz--nodes {
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.cap-viz--nodes span {
+  display: block;
+  width: 56px;
+  height: 3.5px;
+  border-radius: 2px;
+  background: rgba(192, 192, 192, 0.35);
+}
+.cap-viz--nodes span.is-mid { width: 42px; }
+.cap-viz--nodes span.is-signal { width: 34px; background: var(--signal); }
+.cap-viz--nodes span.is-short { width: 22px; }
+
+.cap-viz--radar {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+.cap-viz--radar b {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 10px var(--signal);
+}
+.cap-viz--radar i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(225, 6, 0, 0.7);
+  animation: capRadar 2.8s ease-out infinite;
+}
+.cap-viz--radar i:nth-child(2) {
+  animation-delay: -1.4s;
+}
+
+.cap-viz--slides {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+.cap-viz--slides i {
+  position: absolute;
+  width: 34px;
+  height: 22px;
+  border-radius: 5px;
+  background: rgba(192, 192, 192, 0.14);
+  border: 1px solid rgba(192, 192, 192, 0.3);
+}
+.cap-viz--slides i:nth-child(1) { transform: translate(-10px, -2px) rotate(-6deg); }
+.cap-viz--slides i:nth-child(2) { transform: translate(0, 0); background: rgba(192, 192, 192, 0.24); }
+.cap-viz--slides i.is-signal { transform: translate(10px, 2px) rotate(6deg); border-color: var(--signal); background: rgba(225, 6, 0, 0.22); }
+
+@keyframes capBarPulse {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.65); }
+}
+@keyframes capRadar {
+  from { transform: scale(0.7); opacity: 0.9; }
+  to { transform: scale(2.4); opacity: 0; }
+}
+
+/* ---------- Experience: Interactive 3D Field Deployment Telemetry Stage ---------- */
+.ec-field-stage-wrap {
+  padding: clamp(20px, 4vw, 48px) 0 clamp(60px, 8vw, 110px);
+}
+
+.fg3d-shell {
+  padding: clamp(22px, 3.4vw, 44px);
+  border-radius: 28px;
+  background: linear-gradient(155deg, #191919 0%, #101010 100%);
+  border: 1px solid rgba(192, 192, 192, 0.16);
+  box-shadow: 0 36px 80px -36px rgba(0, 0, 0, 0.85);
+}
+
+.fg3d-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.fg3d-head h3 {
+  margin: 10px 0 0;
+  font: 800 clamp(24px, 3.2vw, 44px) / 1.02 var(--display);
+  font-variation-settings: 'wght' 800, 'wdth' 76;
+  color: var(--silver-hi);
+}
+.site--ar .fg3d-head h3 {
+  font-family: var(--arabic);
+  font-variation-settings: normal;
+}
+
+.fg3d-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fg3d-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  background: rgba(13, 13, 13, 0.72);
+  color: var(--s70);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.fg3d-tab b {
+  font: 600 10px var(--mono);
+  color: var(--signal);
+  direction: ltr;
+}
+.fg3d-tab.is-active,
+.fg3d-tab:hover {
+  border-color: var(--signal);
+  background: rgba(225, 6, 0, 0.14);
+  color: var(--silver-hi);
+}
+
+.fg3d-grid-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: clamp(20px, 3vw, 40px);
+  align-items: center;
+}
+
+.fg3d-stage {
+  position: relative;
+  height: clamp(260px, 34vw, 370px);
+  perspective: 950px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 50%, rgba(42, 42, 42, 0.35), rgba(13, 13, 13, 0.96) 76%);
+  border: 1px solid rgba(192, 192, 192, 0.12);
+}
+
+.fg3d-plane {
+  position: relative;
+  width: 86%;
+  height: 86%;
+  transform-style: preserve-3d;
+  transform: rotateX(46deg) rotateZ(-14deg);
+  transition: transform 0.6s var(--ease);
+}
+.fg3d-stage:hover .fg3d-plane {
+  transform: rotateX(40deg) rotateZ(-8deg);
+}
+
+.fg3d-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.fg3d-gridline {
+  stroke: rgba(192, 192, 192, 0.1);
+  stroke-width: 0.4;
+}
+.fg3d-ring {
+  fill: none;
+  stroke: rgba(192, 192, 192, 0.14);
+  stroke-width: 0.45;
+}
+.fg3d-ring--dashed {
+  stroke-dasharray: 2 2;
+}
+.fg3d-arc {
+  fill: none;
+  stroke-width: 0.9;
+  stroke-dasharray: 3 2;
+  transition: stroke-width 0.3s ease, opacity 0.3s ease;
+  opacity: 0.45;
+}
+.fg3d-arc.is-lit {
+  stroke-width: 1.45;
+  opacity: 1;
+  animation: fgDash 1.6s linear infinite;
+}
+@keyframes fgDash {
+  to { stroke-dashoffset: -10; }
+}
+
+.fg3d-pin {
+  position: absolute;
+  transform: translate(-50%, -50%) translateZ(18px);
+  border: 0;
+  background: transparent;
+  padding: 6px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.fg3d-pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--silver-hi);
+  border: 2px solid #0d0d0d;
+  box-shadow: 0 0 12px rgba(234, 234, 234, 0.6);
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+.fg3d-pin.is-hub .fg3d-pin-dot,
+.fg3d-pin.is-active .fg3d-pin-dot {
+  background: var(--signal);
+  transform: scale(1.3);
+  box-shadow: 0 0 16px rgba(225, 6, 0, 0.95);
+}
+.fg3d-pin-pulse {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--signal);
+  opacity: 0;
+}
+.fg3d-pin.is-active .fg3d-pin-pulse {
+  animation: capRadar 2s ease-out infinite;
+}
+.fg3d-pin-tag {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%) rotateZ(14deg) rotateX(-40deg);
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(13, 13, 13, 0.92);
+  border: 1px solid rgba(192, 192, 192, 0.28);
+  color: var(--silver-hi);
+  font: 600 9.5px var(--mono);
+  pointer-events: none;
+}
+.fg3d-pin-tag.is-below {
+  top: auto;
+  bottom: -24px;
+}
+.fg3d-pin.is-active .fg3d-pin-tag {
+  border-color: var(--signal);
+  color: #ffffff;
+}
+
+.fg3d-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(13, 13, 13, 0.78);
+  border: 1px solid rgba(192, 192, 192, 0.16);
+}
+.fg3d-readout-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font: 600 11px var(--mono);
+  letter-spacing: 0.14em;
+}
+.fg3d-code {
+  color: var(--signal);
+}
+.fg3d-coords {
+  color: var(--s70);
+}
+.fg3d-readout h4 {
+  margin: 4px 0 0;
+  font: 800 clamp(22px, 2.3vw, 32px) / 1.08 var(--display);
+  color: var(--silver-hi);
+}
+.site--ar .fg3d-readout h4 {
+  font-family: var(--arabic);
+}
+.fg3d-readout small {
+  font: 500 12px var(--mono);
+  color: var(--silver);
+}
+.fg3d-readout p {
+  margin: 6px 0 0;
+  color: var(--s70);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.fg3d-status-bar {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(192, 192, 192, 0.14);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 10.5px var(--mono);
+  letter-spacing: 0.12em;
+  color: rgba(192, 192, 192, 0.68);
+}
+.fg3d-status-bar i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+/* ---------- Contact Copy Chips & Footer Replay ---------- */
+.copy-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.copy-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 192, 192, 0.28);
+  background: rgba(42, 42, 42, 0.55);
+  color: var(--silver-hi);
+  font: 500 10px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.copy-chip:hover {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #0d0d0d;
+}
+
+.footer-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.footer-replay {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 192, 192, 0.24);
+  background: transparent;
+  color: var(--silver);
+  font: 500 10.5px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.footer-replay:hover {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: #0d0d0d;
+}
+
+/* ---------- Responsive & Mobile Safety (Zero Horizontal Overflow at 390px) ---------- */
+@media (max-width: 960px) {
+  .about-top-grid,
+  .fg3d-grid-layout {
+    grid-template-columns: 1fr;
+  }
+  .about-operator-card {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 860px) {
+  .ec-case:nth-child(even) .sp3d-wrap {
+    order: 0;
+  }
+  .ec-step-btns {
+    display: none;
+  }
+  .ec-ring-readout {
+    position: static;
+    margin-top: 16px;
+  }
+  .ec-filter-bar {
+    margin-bottom: -10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-copy small {
+    display: none !important;
+  }
+  .brand {
+    padding: 4px 12px 4px 5px;
+    gap: 8px;
+  }
+  .portrait-pill {
+    width: 38px;
+    height: 38px;
+  }
+  .sp3d-stage {
+    transform: none !important;
+    padding: 8px;
+  }
+  .sp3d-floating-cta {
+    font-size: 9.5px;
+    padding: 6px 11px;
+  }
+  .fg3d-stage {
+    height: 240px;
+  }
+  .fg3d-plane {
+    transform: rotateX(34deg) rotateZ(-8deg);
+  }
+  .ec-modal-panel {
+    height: 94dvh;
+    border-radius: 14px;
+  }
+  .ec-modal-bar {
+    padding: 12px 14px;
+  }
+  .footer-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Reduced Motion Respect ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .sp3d-stage,
+  .fg3d-plane,
+  .rb-spotlight-card,
+  .about-portrait-frame {
+    transform: none !important;
+    transition: none !important;
+  }
+  .cap-viz--bars i,
+  .cap-viz--radar i,
+  .fg3d-arc.is-lit,
+  .fg3d-pin.is-active .fg3d-pin-pulse,
+  .ec-modal-spinner {
+    animation: none !important;
+  }
+}
