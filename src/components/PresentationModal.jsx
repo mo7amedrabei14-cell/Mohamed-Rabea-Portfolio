@@ -17,41 +17,23 @@ import { createPortal } from 'react-dom';
 function injectIframeSafeShim(rawHtml, sourceUrl, preferredLang) {
   const baseHref = sourceUrl.slice(0, sourceUrl.lastIndexOf('/') + 1);
   const safeLang = preferredLang === 'ar' ? 'ar' : 'en';
+  const shim = '<base href="' + baseHref + '"><script>(function(){' +
+    'var initLang=' + JSON.stringify(safeLang) + ';' +
+    'try{window.localStorage.getItem("__probe");}' +
+    'catch(e){var store={"deck-lang":initLang};try{' +
+      'Object.defineProperty(window,"localStorage",{configurable:true,value:{' +
+        'getItem:function(k){return Object.prototype.hasOwnProperty.call(store,k)?store[k]:null;},' +
+        'setItem:function(k,v){store[k]=String(v);},' +
+        'removeItem:function(k){delete store[k];},' +
+        'clear:function(){store={};}' +
+      '}});' +
+    '}catch(_){}}' +
+  '})();</script>';
 
-  // The deck has 17 large screenshots (about 8.7 MB total). Load them only
-  // when their slides approach the viewport instead of blocking the first render.
-  const optimizedHtml = rawHtml.replace(/<img\b[^>]*>/gi, (tag) => {
-    if (!/\bclass=(["'])[^"']*\blive-example-image\b[^"']*\1/i.test(tag)) return tag;
-    let next = tag.replace(/\sloading=(["'])eager\1/i, ' loading="lazy"');
-    if (!/\sfetchpriority=/i.test(next)) {
-      next = next.replace(/>$/, ' fetchpriority="low">');
-    }
-    return next;
-  });
-
-  // Notify the parent as soon as the presentation DOM is parsed. The iframe
-  // load event otherwise waits for every eager screenshot to finish downloading.
-  const shim =
-    '<base href="' + baseHref + '">' +
-    '<script>(function(){' +
-      'var initLang=' + JSON.stringify(safeLang) + ';' +
-      'try{window.localStorage.getItem("__probe");}' +
-      'catch(e){var store={"deck-lang":initLang};try{' +
-        'Object.defineProperty(window,"localStorage",{configurable:true,value:{' +
-          'getItem:function(k){return Object.prototype.hasOwnProperty.call(store,k)?store[k]:null;},' +
-          'setItem:function(k,v){store[k]=String(v);},' +
-          'removeItem:function(k){delete store[k];},' +
-          'clear:function(){store={};}' +
-        '}});' +
-      '}catch(_){}}' +
-      'var ready=function(){try{window.parent.postMessage({type:"eoc-presentation:dom-ready"},"*");}catch(_){}};' +
-      'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",ready,{once:true});}else{ready();}' +
-    '})();</script>';
-
-  if (/<head[^>]*>/i.test(optimizedHtml)) {
-    return optimizedHtml.replace(/<head([^>]*)>/i, '<head$1>' + shim);
+  if (/<head[^>]*>/i.test(rawHtml)) {
+    return rawHtml.replace(/<head([^>]*)>/i, '<head$1>' + shim);
   }
-  return shim + optimizedHtml;
+  return shim + rawHtml;
 }
 
 export function PresentationModal({
@@ -64,7 +46,18 @@ export function PresentationModal({
   rtl = false,
   onClose,
 }) {
-  const [mode, setMode] = useState('loading'); // 'loading' | 'srcdoc' | 'direct' | 'error'
+  const isSameOrigin = (() => {
+    try {
+      return new URL(url, window.location.href).origin === window.location.origin;
+    } catch {
+      return false;
+    }
+  })();
+
+  // Production portfolio and EOC deck share the same github.io origin.
+  // Stream the page directly in an iframe instead of fetching the full HTML,
+  // converting it to a string, and creating a second document via srcDoc.
+  const [mode, setMode] = useState(() => (isSameOrigin ? 'direct' : 'loading'));
   const [srcDocHtml, setSrcDocHtml] = useState('');
   const [frameReady, setFrameReady] = useState(false);
   const [showSlowHint, setShowSlowHint] = useState(false);
@@ -73,18 +66,33 @@ export function PresentationModal({
   const panelRef = useRef(null);
   const frameRef = useRef(null);
 
-  // Reveal the deck as soon as its DOM is parsed, without waiting for every screenshot.
+  // In same-origin production and srcDoc local preview, we can inspect the deck
+  // document directly. Mark it ready at DOM parse time, not after its images load.
   useEffect(() => {
-    const onFrameMessage = (event) => {
-      if (event.source !== frameRef.current?.contentWindow) return;
-      if (event.data?.type !== 'eoc-presentation:dom-ready') return;
-      setFrameReady(true);
-      setShowSlowHint(false);
+    let frame = 0;
+    let disposed = false;
+
+    const inspectDeck = () => {
+      if (disposed) return;
+      try {
+        const doc = frameRef.current?.contentDocument;
+        if (doc && doc.readyState !== 'loading' && doc.querySelector('.s')) {
+          setFrameReady(true);
+          setShowSlowHint(false);
+          return;
+        }
+      } catch {
+        // A cross-origin fallback cannot be inspected; its native load event handles readiness.
+      }
+      frame = window.setTimeout(inspectDeck, 100);
     };
 
-    window.addEventListener('message', onFrameMessage);
-    return () => window.removeEventListener('message', onFrameMessage);
-  }, []);
+    inspectDeck();
+    return () => {
+      disposed = true;
+      window.clearTimeout(frame);
+    };
+  }, [mode]);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -130,8 +138,17 @@ export function PresentationModal({
   }, [onClose]);
 
   useEffect(() => {
+    // Same-origin production path: let the browser stream the real document.
+    if (isSameOrigin) {
+      setMode('direct');
+      return undefined;
+    }
+
+    // Localhost / custom preview path: use srcDoc only when the remote deck is
+    // cross-origin, retaining the storage-safe shim for restrictive browsers.
     let active = true;
     const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 12000);
 
     const loadDeck = async () => {
       setMode('loading');
@@ -147,7 +164,7 @@ export function PresentationModal({
         setMode('srcdoc');
       } catch {
         if (!active) return;
-        // Fallback to direct iframe embedding if CORS fetch is unavailable
+        // A timed-out or unavailable fetch must not leave a permanent loader.
         setMode('direct');
       }
     };
@@ -155,9 +172,10 @@ export function PresentationModal({
     loadDeck();
     return () => {
       active = false;
+      window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [url, rtl]);
+  }, [url, rtl, isSameOrigin]);
 
   return createPortal(
     <div
@@ -229,7 +247,7 @@ export function PresentationModal({
             </div>
           ) : mode === 'srcdoc' ? (
             <iframe
-              className={`ec-modal-frame ec-modal-frame--dark${frameReady ? ' is-ready' : ''}`}
+              className="ec-modal-frame ec-modal-frame--dark"
               ref={frameRef}
               srcDoc={srcDocHtml}
               title={title}
@@ -243,14 +261,14 @@ export function PresentationModal({
             />
           ) : mode === 'direct' ? (
             <iframe
-              className={`ec-modal-frame ec-modal-frame--dark${frameReady ? ' is-ready' : ''}`}
+              className="ec-modal-frame ec-modal-frame--dark"
               ref={frameRef}
               src={url}
               title={title}
               allow="fullscreen; autoplay"
               allowFullScreen
               loading="eager"
-              referrerPolicy="no-referrer-when-downgrade"
+              referrerPolicy="strict-origin-when-cross-origin"
               onLoad={() => {
                 setFrameReady(true);
                 setShowSlowHint(false);
