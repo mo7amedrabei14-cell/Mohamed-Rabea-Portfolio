@@ -74,9 +74,28 @@ jobs:
         run: npm install --no-save --package-lock=false playwright
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Verify presentation modal in a real browser
+      - name: Verify production presentation modal in Chromium
         env:
           SITE_URL: https://mo7amedrabei14-cell.github.io/Mohamed-Rabea-Portfolio/
+          TEST_LABEL: production
+        run: node tools/verify-presentation.mjs
+      - name: Build and start localhost preview
+        shell: bash
+        run: |
+          npm run build
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/portfolio-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/Mohamed-Rabea-Portfolio/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/portfolio-preview.log
+          exit 1
+      - name: Verify localhost presentation modal in Chromium
+        env:
+          SITE_URL: http://127.0.0.1:4173/Mohamed-Rabea-Portfolio/
+          TEST_LABEL: localhost
         run: node tools/verify-presentation.mjs
       - name: Upload browser diagnostics
         if: always()

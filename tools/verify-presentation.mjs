@@ -43,6 +43,7 @@ try {
 
   const button = page.getByRole('button', { name: /View interactive presentation/i });
   await button.waitFor({ state: 'visible', timeout: 30000 });
+  const openedAt = Date.now();
   await button.click();
 
   await page.locator('.ec-modal--presentation').waitFor({ state: 'visible', timeout: 15000 });
@@ -59,6 +60,10 @@ try {
   } catch {
     ready = false;
   }
+
+  const readyMs = Date.now() - openedAt;
+  // Let the deck's own entrance choreography settle before capturing the visual result.
+  await page.waitForTimeout(1500);
 
   const frameInfo = await frame.evaluate((el) => {
     const info = {
@@ -85,13 +90,15 @@ try {
 
   const frames = page.frames().map((f) => ({ name: f.name(), url: f.url() }));
   const loaderVisible = await page.locator('.ec-modal-loader').isVisible().catch(() => false);
-  const screenshot = 'artifacts/presentation-modal.png';
+  const label = process.env.TEST_LABEL || 'production';
+  const screenshot = `artifacts/presentation-modal-${label}.png`;
   await page.screenshot({ path: screenshot, fullPage: false });
 
   result = {
     ...result,
     ok: ready && (frameInfo.document?.slideCount > 0 || frames.some((f) => f.url().includes('eoc-command-deck.html'))),
     ready,
+    readyMs,
     loaderVisible,
     frameInfo,
     frames,
@@ -102,7 +109,8 @@ try {
   };
 } catch (error) {
   result = { ...result, ok: false, fatalError: error.message, deckResponses, failedRequests, errors };
-  await page.screenshot({ path: 'artifacts/presentation-modal-failure.png', fullPage: false }).catch(() => {});
+  const label = process.env.TEST_LABEL || 'production';
+  await page.screenshot({ path: `artifacts/presentation-modal-${label}-failure.png`, fullPage: false }).catch(() => {});
 } finally {
   await browser.close();
 }
