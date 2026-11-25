@@ -81,4 +81,23 @@
   width: 0;
   height: 0;
 }
+/* Hide every scrollbar while the cinematic intro is mounted. The :has() rule prevents a first-frame flash; .hz-intro is the JS fallback. */
+html:has(.si-stage),
+html.hz-intro {
+  scrollbar-width: none !important;
+}
 
+html:has(.si-stage) *,
+html.hz-intro * {
+  scrollbar-width: none !important;
+}
+
+html:has(.si-stage)::-webkit-scrollbar,
+html.hz-intro::-webkit-scrollbar,
+html:has(.si-stage) *::-webkit-scrollbar,
+html.hz-intro *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
