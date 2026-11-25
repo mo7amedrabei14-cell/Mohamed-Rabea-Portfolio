@@ -1,0 +1,86 @@
+/*
+ * SIGNAL RAIL — custom scrollbar
+ * Native scrolling remains untouched; this only replaces the browser's default visuals.
+ * Palette: portfolio charcoal #0D0D0D / silver #C0C0C0 / signal red #E10600.
+ */
+
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0c0 #0d0d0d;
+  scrollbar-gutter: stable;
+}
+
+/* Chromium / Safari */
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 42%,
+      rgba(225, 6, 0, 0.24) 46%,
+      rgba(225, 6, 0, 0.24) 54%,
+      transparent 58%,
+      transparent 100%
+    ),
+    #0d0d0d;
+  border-inline-start: 1px solid rgba(192, 192, 192, 0.08);
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 58px;
+  border: 3px solid #0d0d0d;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #555555 0%,
+    #9d9d9d 22%,
+    #eaeaea 48%,
+    #9a9a9a 72%,
+    #e10600 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(192, 192, 192, 0.22),
+    0 0 9px rgba(225, 6, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    90deg,
+    #777777 0%,
+    #d0d0d0 34%,
+    #f1f1f1 52%,
+    #e10600 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(192, 192, 192, 0.38),
+    0 0 14px rgba(225, 6, 0, 0.42),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #e10600 0%, #c0c0c0 100%);
+  box-shadow: 0 0 16px rgba(225, 6, 0, 0.48);
+}
+
+*::-webkit-scrollbar-corner {
+  background: #0d0d0d;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *::-webkit-scrollbar-thumb {
+    scroll-behavior: auto;
+  }
+}
