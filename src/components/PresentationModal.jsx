@@ -18,32 +18,40 @@ function injectIframeSafeShim(rawHtml, sourceUrl, preferredLang) {
   const baseHref = sourceUrl.slice(0, sourceUrl.lastIndexOf('/') + 1);
   const safeLang = preferredLang === 'ar' ? 'ar' : 'en';
 
-  // The deck contains 17 large operational screenshots (about 8.7 MB in total).
-  // They are needed when their slides become active, not before the first slide renders.
-  const optimizedHtml = rawHtml.replace(/<img\\b[^>]*>/gi, (tag) => {
-    if (!/\\bclass=(["'])[^"']*\\blive-example-image\\b[^"']*\\1/i.test(tag)) return tag;
-    let next = tag.replace(/\\sloading=(["'])eager\\1/i, ' loading="lazy"');
-    if (!/\\sfetchpriority=/i.test(next)) next = next.replace(/\\s*\\/?>(?=$)/, ' fetchpriority="low"function injectIframeSafeShim(rawHtml, sourceUrl, preferredLang) {
-  const baseHref = sourceUrl.slice(0, sourceUrl.lastIndexOf('/') + 1);
-  const safeLang = preferredLang === 'ar' ? 'ar' : 'en';
-  const shim = `<base href="${baseHref}"><script>(function(){var initLang=${JSON.stringify(safeLang)};try{window.localStorage.getItem('__probe');}catch(e){var store={'deck-lang':initLang};try{Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:function(k){return Object.prototype.hasOwnProperty.call(store,k)?store[k]:null;},setItem:function(k,v){store[k]=String(v);},removeItem:function(k){delete store[k];},clear:function(){store={};}}});}catch(_){}}})();</script>`;
-
-  if (/<head[^>]*>/i.test(rawHtml)) {
-    return rawHtml.replace(/<head([^>]*)>/i, `<head$1>${shim}`);
-  }
-  return `${shim}${rawHtml}`;
-}');
+  // The deck has 17 large screenshots (about 8.7 MB total). Load them only
+  // when their slides approach the viewport instead of blocking the first render.
+  const optimizedHtml = rawHtml.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (!/\bclass=(["'])[^"']*\blive-example-image\b[^"']*\1/i.test(tag)) return tag;
+    let next = tag.replace(/\sloading=(["'])eager\1/i, ' loading="lazy"');
+    if (!/\sfetchpriority=/i.test(next)) {
+      next = next.replace(/>$/, ' fetchpriority="low">');
+    }
     return next;
   });
 
-  // Signal when the document has been parsed. The browser's iframe load event
-  // waits for eager images; DOMContentLoaded lets the actual deck appear sooner.
-  const shim = `<base href="${baseHref}"><script>(function(){var initLang=${JSON.stringify(safeLang)};try{window.localStorage.getItem('__probe');}catch(e){var store={'deck-lang':initLang};try{Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:function(k){return Object.prototype.hasOwnProperty.call(store,k)?store[k]:null;},setItem:function(k,v){store[k]=String(v);},removeItem:function(k){delete store[k];},clear:function(){store={};}}});}catch(_){}}var ready=function(){try{window.parent.postMessage({type:'eoc-presentation:dom-ready'},'*');}catch(_){}};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',ready,{once:true});}else{ready();}})();</script>`;
+  // Notify the parent as soon as the presentation DOM is parsed. The iframe
+  // load event otherwise waits for every eager screenshot to finish downloading.
+  const shim =
+    '<base href="' + baseHref + '">' +
+    '<script>(function(){' +
+      'var initLang=' + JSON.stringify(safeLang) + ';' +
+      'try{window.localStorage.getItem("__probe");}' +
+      'catch(e){var store={"deck-lang":initLang};try{' +
+        'Object.defineProperty(window,"localStorage",{configurable:true,value:{' +
+          'getItem:function(k){return Object.prototype.hasOwnProperty.call(store,k)?store[k]:null;},' +
+          'setItem:function(k,v){store[k]=String(v);},' +
+          'removeItem:function(k){delete store[k];},' +
+          'clear:function(){store={};}' +
+        '}});' +
+      '}catch(_){}}' +
+      'var ready=function(){try{window.parent.postMessage({type:"eoc-presentation:dom-ready"},"*");}catch(_){}};' +
+      'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",ready,{once:true});}else{ready();}' +
+    '})();</script>';
 
   if (/<head[^>]*>/i.test(optimizedHtml)) {
-    return optimizedHtml.replace(/<head([^>]*)>/i, `<head$1>${shim}`);
+    return optimizedHtml.replace(/<head([^>]*)>/i, '<head$1>' + shim);
   }
-  return `${shim}${optimizedHtml}`;
+  return shim + optimizedHtml;
 }
 
 export function PresentationModal({
@@ -65,8 +73,7 @@ export function PresentationModal({
   const panelRef = useRef(null);
   const frameRef = useRef(null);
 
-  // Reveal the embedded deck after its DOM is parsed, without waiting for all
-  // slide screenshots to download. Only accept a signal from this exact iframe.
+  // Reveal the deck as soon as its DOM is parsed, without waiting for every screenshot.
   useEffect(() => {
     const onFrameMessage = (event) => {
       if (event.source !== frameRef.current?.contentWindow) return;
