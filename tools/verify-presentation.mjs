@@ -96,7 +96,7 @@ try {
 
   result = {
     ...result,
-    ok: ready && (frameInfo.document?.slideCount > 0 || frames.some((f) => f.url().includes('eoc-command-deck.html'))),
+    ok: ready && (frameInfo.document?.slideCount > 0 || frames.some((f) => f.url.includes('eoc-command-deck.html'))),
     ready,
     readyMs,
     loaderVisible,
